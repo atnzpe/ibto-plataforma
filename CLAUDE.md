@@ -21,6 +21,7 @@ Issue ➡️ Branch (`feature/…`, `fix/…`, `docs/…` a partir da `main` atu
 
 - **Segurança:** `.env` nunca no Git; validar entrada no servidor (Form Requests); Eloquent/consultas com parâmetros; erros públicos sem detalhes internos, com código estável (ex.: `SAUDE_BANCO_INDISPONIVEL`).
 - **LGPD:** CPF, nascimento, endereço, telefone e documentos de filiados só no banco, criptografados, nunca em logs, testes com dados reais, issues ou commits.
-- **Acessibilidade:** um `<h1>` por página, navegação por teclado, contraste WCAG AA, textos em pt-BR.
+- **Três idiomas (Gleyson, 29/09/2026):** toda tela tem a opção de **português (padrão), inglês e espanhol**, escolhida pelo usuário. Nenhum texto fixo no código: tudo passa pela camada de tradução, e uma tela só está pronta com as três versões.
+- **Acessibilidade:** um `<h1>` por página, navegação por teclado, contraste WCAG AA, `<html lang>` no idioma escolhido.
 - **Indexação:** `APP_INDEXAVEL=false` (noindex) até o lançamento.
 - Lógica com regra de negócio (datas, status, valores, percentuais) ganha teste.
