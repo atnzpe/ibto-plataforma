@@ -1,0 +1,6 @@
+# Segredos e dependências nunca vão para o repositório
+.env
+.env.*
+!.env.example
+/vendor
+/node_modules
