@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Indexação por buscadores (IBTO)
+    |--------------------------------------------------------------------------
+    |
+    | Desligada por padrão: enquanto for false, todas as páginas saem com
+    | <meta name="robots" content="noindex, nofollow">. Só ligar em produção,
+    | quando a plataforma for lançada.
+    |
+    */
+
+    'indexavel' => (bool) env('APP_INDEXAVEL', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |
