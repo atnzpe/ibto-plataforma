@@ -1,0 +1,53 @@
+# Modelo do .env da homologação (cursos-homolog.ib-to.org), issue #35.
+# Copie para o servidor como `.env`, na pasta cursos-homolog.ib-to.org (ao lado
+# do `artisan`, nunca dentro de public/), e preencha o que está entre < >.
+# O .env real NUNCA vai para o Git. Guia: docs/publicacao-homologacao.md.
+
+APP_NAME="IBTO Cursos"
+APP_ENV=production
+# Gere na sua máquina com: php artisan key:generate --show
+APP_KEY=<cole a chave base64:... aqui>
+APP_DEBUG=false
+APP_URL=https://cursos-homolog.ib-to.org
+APP_INDEXAVEL=false
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=pt_BR
+APP_MAINTENANCE_DRIVER=file
+
+BCRYPT_ROUNDS=12
+
+# Só erros, um arquivo por dia, guardados por 14 dias. Nunca dados pessoais.
+LOG_CHANNEL=daily
+LOG_DAILY_DAYS=14
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=<edua1187_nome-do-banco>
+DB_USERNAME=<edua1187_nome-do-usuario>
+DB_PASSWORD=<senha do usuário do banco>
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=true
+SESSION_PATH=/
+SESSION_DOMAIN=null
+SESSION_SECURE_COOKIE=true
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+
+# E-mail pela conta criada no cPanel (confirmação de cadastro, senha).
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=br1098.hostgator.com.br
+MAIL_PORT=465
+MAIL_USERNAME=<endereço completo da conta de e-mail>
+MAIL_PASSWORD=<senha da conta de e-mail>
+MAIL_FROM_ADDRESS=<o mesmo endereço da conta>
+MAIL_FROM_NAME="${APP_NAME}"

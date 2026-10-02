@@ -42,3 +42,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# Gerado pelo deploy (commit publicado); ver docs/publicacao-homologacao.md
+/VERSAO_DEPLOY
