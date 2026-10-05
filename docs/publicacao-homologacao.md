@@ -21,19 +21,19 @@ Faça na ordem. Cada parte termina num **ponto seguro**: dá para parar ali e co
 
 ### Parte A — Subdomínio
 
-- [ ] cPanel → **Domínios** (ou Subdomínios) → criar `cursos-homolog.ib-to.org`.
-- [ ] **Desmarque** "Share document root" (compartilhar a raiz com ib-to.org). Essa escolha é permanente.
-- [ ] Em "Document Root", escreva **`cursos-homolog.ib-to.org/public`** (com o `/public` no final).
-- [ ] cPanel → **SSL/TLS Status** → confira que o subdomínio ganhou o certificado (AutoSSL). Pode levar alguns minutos.
-- [ ] cPanel → **MultiPHP Manager** → `cursos-homolog.ib-to.org` → **PHP 8.3**.
+- [x] cPanel → **Domínios** (ou Subdomínios) → criar `cursos-homolog.ib-to.org`.
+- [x] **Desmarque** "Share document root" (compartilhar a raiz com ib-to.org). Essa escolha é permanente.
+- [x] Em "Document Root", escreva **`cursos-homolog.ib-to.org/public`** (com o `/public` no final).
+- [x] cPanel → **SSL/TLS Status** → confira que o subdomínio ganhou o certificado (AutoSSL). Pode levar alguns minutos.
+- [x] cPanel → **MultiPHP Manager** → `cursos-homolog.ib-to.org` → **PHP 8.3**.
 
 **Ponto seguro:** subdomínio criado, apontando para `public/`, com HTTPS e PHP 8.3.
 
 ### Parte B — Banco de dados
 
-- [ ] cPanel → **Bancos de dados MySQL** → criar um banco (ex.: `edua1187_cursos_homolog`).
-- [ ] Criar um usuário com senha forte (use o gerador do cPanel) e **adicioná-lo ao banco com TODOS OS PRIVILÉGIOS**.
-- [ ] Anote nome do banco, usuário e senha num lugar seguro (gerenciador de senhas), **nunca** no Git ou na issue.
+- [x] cPanel → **Bancos de dados MySQL** → criar um banco (ex.: `edua1187_cursos_homolog`).
+- [x] Criar um usuário com senha forte (use o gerador do cPanel) e **adicioná-lo ao banco com TODOS OS PRIVILÉGIOS**.
+- [x] Anote nome do banco, usuário e senha num lugar seguro (gerenciador de senhas), **nunca** no Git ou na issue.
 
 **Ponto seguro:** banco criado.
 
@@ -41,14 +41,14 @@ Faça na ordem. Cada parte termina num **ponto seguro**: dá para parar ali e co
 
 O e-mail do domínio `ib-to.org` fica no **Titan** (o e-mail grátis do plano da HostGator, escolhido em 05/10/2026; a escolha não pode ser desfeita). O Titan recebe e envia os e-mails do domínio; a plataforma envia pelo servidor de envio (SMTP) dele, `smtp.titan.email`.
 
-- [ ] Painel da HostGator → **E-mails** → **Titan** → criar a conta `cursos@ib-to.org`, que envia os e-mails da plataforma, e guardar a senha no gerenciador de senhas.
+- [x] Painel da HostGator → **E-mails** → **Titan** → criar a conta `cursos@ib-to.org`, que envia os e-mails da plataforma, e guardar a senha no gerenciador de senhas.
 - [ ] No `.env` do servidor (Parte G), use `MAIL_HOST=smtp.titan.email`, porta `465` e o endereço e a senha dessa conta.
 
 ### Parte D — Conta de FTP só da plataforma
 
-- [ ] cPanel → **Contas FTP** → **Adicionar conta FTP**.
-- [ ] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`).
-- [ ] Anote o **usuário completo** que aparece em "Configurar cliente FTP".
+- [x] cPanel → **Contas FTP** → **Adicionar conta FTP**.
+- [x] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`).
+- [x] Anote o **usuário completo** que aparece em "Configurar cliente FTP".
 
 ### Parte E — Segredos no GitHub
 
