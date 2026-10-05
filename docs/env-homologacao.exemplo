@@ -42,10 +42,11 @@ FILESYSTEM_DISK=local
 QUEUE_CONNECTION=database
 CACHE_STORE=database
 
-# E-mail pela conta criada no cPanel (confirmação de cadastro, senha).
+# E-mail pela conta criada no Titan, o e-mail do domínio ib-to.org (confirmação de cadastro, senha).
+# smtp.titan.email é o servidor de envio do Titan; 465 + smtps = conexão criptografada.
 MAIL_MAILER=smtp
 MAIL_SCHEME=smtps
-MAIL_HOST=br1098.hostgator.com.br
+MAIL_HOST=smtp.titan.email
 MAIL_PORT=465
 MAIL_USERNAME=<endereço completo da conta de e-mail>
 MAIL_PASSWORD=<senha da conta de e-mail>

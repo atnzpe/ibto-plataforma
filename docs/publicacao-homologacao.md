@@ -39,7 +39,10 @@ Faça na ordem. Cada parte termina num **ponto seguro**: dá para parar ali e co
 
 ### Parte C — Conta de e-mail (confirmação de cadastro)
 
-- [ ] cPanel → **Contas de e-mail** → criar a conta que vai enviar os e-mails da plataforma (o endereço é decisão de vocês) e anotar a senha.
+O e-mail do domínio `ib-to.org` fica no **Titan** (o e-mail grátis do plano da HostGator, escolhido em 05/10/2026; a escolha não pode ser desfeita). O Titan recebe e envia os e-mails do domínio; a plataforma envia pelo servidor de envio (SMTP) dele, `smtp.titan.email`.
+
+- [ ] Painel da HostGator → **E-mails** → **Titan** → criar a conta `cursos@ib-to.org`, que envia os e-mails da plataforma, e guardar a senha no gerenciador de senhas.
+- [ ] No `.env` do servidor (Parte G), use `MAIL_HOST=smtp.titan.email`, porta `465` e o endereço e a senha dessa conta.
 
 ### Parte D — Conta de FTP só da plataforma
 
