@@ -64,7 +64,8 @@ No repositório `atnzpe/ibto-plataforma` → **Settings** → **Environments** �
 
 ### Parte F — Primeiro deploy
 
-- [ ] GitHub → **Actions** → **Deploy homologação** → **Run workflow** → escolha a branch (`feature/publicacao-homolog` no primeiro teste) → **Run**.
+- [ ] O GitHub só mostra um workflow na aba **Actions** depois que o arquivo dele chega à `main`. Por isso, o **primeiro deploy** é feito pelo merge da PR da `feature/publicacao-homolog`: o deploy roda sozinho a cada merge na `main`.
+- [ ] Depois disso, para publicar outra branch sem merge: GitHub → **Actions** → **Deploy homologação** → **Run workflow** → escolha a branch → **Run**.
 - [ ] O primeiro envio é demorado (o `vendor` tem milhares de arquivos). Os seguintes mandam só o que mudou.
 - [ ] O passo final "Conferir que está no ar" só confere o HTTPS e a senha (feitos pelo servidor, antes do Laravel); ele passa mesmo sem o `.env`. A plataforma em si só funciona depois das Partes G e H.
 
