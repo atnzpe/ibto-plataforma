@@ -44,8 +44,12 @@ A CI (`.github/workflows/ci.yml`) roda tudo isso a cada push, em PHP 8.3 e com u
 
 ## Rota de saúde
 
-`GET /api/saude` responde `200 {"status":"ok","banco":"ok"}` ou `503 {"status":"erro","codigo":"SAUDE_BANCO_INDISPONIVEL"}`. É pública, então nunca expõe detalhes internos; o código de erro é estável e aparece também no log.
+`GET /api/saude` (no máximo 30 consultas por minuto por IP) responde `200 {"status":"ok","banco":"ok"}` ou `503 {"status":"erro","codigo":"SAUDE_BANCO_INDISPONIVEL"}`. É pública, então nunca expõe detalhes internos; o código de erro é estável e aparece também no log.
 
 ## Indexação
 
 Enquanto `APP_INDEXAVEL=false` (o padrão), todas as páginas saem com `noindex, nofollow`. Só ligar em produção, no lançamento.
+
+## Publicação (homologação)
+
+Todo merge na `main` roda a CI e publica em `cursos-homolog.ib-to.org` por FTPS (`.github/workflows/deploy-homologacao.yml`). Sem SSH: migrations e caches rodam pelo Cron Job (`plataforma:pos-deploy`). Configuração inicial e problemas comuns em [docs/publicacao-homologacao.md](./docs/publicacao-homologacao.md). A produção ainda não existe.

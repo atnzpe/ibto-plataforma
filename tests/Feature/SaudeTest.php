@@ -9,6 +9,14 @@ test('responde ok quando o banco está conectado', function () {
         ->assertExactJson(['status' => 'ok', 'banco' => 'ok']);
 });
 
+test('limita a 30 consultas por minuto por IP', function () {
+    for ($i = 0; $i < 30; $i++) {
+        $this->getJson('/api/saude')->assertOk();
+    }
+
+    $this->getJson('/api/saude')->assertStatus(429);
+});
+
 test('responde 503 com código estável quando o banco está fora do ar', function () {
     // Troca o banco padrão por um arquivo que não existe: a conexão falha.
     $bancoPadrao = config('database.default');

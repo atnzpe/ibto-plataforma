@@ -5,9 +5,13 @@
 name: CI
 
 on:
+  # Na main quem chama a CI é o deploy (deploy-homologacao.yml), antes de
+  # publicar; assim ela não roda duas vezes no mesmo commit.
   push:
+    branches-ignore: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read

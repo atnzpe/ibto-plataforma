@@ -5,6 +5,11 @@
 
     RewriteEngine On
 
+    # Só HTTPS no servidor (no localhost não vale).
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP_HOST} ib-to\.org$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -22,4 +27,22 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Homologação (issue #35): senha e noindex só em cursos-homolog.ib-to.org e só
+# no HTTPS (no HTTP vale primeiro o redirecionamento acima, sem pedir senha).
+# Usa o mesmo arquivo de senhas da homologação do site (homolog.ib-to.org),
+# então a equipe entra com o mesmo usuário e senha. Guia:
+# docs/publicacao-homologacao.md.
+<If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org' && %{HTTPS} == 'on'">
+    AuthType Basic
+    AuthName "Homologacao IBTO Cursos"
+    AuthUserFile "/home1/edua1187/.htpasswds/homolog.ib-to.org/passwd"
+    Require valid-user
+</If>
+
+<IfModule mod_headers.c>
+    <If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org'">
+        Header always set X-Robots-Tag "noindex, nofollow"
+    </If>
 </IfModule>
