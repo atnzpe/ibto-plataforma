@@ -13,3 +13,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Padrão "ler → limpar (`trim`) → comparar → sair cedo": serve para saber se algo mudou (versão, nota fiscal, estoque); escrevi o trecho de `deploy/atualizar-vendor.php` e os 7 testes passaram de primeira.
 - TDD: rodar o teste antes do código e ver falhar prova que o teste confere de verdade; depois o código faz passar.
 - O PHPStan avisa casos que o teste não pega: `file_get_contents` pode devolver `false`, e o `trim` só aceita texto.
+
+## 07/10/2026 — #35 Parte 3: primeiro deploy do vendor.zip
+
+- "Deu sucesso" no GitHub não prova que chegou no lugar certo: quem confirma é o servidor (`VERSAO_DEPLOY`, `vendor-aplicado`, `versao-aplicada`).
+- O cPanel preenche sozinho o diretório da conta FTP; a nossa ficou em `/public` e o código foi parar na parte pública. Conferir o caminho antes de salvar.
+- Erro 500 é problema do servidor de quem responde (aqui, o GitHub): esperar e tentar de novo, sem mudar nada do nosso lado.

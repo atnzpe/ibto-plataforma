@@ -52,7 +52,7 @@ O e-mail do domínio `ib-to.org` fica no **Titan** (o e-mail grátis do plano da
 ### Parte D — Conta de FTP só da plataforma
 
 - [x] cPanel → **Contas FTP** → **Adicionar conta FTP**.
-- [ ] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`). **Cuidado:** ao digitar o login, o cPanel preenche este campo sozinho; apague e escreva o caminho à mão. Na lista de contas, o diretório deve ficar `/home1/edua1187/cursos-homolog.ib-to.org`, sem nada depois. (Em 07/10/2026 a primeira conta tinha ficado em `…/public`: o deploy pôs o código dentro da parte pública e foi preciso limpar o `public/` e criar uma conta nova. O cPanel não deixa trocar o diretório de uma conta existente.)
+- [x] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`). **Cuidado:** ao digitar o login, o cPanel preenche este campo sozinho; apague e escreva o caminho à mão. Na lista de contas, o diretório deve ficar `/home1/edua1187/cursos-homolog.ib-to.org`, sem nada depois. (Em 07/10/2026 a primeira conta tinha ficado em `…/public`: o deploy pôs o código dentro da parte pública e foi preciso limpar o `public/` e criar uma conta nova. O cPanel não deixa trocar o diretório de uma conta existente.)
 - [x] Anote o **usuário completo** que aparece em "Configurar cliente FTP".
 
 ### Parte E — Segredos no GitHub
@@ -94,7 +94,7 @@ No repositório `atnzpe/ibto-plataforma` → **Settings** → **Environments** �
 ```
 
 - São três comandos separados por `;`: primeiro as bibliotecas (vendor), depois o pós-deploy (migrations), por fim o agendador. O `;` faz o seguinte rodar mesmo se o anterior falhar. A ordem importa: o `artisan` precisa do `vendor` pronto, e o agendador precisa da tabela `cache`, criada pelas migrations.
-- [ ] **Desde 07/10/2026 (Parte 3 da #35):** troque o comando do Cron pelo de três partes acima, **antes** do próximo deploy.
+- [x] **Desde 07/10/2026 (Parte 3 da #35):** troque o comando do Cron pelo de três partes acima, **antes** do próximo deploy.
 - [x] Espere 5 minutos. No Gerenciador de Arquivos deve aparecer `storage/app/versao-aplicada` (as migrations rodaram). Se não aparecer, abra o log do dia, `storage/logs/laravel-AAAA-MM-DD.log` (ex.: `laravel-2026-10-05.log`; os logs ficam 14 dias), e procure `POS_DEPLOY_FALHOU`; mande o código para o Claude.
 
 **Ponto seguro:** plataforma no ar.
