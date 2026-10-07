@@ -5,7 +5,9 @@
 import { describe, expect, test } from 'bun:test';
 import {
     IDIOMAS,
+    buscaSemGoogle,
     hostGoogle,
+    hostOriginal,
     idiomaAtual,
     linkTraducao,
     traducaoDisponivel,
@@ -31,7 +33,12 @@ describe('traducaoDisponivel', () => {
     });
 
     test('computador local e IP: o Google não alcança', () => {
-        for (const host of ['localhost', 'localhost:8000', '127.0.0.1', '192.168.0.10:80']) {
+        for (const host of [
+            'localhost',
+            'localhost:8000',
+            '127.0.0.1',
+            '192.168.0.10:80',
+        ]) {
             expect(traducaoDisponivel(host)).toBe(false);
         }
     });
@@ -64,17 +71,52 @@ describe('idiomaAtual', () => {
 
     test('na página do Google lê o idioma de destino', () => {
         expect(
-            idiomaAtual('cursos-ib--to-org.translate.goog', '?_x_tr_sl=pt&_x_tr_tl=es'),
+            idiomaAtual(
+                'cursos-ib--to-org.translate.goog',
+                '?_x_tr_sl=pt&_x_tr_tl=es',
+            ),
         ).toBe('es');
     });
 
     test('idioma que não oferecemos vira português', () => {
-        expect(idiomaAtual('cursos-ib--to-org.translate.goog', '?_x_tr_tl=fr')).toBe('pt');
+        expect(
+            idiomaAtual('cursos-ib--to-org.translate.goog', '?_x_tr_tl=fr'),
+        ).toBe('pt');
+    });
+});
+
+describe('hostOriginal', () => {
+    test('desfaz o apelido do Google (o contrário da hostGoogle)', () => {
+        expect(hostOriginal('cursos--homolog-ib--to-org.translate.goog')).toBe(
+            'cursos-homolog.ib-to.org',
+        );
+    });
+
+    test('fora do Google devolve o próprio domínio', () => {
+        expect(hostOriginal('cursos.ib-to.org')).toBe('cursos.ib-to.org');
+    });
+});
+
+describe('buscaSemGoogle', () => {
+    test('tira só os parâmetros que o Google acrescenta', () => {
+        expect(
+            buscaSemGoogle(
+                '?aba=2&_x_tr_sl=pt&_x_tr_tl=es&_x_tr_hl=es&_x_tr_pto=wapp',
+            ),
+        ).toBe('?aba=2');
+    });
+
+    test('sem nada que sobre, devolve vazio', () => {
+        expect(buscaSemGoogle('?_x_tr_sl=pt&_x_tr_tl=es')).toBe('');
     });
 });
 
 describe('IDIOMAS', () => {
     test('os três idiomas da regra, com o português primeiro', () => {
-        expect(IDIOMAS.map((idioma) => idioma.codigo)).toEqual(['pt', 'en', 'es']);
+        expect(IDIOMAS.map((idioma) => idioma.codigo)).toEqual([
+            'pt',
+            'en',
+            'es',
+        ]);
     });
 });

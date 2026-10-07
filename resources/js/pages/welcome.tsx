@@ -1,5 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+// Menu de bandeiras que abre a página traduzida pelo Google (#53).
+import MenuIdiomas from '@/components/menu-idiomas';
 import { interpretarSaude } from '@/lib/saude';
 import type { EstadoSaude } from '@/lib/saude';
 import { dashboard, login, register } from '@/routes';
@@ -37,7 +39,9 @@ export default function Welcome() {
         <>
             <Head title="Plataforma de cursos" />
             <div className="flex min-h-screen flex-col items-center bg-black px-6 py-6 text-[#f4f1e8] lg:justify-center">
-                <header className="mb-10 w-full max-w-2xl">
+                <header className="mb-10 flex w-full max-w-2xl flex-wrap items-center justify-end gap-4">
+                    {/* Menu de idiomas pelo Google Tradutor (#53), antes da conta. */}
+                    <MenuIdiomas />
                     <nav
                         aria-label="Conta"
                         className="flex items-center justify-end gap-4"

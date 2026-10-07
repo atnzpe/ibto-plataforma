@@ -66,6 +66,54 @@ export function hostGoogle(host: string): string {
 }
 
 /**
+ * Faz o caminho contrário da hostGoogle: descobre o nosso domínio a partir do
+ * endereço da página traduzida. Serve para os links do menu, quando a pessoa
+ * já está na página do Google.
+ *
+ * @param hostname Domínio atual, sem porta. Ex.: 'cursos--homolog-ib--to-org.translate.goog'
+ * @returns Ex.: 'cursos-homolog.ib-to.org'. Fora do Google, devolve o próprio domínio.
+ */
+export function hostOriginal(hostname: string): string {
+    // Fora da página do Google, o domínio já é o nosso: devolve como está.
+    if (!hostname.endsWith('.translate.goog')) {
+        return hostname;
+    }
+
+    // Tira o final ".translate.goog" (ex.: sobra "cursos--homolog-ib--to-org").
+    const apelido = hostname.slice(0, -'.translate.goog'.length);
+
+    // Desfaz a regra do Google, separando primeiro nos hífens DUPLOS (que eram
+    // hífens de verdade); dentro de cada pedaço, os hífens simples eram pontos.
+    return apelido
+        .split('--')
+        .map((pedaco) => pedaco.replaceAll('-', '.'))
+        .join('-');
+}
+
+/**
+ * Tira da busca ("?...") os parâmetros que o Google acrescenta (_x_tr_...),
+ * para o link do menu não levar sobras da tradução anterior.
+ *
+ * @param busca Parte "?..." do endereço. Ex.: '?aba=2&_x_tr_sl=pt&_x_tr_tl=es'
+ * @returns Ex.: '?aba=2'. Se não sobrar nada, devolve ''.
+ */
+export function buscaSemGoogle(busca: string): string {
+    // Lê os parâmetros da busca.
+    const parametros = new URLSearchParams(busca);
+
+    // Junta os nomes primeiro e apaga depois: apagar durante a leitura pularia itens.
+    const doGoogle = [...parametros.keys()].filter((nome) =>
+        nome.startsWith('_x_tr_'),
+    );
+    doGoogle.forEach((nome) => parametros.delete(nome));
+
+    // Monta de novo; se ficou vazio, não coloca o "?".
+    const resto = parametros.toString();
+
+    return resto === '' ? '' : `?${resto}`;
+}
+
+/**
  * Diz se o domínio é público, isto é, se o Google consegue chegar ao site nele.
  * Público = tem ponto, não é "localhost" e não é um IP (ex.: 127.0.0.1).
  *
