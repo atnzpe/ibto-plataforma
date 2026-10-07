@@ -19,3 +19,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - "Deu sucesso" no GitHub não prova que chegou no lugar certo: quem confirma é o servidor (`VERSAO_DEPLOY`, `vendor-aplicado`, `versao-aplicada`).
 - O cPanel preenche sozinho o diretório da conta FTP; a nossa ficou em `/public` e o código foi parar na parte pública. Conferir o caminho antes de salvar.
 - Erro 500 é problema do servidor de quem responde (aqui, o GitHub): esperar e tentar de novo, sem mudar nada do nosso lado.
+
+## 07/10/2026 — #35 Parte 4: e-mail de confirmação pela fila
+
+- Herança (`extends VerifyEmail`): a classe nova ganha o e-mail pronto do Laravel sem reescrever nada; só muda o jeito de entregar.
+- Contrato (`implements ShouldQueue`) + ferramenta (`use Queueable`): é o "carimbo" que manda o e-mail para a tabela `jobs` em vez de sair na hora; se o Titan falhar, o cadastro não dá 500 e o Cron tenta 3 vezes.
+- `Queue::fake()` troca a fila por uma que só anota: o teste confere que o pedido entrou na fila sem mandar e-mail de verdade.
