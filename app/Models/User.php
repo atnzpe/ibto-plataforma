@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ConfirmarEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -46,5 +47,23 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Manda o e-mail de confirmação de cadastro.
+     *
+     * O Laravel já tem este método e chama ele sozinho depois do cadastro (e
+     * quando a pessoa pede "reenviar e-mail"). Nós o substituímos para usar a
+     * nossa notificação ConfirmarEmail, que vai para a FILA em vez de sair na
+     * hora: se o servidor de e-mail falhar, o cadastro não dá erro 500, e o
+     * Cron tenta de novo depois (até 3 vezes).
+     *
+     * Não recebe argumentos e não devolve nada (void).
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        // Entrega a notificação a este usuário; como ConfirmarEmail é
+        // "ShouldQueue", o Laravel só guarda o pedido na tabela `jobs`.
+        $this->notify(new ConfirmarEmail);
     }
 }

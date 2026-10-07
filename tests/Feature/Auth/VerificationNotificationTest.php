@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\ConfirmarEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
@@ -30,7 +30,9 @@ class VerificationNotificationTest extends TestCase
             ->post(route('verification.send'))
             ->assertRedirect(route('home'));
 
-        Notification::assertSentTo($user, VerifyEmail::class);
+        // O botão "reenviar" usa a nossa notificação (a que vai pela fila),
+        // e não a VerifyEmail padrão do Laravel, que sai na hora.
+        Notification::assertSentTo($user, ConfirmarEmail::class);
     }
 
     public function test_does_not_send_verification_notification_if_email_is_verified(): void
