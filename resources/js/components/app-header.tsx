@@ -2,6 +2,8 @@ import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
+// Menu de idiomas (#53), no modo "dica do tradutor do navegador".
+import MenuIdiomas from '@/components/menu-idiomas';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -210,6 +212,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 ))}
                             </div>
                         </div>
+                        {/* Idiomas (#53): tela com login, então usa a dica do
+                            tradutor do navegador (o link do Google tiraria o login). */}
+                        <MenuIdiomas modo="navegador" />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
