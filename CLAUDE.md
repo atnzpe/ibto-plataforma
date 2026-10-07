@@ -36,7 +36,7 @@ Issue ➡️ Branch (`feature/…`, `fix/…`, `docs/…` a partir da `main` atu
 
 - **Segurança:** `.env` nunca no Git; validar entrada no servidor (Form Requests); Eloquent/consultas com parâmetros; erros públicos sem detalhes internos, com código estável (ex.: `SAUDE_BANCO_INDISPONIVEL`).
 - **LGPD:** CPF, nascimento, endereço, telefone e documentos de filiados só no banco, criptografados, nunca em logs, testes com dados reais, issues ou commits.
-- **Três idiomas (Gleyson, 29/09/2026):** toda tela tem a opção de **português (padrão), inglês e espanhol**, escolhida pelo usuário. Nenhum texto fixo no código: tudo passa pela camada de tradução, e uma tela só está pronta com as três versões.
+- **Três idiomas pelo Google Tradutor (Gleyson, 07/10/2026; substitui a regra de 29/09):** toda tela tem o menu de idiomas (`resources/js/components/menu-idiomas.tsx`) com **português (padrão), inglês e espanhol**, sem tradução própria. As telas públicas usam `<MenuIdiomas />`, que abre a página traduzida pelo Google (translate.goog, mesmo método da CBSA). As telas com login e as de entrar/cadastrar usam `<MenuIdiomas modo="navegador" />`, com a dica do tradutor do navegador, porque no endereço do Google a pessoa perde o login. O script antigo do Google (`translate_a/element.js`) foi testado e não traduz as telas em React: não usar.
 - **Acessibilidade:** um `<h1>` por página, navegação por teclado, contraste WCAG AA, `<html lang>` no idioma escolhido.
 - **Indexação:** `APP_INDEXAVEL=false` (noindex) até o lançamento.
 - Lógica com regra de negócio (datas, status, valores, percentuais) ganha teste.

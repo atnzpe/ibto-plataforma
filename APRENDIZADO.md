@@ -25,3 +25,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Herança (`extends VerifyEmail`): a classe nova ganha o e-mail pronto do Laravel sem reescrever nada; só muda o jeito de entregar.
 - Contrato (`implements ShouldQueue`) + ferramenta (`use Queueable`): é o "carimbo" que manda o e-mail para a tabela `jobs` em vez de sair na hora; se o Titan falhar, o cadastro não dá 500 e o Cron tenta 3 vezes.
 - `Queue::fake()` troca a fila por uma que só anota: o teste confere que o pedido entrou na fila sem mandar e-mail de verdade.
+
+## 07/10/2026 — #53 idiomas pelo Google Tradutor
+
+- A mesma regra em outra linguagem: a `hostGoogle` da CBSA (PHP, `str_replace`) virou TypeScript (`replaceAll`), e a ordem continua importando (primeiro o hífen, depois o ponto).
+- Toda função de "ida" pode precisar da "volta": na página do Google, o menu descobre o nosso domínio desfazendo o apelido (`hostOriginal`).
+- Teste no navegador antes de construir em cima: o script antigo do Google mostrou "Traduzido para", mas não traduziu o React; o login some no endereço do Google; por isso as telas com login usam a dica do tradutor do navegador.
