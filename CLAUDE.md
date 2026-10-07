@@ -17,7 +17,6 @@ Todo código escrito ou alterado neste projeto é comentado de forma que uma pes
 - **Comentário acompanha o código:** ao alterar uma linha, atualize o comentário dela. Comentário desatualizado conta como bug.
 - **Código antigo sem comentários:** comente o trecho que for alterado; não é preciso reescrever o projeto inteiro de uma vez.
 
-
 ## Onde estão as issues
 
 No repositório do site, épico #33 (rótulo `plataforma`). Commits e PRs citam `atnzpe/Instituto-Brasileiro-de-Treinamento-Operacional#N`.
