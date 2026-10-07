@@ -52,7 +52,7 @@ O e-mail do domínio `ib-to.org` fica no **Titan** (o e-mail grátis do plano da
 ### Parte D — Conta de FTP só da plataforma
 
 - [x] cPanel → **Contas FTP** → **Adicionar conta FTP**.
-- [x] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`).
+- [ ] Diretório: **`cursos-homolog.ib-to.org`** (a pasta do projeto, **sem** o `/public`). **Cuidado:** ao digitar o login, o cPanel preenche este campo sozinho; apague e escreva o caminho à mão. Na lista de contas, o diretório deve ficar `/home1/edua1187/cursos-homolog.ib-to.org`, sem nada depois. (Em 07/10/2026 a primeira conta tinha ficado em `…/public`: o deploy pôs o código dentro da parte pública e foi preciso limpar o `public/` e criar uma conta nova. O cPanel não deixa trocar o diretório de uma conta existente.)
 - [x] Anote o **usuário completo** que aparece em "Configurar cliente FTP".
 
 ### Parte E — Segredos no GitHub
