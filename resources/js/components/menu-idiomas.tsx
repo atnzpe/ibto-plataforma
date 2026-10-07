@@ -1,8 +1,11 @@
 /**
- * Menu de idiomas com bandeira e nome (#53), para as telas PÚBLICAS.
- *
- * Cada idioma estrangeiro abre a mesma página traduzida pelo Google Tradutor
- * (endereço translate.goog); o português volta para a página original.
+ * Menu de idiomas com bandeira e nome (#53). Tem dois modos:
+ * - 'google' (telas públicas): cada idioma estrangeiro abre a mesma página
+ *   traduzida pelo Google Tradutor (endereço translate.goog); o português
+ *   volta para a página original.
+ * - 'navegador' (telas com login): explica como usar o tradutor do próprio
+ *   navegador. O script antigo do Google, testado em 07/10/2026, não traduziu
+ *   as telas em React, e o link do Google faria a pessoa perder o login.
  * Usa <details>/<summary>, que o próprio navegador abre e fecha: funciona pelo
  * teclado (Tab e Enter) mesmo sem nenhum código extra. O código abaixo só
  * fecha o menu ao clicar fora ou ao apertar Esc.
@@ -87,13 +90,42 @@ function Bandeira({ codigo }: { codigo: CodigoIdioma }) {
     );
 }
 
+// Dica do modo "navegador", escrita nos três idiomas (cada pessoa lê a sua).
+// Chrome e Edge oferecem "Traduzir" no clique com o botão direito do mouse;
+// no celular, ficam no menu de três pontinhos.
+const DICAS_NAVEGADOR: readonly { codigo: CodigoIdioma; texto: string }[] = [
+    {
+        codigo: 'pt',
+        texto: 'Para traduzir esta tela, use o tradutor do seu navegador (Chrome ou Edge: botão direito do mouse → Traduzir).',
+    },
+    {
+        codigo: 'en',
+        texto: "To translate this screen, use your browser's translator (Chrome or Edge: right-click → Translate).",
+    },
+    {
+        codigo: 'es',
+        texto: 'Para traducir esta pantalla, usa el traductor de tu navegador (Chrome o Edge: clic derecho → Traducir).',
+    },
+];
+
+/** Opções do menu de idiomas. */
+type MenuIdiomasProps = {
+    // 'google' (padrão): links para a página traduzida pelo Google; só para
+    //   telas públicas, porque na página do Google a pessoa perde o login.
+    // 'navegador': dica para usar o tradutor do navegador, que mantém o login;
+    //   para as telas com login e as de entrar/cadastrar (o formulário precisa
+    //   ser enviado do nosso domínio).
+    modo?: 'google' | 'navegador';
+};
+
 /**
- * O menu de idiomas: um botão com o idioma atual que abre a lista dos três.
- * Não recebe argumentos: lê o endereço da página atual no navegador.
+ * O menu de idiomas: um botão que abre a lista dos três idiomas.
+ * Lê o endereço da página atual direto no navegador.
  *
- * @returns O menu pronto para o cabeçalho de uma tela pública.
+ * @param modo 'google' ou 'navegador' (ver MenuIdiomasProps). Ex.: <MenuIdiomas modo="navegador" />
+ * @returns O menu pronto para o cabeçalho de uma tela.
  */
-export default function MenuIdiomas() {
+export default function MenuIdiomas({ modo = 'google' }: MenuIdiomasProps) {
     // Referência ao <details>, para o código conseguir fechá-lo.
     const menu = useRef<HTMLDetailsElement>(null);
 
@@ -181,6 +213,42 @@ export default function MenuIdiomas() {
         window.location.assign(destino);
     };
 
+    // Modo "navegador" (telas com login e as de entrar/cadastrar): em vez de
+    // links, o menu explica como usar o tradutor do próprio navegador, que
+    // traduz sem sair da página e por isso mantém o login. Usa as cores do
+    // tema da plataforma (claro ou escuro), e não as da página inicial.
+    if (modo === 'navegador') {
+        return (
+            <details ref={menu} className="relative" translate="no">
+                <summary
+                    className="flex cursor-pointer list-none items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden"
+                    aria-label="Idioma / Language / Idioma"
+                >
+                    <Bandeira codigo="pt" />
+                    <span>Idioma · Language</span>
+                    <span aria-hidden="true" className="text-xs">
+                        ▾
+                    </span>
+                </summary>
+
+                <div className="absolute right-0 z-50 mt-2 w-72 space-y-3 rounded-md border border-border bg-popover p-3 text-sm text-popover-foreground shadow-lg">
+                    {DICAS_NAVEGADOR.map((dica) => (
+                        // lang: o leitor de tela lê cada dica com a pronúncia do idioma dela.
+                        <p
+                            key={dica.codigo}
+                            lang={dica.codigo === 'pt' ? 'pt-BR' : dica.codigo}
+                            className="flex gap-2"
+                        >
+                            <Bandeira codigo={dica.codigo} />
+                            <span>{dica.texto}</span>
+                        </p>
+                    ))}
+                </div>
+            </details>
+        );
+    }
+
+    // Modo "google" (padrão, telas públicas): links para a página traduzida.
     return (
         // translate="no": o Google não traduz o próprio menu (os nomes já estão
         // escritos no idioma de cada um).
