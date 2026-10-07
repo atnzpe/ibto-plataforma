@@ -1,12 +1,17 @@
 # Deploy automático da homologação da plataforma (cursos-homolog.ib-to.org),
 # issue #35. O plano P da HostGator não tem SSH nem Node, então:
 #   1. a CI roda inteira (mesmos PHP e banco do servidor);
-#   2. o pacote é montado aqui: Composer sem dependências de desenvolvimento,
-#      front já compilado em public/build e o commit gravado em VERSAO_DEPLOY;
+#   2. o pacote é montado aqui: front já compilado em public/build, o commit
+#      gravado em VERSAO_DEPLOY e as bibliotecas do PHP (vendor, sem as de
+#      desenvolvimento) num único vendor.zip, com a "versão" delas em
+#      VENDOR_VERSAO;
 #   3. o pacote vai por FTPS para a pasta do projeto (o subdomínio aponta só
-#      para a subpasta public/, então .env, vendor e o código ficam fora da web);
-#   4. no servidor, o Cron Job roda o agendador, que vê a versão nova e roda as
-#      migrations e os caches (comando plataforma:pos-deploy).
+#      para a subpasta public/, então .env, vendor e o código ficam fora da web).
+#      O vendor vai zipado porque, solto, são ~8.300 arquivos e a HostGator
+#      derrubou a conexão depois de 44 minutos (05/10/2026);
+#   4. no servidor, o Cron Job roda, nesta ordem: deploy/atualizar-vendor.php
+#      (descompacta o vendor.zip quando VENDOR_VERSAO muda), o
+#      plataforma:pos-deploy (migrations e caches) e o agendador (fila).
 # Passo a passo para a equipe: docs/publicacao-homologacao.md.
 name: Deploy homologação
 
@@ -63,27 +68,52 @@ jobs:
           bun run build
           rm .env
 
+      # Reinstala só as bibliotecas de produção (sem Pest, PHPStan etc.).
+      # Sem "--optimize-autoloader" de propósito (e com optimize-autoloader
+      # false no composer.json): o vendor.zip só é descompactado quando as
+      # bibliotecas mudam, então ele não pode guardar um mapa das classes do
+      # nosso app/, que mudam a cada commit. As nossas classes são achadas
+      # pela regra de pastas (PSR-4), que nunca fica desatualizada.
       - name: Dependências do PHP só de produção
-        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+        run: composer install --no-dev --no-interaction --no-progress --prefer-dist
 
       # Só o que roda no servidor. Do storage/ vão só as pastas vazias
       # (arquivos versionados), nunca logs, sessões ou caches gerados aqui.
       - name: Montar o pacote
         run: |
+          # Cria a pasta do pacote e copia o código, SEM a pasta vendor (ela vai zipada).
           mkdir pacote
-          cp -r app bootstrap config database public resources routes vendor artisan composer.json pacote/
+          cp -r app bootstrap config database deploy public resources routes artisan composer.json pacote/
+          # O CSS e o JS de origem não vão: o navegador usa só o public/build compilado.
           rm -rf pacote/resources/js pacote/resources/css
+          # Copia só os arquivos do storage/ que estão no Git (os .gitignore das pastas vazias).
           git ls-files storage | xargs -I{} cp --parents {} pacote/
+          # Grava qual commit está sendo publicado (o plataforma:pos-deploy lê este arquivo).
           echo "$GITHUB_SHA" > pacote/VERSAO_DEPLOY
+          # Zipa o CONTEÚDO do vendor (o zip começa em autoload.php, não em vendor/).
+          # -r entra nas subpastas; -q não lista os 8.300 arquivos no log.
+          (cd vendor && zip -rq ../pacote/vendor.zip .)
+          # "Versão" das bibliotecas: uma impressão digital (hash sha256) do
+          # composer.lock + composer.json. Só muda quando as bibliotecas mudam;
+          # é ela que o servidor compara para saber se precisa descompactar.
+          cat composer.lock composer.json | sha256sum | cut -d' ' -f1 > pacote/VENDOR_VERSAO
 
       - name: Conferir o pacote (sem segredos, com o necessário)
         run: |
           test ! -e pacote/.env || { echo "pacote/.env não pode ser publicado"; exit 1; }
           test ! -e pacote/public/hot || { echo "public/hot não pode ser publicado"; exit 1; }
-          for f in public/.htaccess public/index.php public/build/manifest.json vendor/autoload.php artisan VERSAO_DEPLOY; do
+          # Cada arquivo da lista precisa existir; se faltar um, o deploy para aqui.
+          for f in public/.htaccess public/index.php public/build/manifest.json artisan VERSAO_DEPLOY vendor.zip VENDOR_VERSAO deploy/atualizar-vendor.php; do
             test -f "pacote/$f" || { echo "Falta pacote/$f"; exit 1; }
           done
-          test ! -d pacote/vendor/pestphp || { echo "Dependências de desenvolvimento no pacote"; exit 1; }
+          # A pasta vendor solta não pode ir (são os 8.300 arquivos que derrubavam o FTP).
+          test ! -e pacote/vendor || { echo "pacote/vendor não pode ir solto; ele vai em vendor.zip"; exit 1; }
+          # Lista o que tem dentro do zip, sem descompactar, para conferir duas coisas:
+          unzip -l pacote/vendor.zip > lista-vendor.txt
+          # 1) o autoload.php está na raiz do zip (senão o servidor monta o vendor errado);
+          grep -qE ' autoload\.php$' lista-vendor.txt || { echo "vendor.zip sem autoload.php na raiz"; exit 1; }
+          # 2) nada de dependências de desenvolvimento (o Pest é a mais fácil de achar).
+          ! grep -q ' pestphp/' lista-vendor.txt || { echo "Dependências de desenvolvimento no vendor.zip"; exit 1; }
 
       # include-hidden-files: sem ele o public/.htaccess (senha, HTTPS) e as
       # pastas do storage ficariam de fora sem aviso.
@@ -99,9 +129,10 @@ jobs:
     name: Enviar para cursos-homolog.ib-to.org
     needs: pacote
     runs-on: ubuntu-24.04
-    # O primeiro envio leva o vendor inteiro (milhares de arquivos); os
-    # seguintes mandam só o que mudou.
-    timeout-minutes: 60
+    # Com o vendor num zip só, o envio leva poucos minutos (o zip, ~20 MB,
+    # vai em todo deploy porque muda um pouco a cada commit). 20 minutos
+    # sobram e evitam um job preso por uma hora se a conexão travar.
+    timeout-minutes: 20
     # Os segredos do FTP ficam só neste ambiente, longe dos jobs que rodam
     # código de dependências.
     environment:
@@ -116,6 +147,10 @@ jobs:
 
       # Envia só o que mudou. O .env e tudo o que o servidor cria (logs,
       # sessões, caches) nunca são enviados nem apagados.
+      # vendor/** e storage/app/vendor-aplicado: quem cuida deles no servidor é
+      # o deploy/atualizar-vendor.php. A lista "exclude" também vale para o que
+      # já está no servidor (conferido no código da action v4.4.0), então o
+      # FTP nunca apaga a pasta vendor de lá, mesmo ela não estando no pacote.
       - name: Enviar por FTPS
         uses: SamKirkland/FTP-Deploy-Action@110f9186c050f71550953127052e77650219c287 # v4.4.0
         with:
@@ -130,6 +165,8 @@ jobs:
             .env
             storage/logs/*.log
             storage/app/versao-aplicada
+            vendor/**
+            storage/app/vendor-aplicado
 
       - name: Conferir que está no ar e protegido
         run: |

@@ -2,6 +2,21 @@
 
 Como trabalhar neste repositório. O README explica o projeto. As regras gerais do IBTO (pessoas, idioma, fluxo, LGPD, economia de tokens) estão no [CLAUDE.md do site](https://github.com/atnzpe/Instituto-Brasileiro-de-Treinamento-Operacional/blob/main/CLAUDE.md) e valem aqui também; abaixo, só o que é próprio da plataforma.
 
+> **Aprendizado:** este projeto também é um ambiente de aprendizado do autor. Explique o porquê das decisões em linguagem simples, divida o trabalho em passos pequenos e proponha trechos curtos para ele escrever e você revisar.
+
+## Regra inegociável: código comentado para qualquer pessoa entender
+
+Todo código escrito ou alterado neste projeto é comentado de forma que uma pessoa leiga entenda o que cada parte faz ou deixa de fazer:
+
+- **Arquivo:** começa com um comentário dizendo para que ele serve.
+- **Função, método e componente:** comentário antes, explicando o que faz, cada argumento (o que é, com um exemplo) e o que devolve.
+- **Variável e constante:** comentário dizendo o que guarda e por quê.
+- **Cada linha ou pequeno bloco de lógica:** comentário dizendo o que faz e por quê; numa condição, também o que acontece quando ela não é verdadeira.
+- **Idioma e tom:** português do Brasil, linguagem simples; todo termo técnico vem explicado.
+- **Vale para tudo:** TypeScript/TSX, PHP, SQL (migrations, policies e funções), Python, CSS, HTML e workflows YAML.
+- **Comentário acompanha o código:** ao alterar uma linha, atualize o comentário dela. Comentário desatualizado conta como bug.
+- **Código antigo sem comentários:** comente o trecho que for alterado; não é preciso reescrever o projeto inteiro de uma vez.
+
 ## Onde estão as issues
 
 No repositório do site, épico #33 (rótulo `plataforma`). Commits e PRs citam `atnzpe/Instituto-Brasileiro-de-Treinamento-Operacional#N`.
