@@ -167,6 +167,9 @@ jobs:
             storage/app/versao-aplicada
             vendor/**
             storage/app/vendor-aplicado
+            # Arquivos enviados pelas pessoas na plataforma (ex.: imagem de cada
+            # área de atuação, #37): só existem no servidor, o deploy nunca mexe.
+            storage/app/public/**
 
       - name: Conferir que está no ar e protegido
         run: |

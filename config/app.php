@@ -30,6 +30,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Administradores provisórios (IBTO, #37)
+    |--------------------------------------------------------------------------
+    |
+    | Até a #36 (papéis de usuário), quem abre os cadastros (áreas, níveis,
+    | equipes) são os e-mails desta lista, separados por vírgula no .env.
+    | Ex.: ADMIN_EMAILS=gleyson@exemplo.com,eduardo@exemplo.com
+    | Vazio = ninguém é administrador (o padrão mais seguro).
+    | A regra completa está no Gate "administrar" (AppServiceProvider).
+    |
+    */
+
+    'admin_emails' => array_values(array_filter(array_map(
+        // Para cada e-mail: tira espaços e passa para minúsculas
+        // (ex.: " Gleyson@Exemplo.com" vira "gleyson@exemplo.com").
+        fn (string $email): string => strtolower(trim($email)),
+        // Quebra o texto do .env em pedaços, um por vírgula.
+        explode(',', (string) env('ADMIN_EMAILS', '')),
+    ))), // array_filter tira os pedaços vazios (ex.: vírgula sobrando no fim).
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |
