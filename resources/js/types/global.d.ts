@@ -14,7 +14,13 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             // O que o usuário logado pode fazer (HandleInertiaRequests). Só
             // esconde ou mostra menus; quem garante a permissão são as rotas.
-            pode: { administrar: boolean };
+            pode: {
+                cadastros_areas: boolean;
+                cadastros_niveis: boolean;
+                cadastros_equipes: boolean;
+                usuarios_gerenciar: boolean;
+                permissoes_gerenciar: boolean;
+            };
             // Mensagem de sucesso da última ação (ex.: "Área cadastrada."), ou null.
             sucesso: string | null;
             [key: string]: unknown;

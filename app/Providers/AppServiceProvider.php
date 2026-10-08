@@ -51,11 +51,6 @@ class AppServiceProvider extends ServiceProvider
             // para o Laravel continuar procurando (como o porteiro que liga para o apartamento).
             return $usuario->temPermissao($habilidade) ? true : null;
         });
-
-        // "administrar" (provisório, #37): as rotas de cadastro ainda pedem esta
-        // habilidade até o bloco 2 da #36. Só a chave de emergência passa por ela
-        // (o Gate::before acima já liberou), então aqui a resposta é sempre "não".
-        Gate::define('administrar', fn (User $usuario): bool => false);
     }
 
     /**

@@ -50,34 +50,44 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-// Itens dos cadastros de apoio (#37), mostrados só para administradores.
-const cadastrosNavItems: NavItem[] = [
+// Itens dos cadastros de apoio (#37), cada um com a permissão que ele pede (#36).
+// "permissao" é o nome em "pode" (o ponto do slug vira "_").
+const cadastrosNavItems: (NavItem & {
+    permissao: keyof SharedProps['pode'];
+})[] = [
     {
         title: 'Áreas de atuação',
         href: areasAtuacao(),
         icon: Tags,
+        permissao: 'cadastros_areas',
     },
     {
         title: 'Níveis',
         href: niveis(),
         icon: Medal,
+        permissao: 'cadastros_niveis',
     },
     {
         title: 'Equipes',
         href: equipes(),
         icon: Users,
+        permissao: 'cadastros_equipes',
     },
 ];
 
+// Formato das informações que o servidor manda para todas as telas.
+type SharedProps = ReturnType<typeof usePage>['props'];
+
 export function AppSidebar() {
-    // pode.administrar vem do servidor (HandleInertiaRequests). Só esconde o
-    // menu; a rota continua barrando quem não é administrador (403).
+    // pode vem do servidor (HandleInertiaRequests). Só esconde o menu; a rota
+    // continua barrando quem não tem a permissão (403).
     const { pode } = usePage().props;
 
-    // Menu principal + cadastros, quando a pessoa é administradora.
-    const itens = pode.administrar
-        ? [...mainNavItems, ...cadastrosNavItems]
-        : mainNavItems;
+    // Menu principal + só os cadastros que esta pessoa pode abrir.
+    const itens = [
+        ...mainNavItems,
+        ...cadastrosNavItems.filter((item) => pode[item.permissao]),
+    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">

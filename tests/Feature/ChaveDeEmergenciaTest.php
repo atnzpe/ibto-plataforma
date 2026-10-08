@@ -1,8 +1,8 @@
 <?php
 
 /*
- * Testes da trava provisória de administrador (#37, até a #36): o Gate
- * "administrar" só libera e-mails da lista ADMIN_EMAILS que já foram confirmados.
+ * Testes da chave de emergência (#37, #36): e-mails da lista ADMIN_EMAILS,
+ * já confirmados, passam em qualquer permissão (aqui, "cadastros.areas").
  */
 
 use App\Models\User;
@@ -16,31 +16,31 @@ beforeEach(function () {
 test('libera o e-mail da lista que já foi confirmado', function () {
     $admin = User::factory()->create(['email' => 'admin@ibto.test']);
 
-    expect(Gate::forUser($admin)->allows('administrar'))->toBeTrue();
+    expect(Gate::forUser($admin)->allows('cadastros.areas'))->toBeTrue();
 });
 
 test('barra quem não está na lista', function () {
     $aluno = User::factory()->create(['email' => 'aluno@ibto.test']);
 
-    expect(Gate::forUser($aluno)->allows('administrar'))->toBeFalse();
+    expect(Gate::forUser($aluno)->allows('cadastros.areas'))->toBeFalse();
 });
 
 test('barra o e-mail da lista que ainda não foi confirmado', function () {
     // Alguém criou conta com o e-mail do administrador, mas não tem acesso à caixa de entrada.
     $impostor = User::factory()->unverified()->create(['email' => 'admin@ibto.test']);
 
-    expect(Gate::forUser($impostor)->allows('administrar'))->toBeFalse();
+    expect(Gate::forUser($impostor)->allows('cadastros.areas'))->toBeFalse();
 });
 
 test('não diferencia maiúsculas de minúsculas no e-mail', function () {
     $admin = User::factory()->create(['email' => 'Admin@IBTO.test']);
 
-    expect(Gate::forUser($admin)->allows('administrar'))->toBeTrue();
+    expect(Gate::forUser($admin)->allows('cadastros.areas'))->toBeTrue();
 });
 
 test('lista vazia: ninguém é administrador', function () {
     config(['app.admin_emails' => []]);
     $usuario = User::factory()->create(['email' => 'admin@ibto.test']);
 
-    expect(Gate::forUser($usuario)->allows('administrar'))->toBeFalse();
+    expect(Gate::forUser($usuario)->allows('cadastros.areas'))->toBeFalse();
 });

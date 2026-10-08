@@ -24,26 +24,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 
-// Cadastros de apoio (#37): só para administradores. "can:administrar" usa o
-// Gate provisório (lista ADMIN_EMAILS + e-mail confirmado) até a #36; quem não
-// passa recebe "403 Proibido". Endereços: /cadastros/areas-atuacao, .../create,
-// .../{area}/edit. Sem "show" (a lista basta) e sem "destroy" (apagar = desativar).
-Route::middleware(['auth', 'verified', 'can:administrar'])
+// Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.
+// "can:cadastros.equipes" só deixa entrar quem tem essa permissão por algum
+// papel (ou a chave de emergência); quem não tem recebe "403 Proibido".
+// Endereços: /cadastros/areas-atuacao, .../create, .../{area}/edit. Sem "show"
+// (a lista basta) e sem "destroy" (apagar = desativar).
+Route::middleware(['auth', 'verified'])
     ->prefix('cadastros')
     ->name('cadastros.')
     ->group(function () {
         Route::resource('areas-atuacao', AreaAtuacaoController::class)
             ->except(['show', 'destroy'])
-            ->parameters(['areas-atuacao' => 'area']);
+            ->parameters(['areas-atuacao' => 'area'])
+            ->middleware('can:cadastros.areas');
 
         // Níveis (Praticante, Monitor I–II, Instrutor I–V, Instrutor Expert I–V).
         Route::resource('niveis', NivelController::class)
             ->except(['show', 'destroy'])
-            ->parameters(['niveis' => 'nivel']);
+            ->parameters(['niveis' => 'nivel'])
+            ->middleware('can:cadastros.niveis');
 
         // Equipes filiadas (situação: em homologação, ativa ou inativa).
         Route::resource('equipes', EquipeController::class)
-            ->except(['show', 'destroy']);
+            ->except(['show', 'destroy'])
+            ->middleware('can:cadastros.equipes');
     });
 
 require __DIR__.'/settings.php';

@@ -3,7 +3,7 @@
 /*
  * Telas do cadastro de níveis (#37): lista, novo nível e edição.
  * Como nas áreas, não existe "apagar": desativar tira o nível das listas de
- * escolha. Só administradores entram (Gate "administrar", em routes/web.php).
+ * escolha. Só entra quem tem a permissão "cadastros.niveis" (routes/web.php).
  */
 
 namespace App\Http\Controllers\Cadastros;
