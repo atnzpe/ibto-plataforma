@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\PermissaoController;
+use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
@@ -48,6 +50,25 @@ Route::middleware(['auth', 'verified'])
         Route::resource('equipes', EquipeController::class)
             ->except(['show', 'destroy'])
             ->middleware('can:cadastros.equipes');
+    });
+
+// Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".
+Route::middleware(['auth', 'verified', 'can:permissoes.gerenciar'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('permissoes', [PermissaoController::class, 'edit'])->name('permissoes.edit');
+        Route::put('permissoes', [PermissaoController::class, 'update'])->name('permissoes.update');
+    });
+
+// Usuários (#36): buscar uma pessoa e marcar os papéis dela, só com "usuarios.gerenciar".
+Route::middleware(['auth', 'verified', 'can:usuarios.gerenciar'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('usuarios', UsuarioController::class)
+            ->only(['index', 'edit', 'update'])
+            ->parameters(['usuarios' => 'usuario']);
     });
 
 require __DIR__.'/settings.php';

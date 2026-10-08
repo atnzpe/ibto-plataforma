@@ -2,9 +2,11 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     FolderGit2,
+    KeyRound,
     LayoutGrid,
     Medal,
     Tags,
+    UserCog,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -27,6 +29,10 @@ import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 import { index as niveis } from '@/routes/cadastros/niveis';
 // Lista das equipes filiadas (#37), para o item do menu.
 import { index as equipes } from '@/routes/cadastros/equipes';
+// Grade de papéis × permissões (#36), para o item do menu.
+import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
+// Lista de usuários (#36), para o item do menu.
+import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -72,6 +78,20 @@ const cadastrosNavItems: (NavItem & {
         href: equipes(),
         icon: Users,
         permissao: 'cadastros_equipes',
+    },
+    // Administração (#36): papéis de cada pessoa.
+    {
+        title: 'Usuários',
+        href: usuariosAdmin(),
+        icon: UserCog,
+        permissao: 'usuarios_gerenciar',
+    },
+    // Administração (#36): grade de papéis × permissões.
+    {
+        title: 'Permissões',
+        href: permissoesAdmin(),
+        icon: KeyRound,
+        permissao: 'permissoes_gerenciar',
     },
 ];
 
