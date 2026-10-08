@@ -73,6 +73,19 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Canal de SEGURANÇA (IBTO, #58): acessos negados (403) e afins.
+        // Arquivo próprio por dia (storage/logs/seguranca-AAAA-MM-DD.log).
+        // O nível fica fixo em "info" de propósito: no servidor o LOG_LEVEL é
+        // "error", e com ele um aviso de acesso negado seria descartado em silêncio.
+        // Guardado por 30 dias (LGPD: só o necessário, pelo tempo necessário).
+        'seguranca' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/seguranca.log'),
+            'level' => 'info',
+            'max_files' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),
