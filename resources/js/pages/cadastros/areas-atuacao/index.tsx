@@ -64,6 +64,12 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                                     scope="col"
                                     className="px-4 py-2 font-medium"
                                 >
+                                    Imagem
+                                </th>
+                                <th
+                                    scope="col"
+                                    className="px-4 py-2 font-medium"
+                                >
                                     Nome
                                 </th>
                                 <th
@@ -86,6 +92,22 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                                     key={area.id}
                                     className="border-t border-border"
                                 >
+                                    <td className="px-4 py-2">
+                                        {/* Miniatura da imagem; sem imagem, o aviso escrito.
+                                            alt="" : a imagem é decorativa aqui, o nome está ao lado. */}
+                                        {area.imagem_url ? (
+                                            <img
+                                                src={area.imagem_url}
+                                                alt=""
+                                                loading="lazy"
+                                                className="h-10 w-16 rounded border border-border object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">
+                                                Sem imagem
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-2">{area.nome}</td>
                                     <td className="px-4 py-2">
                                         {/* Situação escrita (não só cor), para quem não distingue cores. */}

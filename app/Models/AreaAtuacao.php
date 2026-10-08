@@ -19,11 +19,14 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $nome
+ * @property string|null $imagem
  * @property bool $ativa
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 // Campos que podem ser preenchidos de uma vez pelo formulário (o resto, como o id, não).
+// "imagem" fica de fora de propósito: quem grava o caminho é o controller, depois
+// de guardar o arquivo; assim ninguém consegue mandar um caminho inventado.
 #[Fillable(['nome', 'ativa'])]
 class AreaAtuacao extends Model
 {
@@ -45,6 +48,26 @@ class AreaAtuacao extends Model
             // O banco guarda 0 ou 1; no PHP vira false ou true.
             'ativa' => 'boolean',
         ];
+    }
+
+    /**
+     * Endereço público da imagem da área, para as telas e o site (#57).
+     * O "?v=" muda quando a área é alterada: assim o navegador não mostra a
+     * imagem antiga guardada na memória dele depois de uma troca.
+     *
+     * @return string|null Ex.: 'https://cursos.ib-to.org/imagens/areas-atuacao/4?v=1759870000'; null se não tem imagem.
+     */
+    public function imagemUrl(): ?string
+    {
+        // Sem imagem cadastrada: não há endereço.
+        if ($this->imagem === null) {
+            return null;
+        }
+
+        return route('areas-atuacao.imagem', [
+            'area' => $this->id,
+            'v' => $this->updated_at?->getTimestamp(),
+        ]);
     }
 
     /**

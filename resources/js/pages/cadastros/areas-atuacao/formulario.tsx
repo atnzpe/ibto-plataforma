@@ -87,6 +87,36 @@ export default function AreaAtuacaoFormulario({
                                 <InputError message={errors.ativa} />
                             </div>
 
+                            <div className="grid gap-2">
+                                <Label htmlFor="imagem">Imagem da área</Label>
+                                {/* Imagem atual (na edição), para a pessoa ver o que vai trocar. */}
+                                {area?.imagem_url && (
+                                    <img
+                                        src={area.imagem_url}
+                                        alt={`Imagem atual de ${area.nome}`}
+                                        className="h-32 w-48 rounded-md border border-border object-cover"
+                                    />
+                                )}
+                                {/* accept: o seletor de arquivos já mostra só imagens
+                                    (a conferência de verdade é no servidor). */}
+                                <Input
+                                    id="imagem"
+                                    name="imagem"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    aria-describedby="dica-imagem"
+                                />
+                                <p
+                                    id="dica-imagem"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    JPG, PNG ou WEBP, até 2 MB.
+                                    {editando &&
+                                        ' Deixe em branco para manter a imagem atual.'}
+                                </p>
+                                <InputError message={errors.imagem} />
+                            </div>
+
                             <div className="flex items-center gap-4">
                                 {/* Desabilitado enquanto envia, para não gravar duas vezes. */}
                                 <Button disabled={processing}>Salvar</Button>

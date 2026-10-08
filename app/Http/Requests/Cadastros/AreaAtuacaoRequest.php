@@ -40,6 +40,18 @@ class AreaAtuacaoRequest extends FormRequest
             ],
             // Ativa: obrigatória e só aceita sim/não (true/false, 1/0).
             'ativa' => ['required', 'boolean'],
+            // Numa LISTA, cada item é uma regra só (nada de juntar com "|").
+            'imagem' => [
+                // Opcional: editar sem escolher imagem nova não dá erro (mantém a atual).
+                'nullable',
+                // Tem que ser imagem de verdade (o Laravel olha o conteúdo, não só o nome).
+                'image',
+                // Só estes formatos. SVG fica de fora de propósito: ele pode
+                // carregar código escondido e virar um risco de segurança.
+                'mimes:jpg,jpeg,png,webp',
+                // No máximo 2 MB (em arquivo, o "max" conta KB: 2 x 1024 = 2048).
+                'max:2048',
+            ],
         ];
     }
 
@@ -56,6 +68,10 @@ class AreaAtuacaoRequest extends FormRequest
             'nome.unique' => 'Já existe uma área com esse nome.',
             'ativa.required' => 'Informe se a área está ativa.',
             'ativa.boolean' => 'Valor inválido para "ativa".',
+            'imagem.image' => 'O arquivo precisa ser uma imagem.',
+            'imagem.mimes' => 'Use uma imagem JPG, PNG ou WEBP.',
+            'imagem.max' => 'A imagem pode ter no máximo 2 MB.',
+            'imagem.uploaded' => 'Não foi possível receber a imagem. Tente uma menor que 2 MB.',
         ];
     }
 

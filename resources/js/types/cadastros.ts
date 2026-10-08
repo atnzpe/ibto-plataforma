@@ -10,4 +10,6 @@ export type AreaAtuacao = {
     nome: string;
     // true = aparece nas listas de escolha; false = desativada.
     ativa: boolean;
+    // Endereço da imagem da área, ou null se ainda não tem imagem.
+    imagem_url: string | null;
 };

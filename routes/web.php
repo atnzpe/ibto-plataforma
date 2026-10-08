@@ -1,9 +1,16 @@
 <?php
 
+use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+
+// Imagem de uma área de atuação (#37, #57): pública, porque o site também a
+// mostra. Limite de 120 pedidos por minuto por IP, para ninguém sobrecarregar.
+Route::get('imagens/areas-atuacao/{area}', AreaAtuacaoImagemController::class)
+    ->middleware('throttle:120,1')
+    ->name('areas-atuacao.imagem');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

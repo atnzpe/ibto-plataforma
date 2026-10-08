@@ -88,15 +88,16 @@ test('administrador abre o formulário de nova área e o de edição', function 
             ->component('cadastros/areas-atuacao/formulario')
             ->where('area', null));
 
-    // Edição: a tela recebe só id, nome e ativa (nada de datas internas).
-    $area = AreaAtuacao::where('nome', 'KAPAP')->firstOrFail();
+    // Edição: a tela recebe só id, nome, ativa e o endereço da imagem (nada de datas nem caminho de arquivo).
+    // Área criada só para o teste, sem imagem (as 15 do site já vêm com imagem).
+    $area = AreaAtuacao::factory()->create(['nome' => 'Área sem imagem']);
 
     $this->actingAs($this->admin)
         ->get(route('cadastros.areas-atuacao.edit', $area))
         ->assertOk()
         ->assertInertia(fn (Assert $pagina) => $pagina
             ->component('cadastros/areas-atuacao/formulario')
-            ->where('area', ['id' => $area->id, 'nome' => 'KAPAP', 'ativa' => true]));
+            ->where('area', ['id' => $area->id, 'nome' => 'Área sem imagem', 'ativa' => true, 'imagem_url' => null]));
 });
 
 test('o menu "Áreas de atuação" só é liberado para o administrador', function () {
