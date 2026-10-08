@@ -25,6 +25,13 @@ class LeitorCsv
         // Tira o BOM do começo, se houver (senão o nome da 1ª coluna vem com lixo invisível).
         $conteudo = preg_replace('/^\xEF\xBB\xBF/', '', $conteudo) ?? $conteudo;
 
+        // O Excel em português salva CSV com a acentuação ANTIGA do Windows
+        // (Windows-1252), e não em UTF-8. Sem converter, "Município" vira lixo e
+        // a importação quebra. Se o texto não é UTF-8 válido, converte.
+        if (! mb_check_encoding($conteudo, 'UTF-8')) {
+            $conteudo = mb_convert_encoding($conteudo, 'UTF-8', 'Windows-1252');
+        }
+
         // Quebra em linhas (aceita fim de linha do Windows e do Linux) e tira as vazias.
         $brutas = array_values(array_filter(
             preg_split('/\r\n|\n|\r/', $conteudo) ?: [],

@@ -177,7 +177,11 @@ class ImportacaoFiliadosController extends Controller
     {
         $pacote = ['usuario_id' => $request->user()?->id, ...$dados];
 
-        Cache::put($this->chave($codigo), Crypt::encryptString((string) json_encode($pacote)), now()->addMinutes(self::MINUTOS));
+        // JSON_THROW_ON_ERROR: se o texto não virar JSON (ex.: acentuação quebrada),
+        // dá erro na hora, em vez de seguir com uma importação vazia (nada em silêncio, #58).
+        $json = json_encode($pacote, JSON_THROW_ON_ERROR);
+
+        Cache::put($this->chave($codigo), Crypt::encryptString($json), now()->addMinutes(self::MINUTOS));
     }
 
     /**

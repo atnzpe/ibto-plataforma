@@ -102,3 +102,13 @@ test('importar grava as válidas, mantém o registro da planilha e manda os conv
 
     Notification::assertSentTimes(ConviteFiliado::class, 2);
 });
+
+test('CSV salvo pelo Excel em português (acentuação antiga, Windows-1252) é convertido', function () {
+    // Monta o texto em UTF-8 e converte para a acentuação antiga, como o Excel salva.
+    $windows = mb_convert_encoding("Município;Equipe\nRecife;Dragão Negro", 'Windows-1252', 'UTF-8');
+
+    $csv = LeitorCsv::ler($windows);
+
+    expect($csv['colunas'])->toBe(['Município', 'Equipe']);
+    expect($csv['linhas'][0]['Equipe'])->toBe('Dragão Negro');
+});
