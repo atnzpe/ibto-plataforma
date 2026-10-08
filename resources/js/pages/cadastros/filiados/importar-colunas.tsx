@@ -57,14 +57,14 @@ export default function ImportarColunas({
                         Relacionar as colunas
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Passo 2 de 3: a planilha tem {total_linhas} linha(s).
+                        Passo 2 de 4: a planilha tem {total_linhas} linha(s).
                         Confira o campo de cada coluna; a sugestão já vem
                         marcada.
                     </p>
                 </div>
 
                 <Form
-                    {...ImportacaoFiliadosController.previa.form(codigo)}
+                    {...ImportacaoFiliadosController.salvarColunas.form(codigo)}
                     className="space-y-6"
                 >
                     {({ processing }) => (
@@ -177,7 +177,7 @@ export default function ImportarColunas({
                                         processing || repetidos.length > 0
                                     }
                                 >
-                                    Ver a prévia
+                                    Continuar
                                 </Button>
                                 <a
                                     href={create().url}

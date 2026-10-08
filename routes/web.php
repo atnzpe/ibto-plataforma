@@ -72,7 +72,10 @@ Route::middleware(['auth', 'verified'])
                 Route::get('/', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('{codigo}/colunas', 'colunas')->name('colunas');
-                Route::post('{codigo}/previa', 'previa')->name('previa');
+                Route::post('{codigo}/colunas', 'salvarColunas')->name('colunas.salvar');
+                Route::get('{codigo}/valores', 'valores')->name('valores');
+                Route::post('{codigo}/valores', 'salvarValores')->name('valores.salvar');
+                Route::get('{codigo}/previa', 'previa')->name('previa');
                 Route::post('{codigo}/confirmar', 'confirmar')->name('confirmar');
             });
 

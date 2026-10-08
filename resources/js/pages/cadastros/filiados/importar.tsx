@@ -25,7 +25,7 @@ export default function ImportarFiliados() {
                         Importar filiados
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Passo 1 de 3: envie a planilha em CSV. No próximo passo,
+                        Passo 1 de 4: envie a planilha em CSV. No próximo passo,
                         você liga cada coluna da planilha ao campo certo.
                     </p>
                 </div>

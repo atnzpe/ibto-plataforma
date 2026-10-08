@@ -2,7 +2,8 @@
 
 /*
  * Telas da IMPORTAÇÃO de filiados (#37, F4b; pedido do Gleyson em 08/10/2026):
- * 1) enviar o CSV → 2) relacionar as colunas com os campos → 3) prévia → confirmar.
+ * 1) enviar o CSV → 2) relacionar as colunas com os campos → 3) relacionar os
+ * valores fora do padrão (pulada se tudo bate) → 4) prévia → confirmar.
  *
  * Só quem cuida de TODOS os filiados ("filiados.gerenciar") importa.
  *
@@ -92,25 +93,102 @@ class ImportacaoFiliadosController extends Controller
     }
 
     /**
-     * Tela 3: prévia. Confere as linhas com o mapa escolhido.
+     * Grava o mapa das colunas e segue: para "relacionar os valores", se algum
+     * valor não bate com o cadastro; senão, direto para a prévia.
+     *
+     * @param  string  $codigo  O código da importação.
+     * @return RedirectResponse Vai para a tela de valores ou para a prévia.
+     */
+    public function salvarColunas(Request $request, string $codigo, ImportarFiliados $importar): RedirectResponse
+    {
+        $dados = $this->recuperar($request, $codigo);
+        $mapa = $this->validarMapa($request, $dados['colunas']);
+
+        // Mapa novo = relações antigas não valem mais (podem ser de outra coluna).
+        $this->guardar($request, $codigo, [...$dados, 'mapa' => $mapa, 'relacoes' => []]);
+
+        $precisaRelacionar = $importar->valoresParaRelacionar($dados['linhas'], $mapa)['valores'] !== [];
+
+        return to_route(
+            $precisaRelacionar ? 'cadastros.filiados.importar.valores' : 'cadastros.filiados.importar.previa',
+            $codigo,
+        );
+    }
+
+    /**
+     * Tela 3: relacionar os valores que não batem com o cadastro (equipe, nível,
+     * áreas), cada um uma vez só, com a sugestão já marcada.
+     *
+     * @param  string  $codigo  O código da importação.
+     */
+    public function valores(Request $request, string $codigo, ImportarFiliados $importar): Response
+    {
+        $dados = $this->recuperar($request, $codigo);
+        abort_unless(isset($dados['mapa']), 404);
+
+        $relacao = $importar->valoresParaRelacionar($dados['linhas'], $dados['mapa']);
+
+        return Inertia::render('cadastros/filiados/importar-valores', [
+            'codigo' => $codigo,
+            'valores' => $relacao['valores'],
+            'opcoes' => $relacao['opcoes'],
+            'campos' => ImportarFiliados::CAMPOS,
+        ]);
+    }
+
+    /**
+     * Grava as escolhas da tela de valores e vai para a prévia.
+     * A tela manda "escolhas" na MESMA ordem da lista de valores (escolhas[0] é do 1º valor).
+     *
+     * @param  string  $codigo  O código da importação.
+     * @return RedirectResponse Vai para a prévia.
+     */
+    public function salvarValores(Request $request, string $codigo, ImportarFiliados $importar): RedirectResponse
+    {
+        $dados = $this->recuperar($request, $codigo);
+        abort_unless(isset($dados['mapa']), 404);
+
+        $relacao = $importar->valoresParaRelacionar($dados['linhas'], $dados['mapa']);
+        /** @var array<int|string, mixed> $escolhas */
+        $escolhas = (array) $request->input('escolhas', []);
+        $relacoes = [];
+
+        foreach ($relacao['valores'] as $posicao => $valor) {
+            $escolha = $escolhas[$posicao] ?? null;
+            // Só vale uma das opções oferecidas para aquele campo; outra coisa é recusada (422).
+            $permitidas = array_column($relacao['opcoes'][$valor['campo']], 'valor');
+
+            // Comparação ESTRITA (true): tipo e valor iguais; o texto "1" não passa
+            // por igual ao número 1 (como o código de barras que precisa ser exato).
+            abort_unless(is_string($escolha) && in_array($escolha, $permitidas, true), 422);
+
+            $relacoes[$valor['campo']][Str::lower(Str::ascii(trim($valor['valor'])))] = $escolha;
+        }
+
+        $this->guardar($request, $codigo, [...$dados, 'relacoes' => $relacoes]);
+
+        return to_route('cadastros.filiados.importar.previa', $codigo);
+    }
+
+    /**
+     * Tela 4: prévia. Confere as linhas com o mapa e as relações escolhidas.
      *
      * @param  string  $codigo  O código da importação.
      */
     public function previa(Request $request, string $codigo, ImportarFiliados $importar): Response
     {
         $dados = $this->recuperar($request, $codigo);
-        $mapa = $this->validarMapa($request, $dados['colunas']);
+        abort_unless(isset($dados['mapa']), 404);
 
-        // Guarda o mapa escolhido, para a confirmação usar o mesmo.
-        $this->guardar($request, $codigo, [...$dados, 'mapa' => $mapa]);
-
-        $resultado = $importar->conferir($dados['linhas'], $mapa);
+        $resultado = $importar->conferir($dados['linhas'], $dados['mapa'], $dados['relacoes'] ?? []);
 
         return Inertia::render('cadastros/filiados/importar-previa', [
             'codigo' => $codigo,
             'validas' => count($resultado['validas']),
             // Só linha e motivo (LGPD).
             'recusadas' => $resultado['recusadas'],
+            // Se houve a etapa de valores (para o botão "voltar" ir para ela).
+            'teve_valores' => $importar->valoresParaRelacionar($dados['linhas'], $dados['mapa'])['valores'] !== [],
         ]);
     }
 
@@ -126,7 +204,7 @@ class ImportacaoFiliadosController extends Controller
         $dados = $this->recuperar($request, $codigo);
         abort_unless(isset($dados['mapa']), 422);
 
-        $resultado = $importar->conferir($dados['linhas'], $dados['mapa']);
+        $resultado = $importar->conferir($dados['linhas'], $dados['mapa'], $dados['relacoes'] ?? []);
         $gravados = $importar->importar($resultado['validas']);
 
         // O arquivo some da memória temporária de vez.
@@ -187,14 +265,14 @@ class ImportacaoFiliadosController extends Controller
     /**
      * Recupera a importação guardada. Vencida (30 min) ou de outra pessoa: 404.
      *
-     * @return array{colunas: list<string>, linhas: list<array<string, string>>, mapa?: array<string, string>}
+     * @return array{colunas: list<string>, linhas: list<array<string, string>>, mapa?: array<string, string>, relacoes?: array<string, array<string, string>>}
      */
     private function recuperar(Request $request, string $codigo): array
     {
         $guardado = Cache::get($this->chave($codigo));
         abort_unless(is_string($guardado), 404, 'Importação vencida. Envie o arquivo de novo.');
 
-        /** @var array{usuario_id: int|null, colunas: list<string>, linhas: list<array<string, string>>, mapa?: array<string, string>} $pacote */
+        /** @var array{usuario_id: int|null, colunas: list<string>, linhas: list<array<string, string>>, mapa?: array<string, string>, relacoes?: array<string, array<string, string>>} $pacote */
         $pacote = json_decode(Crypt::decryptString($guardado), true);
 
         // A importação é de quem a começou: outra pessoa (mesmo administradora)

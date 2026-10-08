@@ -8,22 +8,26 @@
 import { Form, Head } from '@inertiajs/react';
 import ImportacaoFiliadosController from '@/actions/App/Http/Controllers/Cadastros/ImportacaoFiliadosController';
 import { Button } from '@/components/ui/button';
-import { colunas, create } from '@/routes/cadastros/filiados/importar';
+import { colunas, create, valores } from '@/routes/cadastros/filiados/importar';
 
 /**
  * @param codigo O código desta importação.
  * @param validas Quantas linhas estão certas e vão entrar.
  * @param recusadas As linhas recusadas: número da linha e motivos.
+ * @param teve_valores Se houve a etapa de relacionar os valores.
  * @returns A tela da prévia.
  */
 export default function ImportarPrevia({
     codigo,
     validas,
     recusadas,
+    teve_valores,
 }: {
     codigo: string;
     validas: number;
     recusadas: { linha: number; motivos: string[] }[];
+    // true quando houve a etapa "relacionar os valores" (para o botão de voltar).
+    teve_valores: boolean;
 }) {
     return (
         <>
@@ -35,7 +39,7 @@ export default function ImportarPrevia({
                         Prévia da importação
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Passo 3 de 3: confira antes de confirmar.
+                        Passo 4 de 4: confira antes de confirmar.
                     </p>
                 </div>
 
@@ -107,11 +111,20 @@ export default function ImportarPrevia({
                             <Button disabled={processing || validas === 0}>
                                 Confirmar e cadastrar {validas} filiado(s)
                             </Button>
+                            {/* Voltar para a etapa anterior: os valores (se houve) ou as colunas. */}
+                            {teve_valores && (
+                                <a
+                                    href={valores(codigo).url}
+                                    className="text-sm underline underline-offset-4"
+                                >
+                                    Voltar aos valores
+                                </a>
+                            )}
                             <a
                                 href={colunas(codigo).url}
                                 className="text-sm underline underline-offset-4"
                             >
-                                Voltar e mudar as colunas
+                                Voltar às colunas
                             </a>
                             <a
                                 href={create().url}

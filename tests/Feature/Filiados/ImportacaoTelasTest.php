@@ -49,7 +49,7 @@ function enviarCsv($teste): string
     return $achado[1];
 }
 
-test('caminho completo: enviar, relacionar colunas, prévia e confirmar', function () {
+test('caminho completo: enviar, relacionar colunas e valores, prévia e confirmar', function () {
     $codigo = enviarCsv($this);
 
     // Tela 2: as 7 colunas, com a sugestão marcada.
@@ -62,24 +62,57 @@ test('caminho completo: enviar, relacionar colunas, prévia e confirmar', functi
             ->where('sugestao.CPF', 'cpf')
             ->where('total_linhas', 2));
 
-    // Tela 3: o mapa vai pela posição das colunas (0 = Nome completo, 1 = E-mail...).
+    // Salva as colunas: o mapa vai pela posição (0 = Nome completo, 1 = E-mail...).
+    // O nível "Nacional" não bate com o cadastro, então segue para os VALORES.
     $mapa = ['nome', 'email', 'cpf', 'nascimento', 'municipio', 'uf', 'nivel'];
     $this->actingAs($this->admin)
-        ->post(route('cadastros.filiados.importar.previa', $codigo), ['mapa' => $mapa])
+        ->post(route('cadastros.filiados.importar.colunas.salvar', $codigo), ['mapa' => $mapa])
+        ->assertRedirect(route('cadastros.filiados.importar.valores', $codigo));
+
+    // Tela 3: só o "Nacional" aparece, já com a sugestão de abrangência.
+    $this->actingAs($this->admin)
+        ->get(route('cadastros.filiados.importar.valores', $codigo))
+        ->assertOk()
+        ->assertInertia(fn (Assert $pagina) => $pagina
+            ->component('cadastros/filiados/importar-valores')
+            ->has('valores', 1)
+            ->where('valores.0.valor', 'Nacional')
+            ->where('valores.0.sugestao', 'abrangencia:nacional'));
+
+    // Aceita a sugestão e vai para a prévia.
+    $this->actingAs($this->admin)
+        ->post(route('cadastros.filiados.importar.valores.salvar', $codigo), ['escolhas' => ['abrangencia:nacional']])
+        ->assertRedirect(route('cadastros.filiados.importar.previa', $codigo));
+
+    // Tela 4: as 2 linhas entram.
+    $this->actingAs($this->admin)
+        ->get(route('cadastros.filiados.importar.previa', $codigo))
         ->assertOk()
         ->assertInertia(fn (Assert $pagina) => $pagina
             ->component('cadastros/filiados/importar-previa')
-            ->where('validas', 1)
-            ->where('recusadas.0.linha', 3));
+            ->where('validas', 2)
+            ->where('teve_valores', true));
 
-    // Confirmar: 1 entra, 1 recusada; o arquivo some da memória temporária.
+    // Confirmar: 2 entram; o arquivo some da memória temporária.
     $this->actingAs($this->admin)
         ->post(route('cadastros.filiados.importar.confirmar', $codigo))
         ->assertRedirect(route('cadastros.filiados.index'))
-        ->assertSessionHas('sucesso', 'Importação concluída: 1 filiado(s) cadastrado(s) e convidado(s); 1 linha(s) recusada(s).');
+        ->assertSessionHas('sucesso', 'Importação concluída: 2 filiado(s) cadastrado(s) e convidado(s); 0 linha(s) recusada(s).');
 
-    expect(Filiado::count())->toBe(1);
+    expect(Filiado::count())->toBe(2);
+    expect(Filiado::whereNotNull('abrangencia')->value('abrangencia'))->toBe('nacional');
     expect(Cache::has("importacao-filiados:{$codigo}"))->toBeFalse();
+});
+
+test('escolha que não está entre as opções é recusada (422)', function () {
+    $codigo = enviarCsv($this);
+    $this->actingAs($this->admin)->post(route('cadastros.filiados.importar.colunas.salvar', $codigo), [
+        'mapa' => ['nome', 'email', 'cpf', 'nascimento', 'municipio', 'uf', 'nivel'],
+    ]);
+
+    $this->actingAs($this->admin)
+        ->post(route('cadastros.filiados.importar.valores.salvar', $codigo), ['escolhas' => ['nivel:99999']])
+        ->assertStatus(422);
 });
 
 test('a importação é presa a quem começou: outro administrador recebe 404', function () {
@@ -97,7 +130,7 @@ test('o mesmo campo em duas colunas é recusado', function () {
     $codigo = enviarCsv($this);
 
     $this->actingAs($this->admin)
-        ->post(route('cadastros.filiados.importar.previa', $codigo), ['mapa' => ['nome', 'nome', 'cpf']])
+        ->post(route('cadastros.filiados.importar.colunas.salvar', $codigo), ['mapa' => ['nome', 'nome', 'cpf']])
         ->assertStatus(422);
 });
 
