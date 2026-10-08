@@ -31,3 +31,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - A mesma regra em outra linguagem: a `hostGoogle` da CBSA (PHP, `str_replace`) virou TypeScript (`replaceAll`), e a ordem continua importando (primeiro o hífen, depois o ponto).
 - Toda função de "ida" pode precisar da "volta": na página do Google, o menu descobre o nosso domínio desfazendo o apelido (`hostOriginal`).
 - Teste no navegador antes de construir em cima: o script antigo do Google mostrou "Traduzido para", mas não traduziu o React; o login some no endereço do Google; por isso as telas com login usam a dica do tradutor do navegador.
+
+## 07/10/2026 — #37 cadastros de apoio (área, nível, equipe)
+
+- Regras do Laravel numa LISTA: cada item é uma regra só (`['nullable', 'max:2048']`); juntar com `|` dentro da lista quebra (erro 500 "validateNullable|... does not exist").
+- O mesmo `max` muda de sentido: no texto conta letras (`max:100`), no arquivo conta KB (`max:2048` = 2 MB).
+- Regra de negócio fica no servidor e ganha teste: grau máximo por categoria (`match`) e "para ativar a equipe precisa de cidade, UF, responsável, telefone e uma área". A tela só ajuda; quem garante é o servidor.
