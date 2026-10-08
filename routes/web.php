@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
+use App\Http\Controllers\Cadastros\NivelController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -27,6 +28,11 @@ Route::middleware(['auth', 'verified', 'can:administrar'])
         Route::resource('areas-atuacao', AreaAtuacaoController::class)
             ->except(['show', 'destroy'])
             ->parameters(['areas-atuacao' => 'area']);
+
+        // Níveis (Praticante, Monitor I–II, Instrutor I–V, Instrutor Expert I–V).
+        Route::resource('niveis', NivelController::class)
+            ->except(['show', 'destroy'])
+            ->parameters(['niveis' => 'nivel']);
     });
 
 require __DIR__.'/settings.php';

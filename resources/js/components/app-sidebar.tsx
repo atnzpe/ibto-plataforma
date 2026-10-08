@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Tags } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Medal, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -16,6 +16,8 @@ import {
 import { dashboard } from '@/routes';
 // Lista das áreas de atuação (#37), para o item do menu.
 import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
+// Lista dos níveis (#37), para o item do menu.
+import { index as niveis } from '@/routes/cadastros/niveis';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -45,6 +47,11 @@ const cadastrosNavItems: NavItem[] = [
         title: 'Áreas de atuação',
         href: areasAtuacao(),
         icon: Tags,
+    },
+    {
+        title: 'Níveis',
+        href: niveis(),
+        icon: Medal,
     },
 ];
 
