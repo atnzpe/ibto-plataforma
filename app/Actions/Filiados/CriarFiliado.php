@@ -26,7 +26,7 @@ class CriarFiliado
      * $dados = os campos do formulário ou de uma linha da planilha.
      * Ex.: ['nome' => 'Fulano', 'email' => 'fulano@exemplo.com', 'cpf' => '529.982.247-25', ...]
      *
-     * @param  array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>}  $dados
+     * @param  array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>, registro?: string|null}  $dados
      * @return Filiado O filiado criado, já com a conta (usuario) ligada.
      */
     public function executar(array $dados): Filiado
@@ -52,7 +52,9 @@ class CriarFiliado
             ]);
             // Campos que o formulário não preenche: a conta e o número de registro.
             $filiado->user_id = $usuario->id;
-            $filiado->registro = $this->proximoRegistro($dados['uf']);
+            // Registro: o que já existe na planilha (importação) é mantido, porque a
+            // carteirinha não muda; senão, a plataforma gera o próximo do ano.
+            $filiado->registro = $dados['registro'] ?? $this->proximoRegistro($dados['uf']);
             $filiado->save();
 
             $filiado->areas()->sync($dados['areas'] ?? []);
