@@ -30,6 +30,9 @@ return new class extends Migration
         'aluno' => ['Aluno', 'Qualquer pessoa cadastrada: faz cursos abertos ao público.', true],
         'filiado' => ['Filiado', 'Membro do IBTO com anuidade: acessa os cursos restritos.', true],
         'instrutor' => ['Instrutor', 'Filiado autorizado a criar cursos na sua área.', true],
+        // Responsável por uma equipe filiada (Gleyson, 07/10/2026). O limite "só os
+        // filiados da própria equipe" entra junto com o cadastro de filiados (#37).
+        'admin_equipe' => ['Administrador de equipe', 'Filiado responsável por uma equipe: cuida dos filiados dela.', true],
         'administrador' => ['Administrador', 'Equipe do IBTO: cuida dos cadastros e dos usuários.', true],
         'tecnologia' => ['Tecnologia', 'Time de Tecnologia: o único que mexe nas permissões.', true],
     ];

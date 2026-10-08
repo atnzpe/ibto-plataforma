@@ -23,9 +23,9 @@ function darPapel(User $usuario, string $slug): void
     $usuario->papeis()->attach(Papel::where('slug', $slug)->value('id'));
 }
 
-test('a migration traz os 5 papéis e as 5 permissões', function () {
+test('a migration traz os 6 papéis e as 5 permissões', function () {
     expect(Papel::pluck('slug')->sort()->values()->all())
-        ->toBe(['administrador', 'aluno', 'filiado', 'instrutor', 'tecnologia']);
+        ->toBe(['admin_equipe', 'administrador', 'aluno', 'filiado', 'instrutor', 'tecnologia']);
     expect(Permissao::count())->toBe(5);
 });
 
