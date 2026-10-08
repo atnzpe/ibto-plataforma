@@ -5,13 +5,13 @@
  * o convite para criar a senha; bloco F3). O número de registro é gerado pela
  * plataforma. LGPD: CPF, nascimento e telefone são gravados criptografados.
  */
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import FiliadoController from '@/actions/App/Http/Controllers/Cadastros/FiliadoController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { index } from '@/routes/cadastros/filiados';
+import { convite, index } from '@/routes/cadastros/filiados';
 
 /** Os dados do filiado na edição. */
 type FiliadoFormulario = {
@@ -28,6 +28,8 @@ type FiliadoFormulario = {
     nivel_id: number | null;
     areas: number[];
     status: string;
+    // true quando a pessoa já criou a senha pelo convite.
+    conta_ativada: boolean;
 };
 
 /** Uma opção com número e nome. */
@@ -58,6 +60,8 @@ export default function FiliadoFormularioTela({
     areas: Opcao[];
     ufs: string[];
 }) {
+    // Mensagem da última ação (ex.: "Convite reenviado."), ou null.
+    const { sucesso } = usePage().props;
     const editando = filiado !== null;
     const titulo = editando
         ? `Editar filiado ${filiado.registro}`
@@ -79,10 +83,48 @@ export default function FiliadoFormularioTela({
                     {!editando && (
                         <p className="text-sm text-muted-foreground">
                             O número de registro é gerado ao salvar. A conta do
-                            app é criada com o e-mail informado.
+                            app é criada com o e-mail informado, e a pessoa
+                            recebe um convite para criar a senha.
                         </p>
                     )}
                 </div>
+
+                {/* Mensagem da última ação (ex.: "Convite reenviado."). */}
+                {sucesso && (
+                    <p
+                        role="status"
+                        className="rounded-md border border-green-600/40 bg-green-600/10 px-4 py-2 text-sm"
+                    >
+                        {sucesso}
+                    </p>
+                )}
+
+                {/* Situação da conta e botão de reenviar o convite (só na edição). */}
+                {editando && (
+                    <div className="flex flex-wrap items-center gap-3 rounded-md border border-border px-4 py-3 text-sm">
+                        <span>
+                            Conta do app:{' '}
+                            {filiado.conta_ativada
+                                ? 'ativada (senha criada)'
+                                : 'aguardando o convite ser usado'}
+                        </span>
+                        {!filiado.conta_ativada && (
+                            // Formulário só com o botão: POST para reenviar o convite.
+                            <Form {...convite.form(filiado.id)}>
+                                {({ processing }) => (
+                                    <Button
+                                        type="submit"
+                                        variant="secondary"
+                                        size="sm"
+                                        disabled={processing}
+                                    >
+                                        Reenviar convite
+                                    </Button>
+                                )}
+                            </Form>
+                        )}
+                    </div>
+                )}
 
                 <Form {...destino} className="space-y-8">
                     {({ processing, errors }) => (

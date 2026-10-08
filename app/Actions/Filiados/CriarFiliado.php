@@ -15,6 +15,7 @@ namespace App\Actions\Filiados;
 
 use App\Models\Filiado;
 use App\Models\User;
+use App\Notifications\ConviteFiliado;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -55,6 +56,10 @@ class CriarFiliado
             $filiado->save();
 
             $filiado->areas()->sync($dados['areas'] ?? []);
+
+            // Convite por e-mail para a pessoa criar a própria senha (F3). Vai pela
+            // fila e só sai depois que tudo acima foi gravado de vez.
+            $usuario->notify(new ConviteFiliado);
 
             return $filiado;
         });

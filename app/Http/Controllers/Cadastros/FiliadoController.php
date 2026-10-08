@@ -19,6 +19,7 @@ use App\Models\AreaAtuacao;
 use App\Models\Equipe;
 use App\Models\Filiado;
 use App\Models\Nivel;
+use App\Notifications\ConviteFiliado;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -114,6 +115,8 @@ class FiliadoController extends Controller
                 'nivel_id' => $filiado->nivel_id,
                 'areas' => $filiado->areas()->pluck('areas_atuacao.id'),
                 'status' => $filiado->status,
+                // true quando a pessoa já criou a senha pelo convite (e-mail confirmado).
+                'conta_ativada' => (bool) $filiado->usuario?->hasVerifiedEmail(),
             ],
             ...$this->opcoes(),
         ]);
@@ -141,6 +144,29 @@ class FiliadoController extends Controller
 
         return to_route('cadastros.filiados.index')
             ->with('sucesso', "Filiado {$filiado->registro} atualizado.");
+    }
+
+    /**
+     * Reenvia o convite por e-mail (ex.: o primeiro venceu ou foi para o spam).
+     * Se a pessoa já criou a senha, não reenvia: o convite já foi usado.
+     *
+     * @param  Filiado  $filiado  O filiado do endereço.
+     * @return RedirectResponse Volta para a edição com o resultado.
+     */
+    public function reenviarConvite(Filiado $filiado): RedirectResponse
+    {
+        $usuario = $filiado->usuario;
+
+        // Sem conta, ou conta já ativada: nada a reenviar.
+        if ($usuario === null || $usuario->hasVerifiedEmail()) {
+            return to_route('cadastros.filiados.edit', $filiado)
+                ->with('sucesso', 'Este filiado já criou a senha; não é preciso convite.');
+        }
+
+        $usuario->notify(new ConviteFiliado);
+
+        return to_route('cadastros.filiados.edit', $filiado)
+            ->with('sucesso', 'Convite reenviado. O link novo vale por '.ConviteFiliado::DIAS_DE_VALIDADE.' dias.');
     }
 
     /**

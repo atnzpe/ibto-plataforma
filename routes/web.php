@@ -7,10 +7,19 @@ use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+
+// Convite do filiado (#37, F3): link ASSINADO do e-mail ("signed": endereço
+// alterado ou vencido dá 403). Mesmo endereço para abrir (GET) e salvar (POST).
+// Limite de 10 por minuto, contra quem tenta adivinhar senhas.
+Route::middleware(['signed', 'throttle:10,1'])->group(function () {
+    Route::get('convite/{usuario}', [ConviteController::class, 'mostrar'])->name('convite.mostrar');
+    Route::post('convite/{usuario}', [ConviteController::class, 'salvar'])->name('convite.salvar');
+});
 
 // Imagem de uma área de atuação (#37, #57): pública, porque o site também a
 // mostra. Limite de 120 pedidos por minuto por IP, para ninguém sobrecarregar.
@@ -56,6 +65,11 @@ Route::middleware(['auth', 'verified'])
         Route::resource('filiados', FiliadoController::class)
             ->except(['show', 'destroy'])
             ->middleware('can:filiados.gerenciar');
+
+        // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
+        Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
+            ->middleware(['can:filiados.gerenciar', 'throttle:6,1'])
+            ->name('filiados.convite');
     });
 
 // Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".
