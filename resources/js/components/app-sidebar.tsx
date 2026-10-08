@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, LayoutGrid, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,6 +14,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+// Lista das áreas de atuação (#37), para o item do menu.
+import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -37,7 +39,25 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
+// Itens dos cadastros de apoio (#37), mostrados só para administradores.
+const cadastrosNavItems: NavItem[] = [
+    {
+        title: 'Áreas de atuação',
+        href: areasAtuacao(),
+        icon: Tags,
+    },
+];
+
 export function AppSidebar() {
+    // pode.administrar vem do servidor (HandleInertiaRequests). Só esconde o
+    // menu; a rota continua barrando quem não é administrador (403).
+    const { pode } = usePage().props;
+
+    // Menu principal + cadastros, quando a pessoa é administradora.
+    const itens = pode.administrar
+        ? [...mainNavItems, ...cadastrosNavItems]
+        : mainNavItems;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +73,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={itens} />
             </SidebarContent>
 
             <SidebarFooter>

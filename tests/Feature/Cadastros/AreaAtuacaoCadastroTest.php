@@ -39,7 +39,7 @@ test('administrador vê a lista com as 15 áreas', function () {
         ->get(route('cadastros.areas-atuacao.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $pagina) => $pagina
-            ->component('cadastros/areas-atuacao/index', false)
+            ->component('cadastros/areas-atuacao/index')
             ->has('areas', 15));
 });
 
@@ -77,4 +77,36 @@ test('administrador desativa uma área, e salvar sem mudar o nome não acusa rep
     expect($area->fresh()->ativa)->toBeFalse();
     // Desativada, ela some do filtro usado nas listas de escolha.
     expect(AreaAtuacao::ativas()->pluck('nome'))->not->toContain('Selva');
+});
+
+test('administrador abre o formulário de nova área e o de edição', function () {
+    // Nova: a tela recebe area = null.
+    $this->actingAs($this->admin)
+        ->get(route('cadastros.areas-atuacao.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $pagina) => $pagina
+            ->component('cadastros/areas-atuacao/formulario')
+            ->where('area', null));
+
+    // Edição: a tela recebe só id, nome e ativa (nada de datas internas).
+    $area = AreaAtuacao::where('nome', 'KAPAP')->firstOrFail();
+
+    $this->actingAs($this->admin)
+        ->get(route('cadastros.areas-atuacao.edit', $area))
+        ->assertOk()
+        ->assertInertia(fn (Assert $pagina) => $pagina
+            ->component('cadastros/areas-atuacao/formulario')
+            ->where('area', ['id' => $area->id, 'nome' => 'KAPAP', 'ativa' => true]));
+});
+
+test('o menu "Áreas de atuação" só é liberado para o administrador', function () {
+    // Administrador: pode.administrar = true (o menu aparece).
+    $this->actingAs($this->admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.administrar', true));
+
+    // Usuário comum: false (o menu fica escondido).
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.administrar', false));
 });
