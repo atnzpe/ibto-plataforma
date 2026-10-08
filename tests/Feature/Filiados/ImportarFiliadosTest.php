@@ -112,3 +112,29 @@ test('CSV salvo pelo Excel em português (acentuação antiga, Windows-1252) é 
     expect($csv['colunas'])->toBe(['Município', 'Equipe']);
     expect($csv['linhas'][0]['Equipe'])->toBe('Dragão Negro');
 });
+
+test('célula entre aspas com quebra de linha dentro (UF "RJ" + Enter) não parte a linha', function () {
+    // Mesmo formato da planilha do Canva: separador "," e a UF com Enter dentro das aspas.
+    $csv = LeitorCsv::ler("Nome completo,UF,Município\nTeste Um,\"RJ\n\",Niterói\nTeste Dois,SP ,Campinas");
+
+    expect($csv['linhas'])->toHaveCount(2);
+    expect($csv['linhas'][0]['UF'])->toBe('RJ');
+    expect($csv['linhas'][0]['Município'])->toBe('Niterói');
+    // Espaço sobrando nas pontas ("SP ") também sai.
+    expect($csv['linhas'][1]['UF'])->toBe('SP');
+});
+
+test('equipe em MAIÚSCULAS com acento é encontrada ("TÁTICOS" = "Táticos")', function () {
+    $importar = app(ImportarFiliados::class);
+    $linhas = [[
+        'Nome' => 'Teste Maiusculo', 'E-mail' => 'maiusculo@ibto.test', 'CPF' => '529.982.247-25',
+        'Nascimento' => '20/05/1990', 'Município' => 'Recife', 'UF' => 'PE',
+        'Equipe' => 'ALFA COMBAT TREINAMENTOS TÁTICOS', 'Área de Atuação' => 'KAPAP, krav maga',
+    ]];
+
+    $resultado = $importar->conferir($linhas, $importar->sugerirMapa(array_keys($linhas[0])));
+
+    expect($resultado['recusadas'])->toBe([]);
+    expect($resultado['validas'][0]['equipe_id'])->not->toBeNull();
+    expect($resultado['validas'][0]['areas'])->toHaveCount(2);
+});

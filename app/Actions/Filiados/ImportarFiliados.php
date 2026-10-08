@@ -63,6 +63,13 @@ class ImportarFiliados
         'areas' => ['area de atuacao', 'areas de atuacao', 'area', 'areas'],
     ];
 
+    /**
+     * Nomes de equipes e áreas já carregados nesta importação: [modelo => [nome em minúsculas => id]].
+     *
+     * @var array<string, array<string, int>>
+     */
+    private array $nomesCarregados = [];
+
     public function __construct(private CriarFiliado $criar) {}
 
     /**
@@ -230,7 +237,7 @@ class ImportarFiliados
         // Equipe: pelo nome (sem diferenciar maiúsculas). Vazia = sem equipe.
         $dados['equipe_id'] = null;
         if (isset($bruto['equipe']) && $bruto['equipe'] !== '-') {
-            $equipe = Equipe::whereRaw('LOWER(nome) = ?', [Str::lower($bruto['equipe'])])->value('id');
+            $equipe = $this->idPorNome(Equipe::class, $bruto['equipe']);
             $equipe === null
                 ? $motivos[] = "Equipe \"{$bruto['equipe']}\" não cadastrada."
                 : $dados['equipe_id'] = $equipe;
@@ -249,7 +256,7 @@ class ImportarFiliados
         $dados['areas'] = [];
         if (isset($bruto['areas'])) {
             foreach (array_filter(array_map('trim', explode(',', $bruto['areas']))) as $nomeArea) {
-                $area = AreaAtuacao::whereRaw('LOWER(nome) = ?', [Str::lower($nomeArea)])->value('id');
+                $area = $this->idPorNome(AreaAtuacao::class, $nomeArea);
                 $area === null
                     ? $motivos[] = "Área \"{$nomeArea}\" não cadastrada."
                     : $dados['areas'][] = $area;
@@ -270,6 +277,26 @@ class ImportarFiliados
         }
 
         return [$dados, $motivos];
+    }
+
+    /**
+     * Acha o número de uma equipe ou área pelo nome, sem diferenciar maiúsculas
+     * de minúsculas, INCLUSIVE com acento ("TÁTICOS" = "Táticos").
+     * A comparação é feita no PHP (Str::lower entende acentos), e não no banco:
+     * o LOWER do SQLite (computador) não passa "Á" para "á".
+     * Os nomes são carregados uma vez só por importação (como a tabela de preços do PDV).
+     *
+     * @param  class-string<Equipe|AreaAtuacao>  $modelo  Equipe::class ou AreaAtuacao::class.
+     * @param  string  $nome  O nome como veio da planilha. Ex.: 'ALFA COMBAT TREINAMENTOS TÁTICOS'
+     * @return int|null O número encontrado, ou null se não existe.
+     */
+    private function idPorNome(string $modelo, string $nome): ?int
+    {
+        $this->nomesCarregados[$modelo] ??= $modelo::query()->pluck('id', 'nome')
+            ->mapWithKeys(fn (int $id, string $nomeCadastrado) => [Str::lower(trim($nomeCadastrado)) => $id])
+            ->all();
+
+        return $this->nomesCarregados[$modelo][Str::lower(trim($nome))] ?? null;
     }
 
     /**
