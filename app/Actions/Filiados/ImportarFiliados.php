@@ -45,8 +45,13 @@ class ImportarFiliados
         'uf' => 'UF (estado)',
         'equipe' => 'Equipe (nome)',
         'nivel' => 'Nível (ex.: Instrutor Expert IV)',
+        'abrangencia' => 'Abrangência (Nacional ou Internacional)',
         'areas' => 'Áreas de atuação (separadas por vírgula)',
     ];
+
+    // Campos cujos valores são escolhas de um cadastro e podem ser RELACIONADOS
+    // na etapa "relacionar os valores" (ex.: "Expert Nível 3" → Instrutor Expert III).
+    public const CAMPOS_RELACIONAVEIS = ['equipe', 'nivel', 'areas'];
 
     // Palavras que, no nome da coluna, indicam cada campo (para a sugestão).
     private const PISTAS = [
@@ -60,6 +65,7 @@ class ImportarFiliados
         'uf' => ['uf', 'estado'],
         'equipe' => ['equipe', 'academia', 'time'],
         'nivel' => ['nivel', 'graduacao'],
+        'abrangencia' => ['abrangencia'],
         'areas' => ['area de atuacao', 'areas de atuacao', 'area', 'areas'],
     ];
 
@@ -69,6 +75,13 @@ class ImportarFiliados
      * @var array<string, array<string, int>>
      */
     private array $nomesCarregados = [];
+
+    /**
+     * Escolhas da etapa "relacionar os valores" da importação atual (ver conferir()).
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $relacoes = [];
 
     public function __construct(private CriarFiliado $criar) {}
 
@@ -96,14 +109,58 @@ class ImportarFiliados
     }
 
     /**
+     * Etapa "relacionar os valores": acha, nas colunas de equipe, nível e áreas,
+     * os valores que NÃO batem com o cadastro, cada um uma vez só, com uma sugestão.
+     *
+     * @param  list<array<string, string>>  $linhas  As linhas do CSV.
+     * @param  array<string, string>  $mapa  [coluna => campo].
+     * @return array{valores: list<array{campo: string, valor: string, sugestao: string|null}>, opcoes: array<string, list<array{valor: string, rotulo: string}>>}
+     */
+    public function valoresParaRelacionar(array $linhas, array $mapa): array
+    {
+        $opcoes = $this->opcoesDeRelacao();
+        $achados = [];
+
+        foreach ($linhas as $linha) {
+            foreach ($mapa as $coluna => $campo) {
+                if (! in_array($campo, self::CAMPOS_RELACIONAVEIS, true) || ($linha[$coluna] ?? '') === '') {
+                    continue;
+                }
+
+                // Áreas vêm várias numa célula, separadas por vírgula.
+                $valores = $campo === 'areas' ? array_map('trim', explode(',', $linha[$coluna])) : [$linha[$coluna]];
+
+                foreach (array_filter($valores, fn (string $v) => $v !== '' && $v !== '-') as $valor) {
+                    // Já bate com o cadastro (sem diferenciar maiúsculas): não precisa relacionar.
+                    if ($this->idDireto($campo, $valor) !== null) {
+                        continue;
+                    }
+                    // Cada valor diferente aparece uma vez só (pela "chave": sem acento e minúsculo).
+                    $achados[$campo.'|'.$this->chave($valor)] ??= [
+                        'campo' => $campo,
+                        'valor' => $valor,
+                        'sugestao' => $this->sugerir($valor, $opcoes[$campo]),
+                    ];
+                }
+            }
+        }
+
+        return ['valores' => array_values($achados), 'opcoes' => $opcoes];
+    }
+
+    /**
      * Confere todas as linhas com o mapa escolhido.
      *
      * @param  list<array<string, string>>  $linhas  As linhas do CSV ([coluna => valor]).
      * @param  array<string, string>  $mapa  [coluna => campo], vindo da tela.
+     * @param  array<string, array<string, string>>  $relacoes  Escolhas da etapa "relacionar os valores":
+     *                                                          [campo => [chave do valor => escolha]]. Ex.: ['nivel' => ['expert nivel 3' => 'nivel:12']]
      * @return array{validas: list<array<string, mixed>>, recusadas: list<array{linha: int, motivos: list<string>}>}
      */
-    public function conferir(array $linhas, array $mapa): array
+    public function conferir(array $linhas, array $mapa, array $relacoes = []): array
     {
+        $this->relacoes = $relacoes;
+
         $validas = [];
         $recusadas = [];
         // CPFs e e-mails já vistos NESTE arquivo (para pegar repetição dentro da própria planilha).
@@ -234,33 +291,56 @@ class ImportarFiliados
         }
         $dados['uf'] = $uf;
 
-        // Equipe: pelo nome (sem diferenciar maiúsculas). Vazia = sem equipe.
+        // Abrangência numa coluna própria (planilhas futuras): nacional ou internacional.
+        $dados['abrangencia'] = null;
+        if (isset($bruto['abrangencia'])) {
+            $abrangencia = $this->chave($bruto['abrangencia']);
+            in_array($abrangencia, ['nacional', 'internacional'], true)
+                ? $dados['abrangencia'] = $abrangencia
+                : $motivos[] = "Abrangência \"{$bruto['abrangencia']}\" inválida (use Nacional ou Internacional).";
+        }
+
+        // Equipe: pelo nome, ou pela escolha da etapa "relacionar os valores". "-" = sem equipe.
         $dados['equipe_id'] = null;
         if (isset($bruto['equipe']) && $bruto['equipe'] !== '-') {
-            $equipe = $this->idPorNome(Equipe::class, $bruto['equipe']);
-            $equipe === null
-                ? $motivos[] = "Equipe \"{$bruto['equipe']}\" não cadastrada."
-                : $dados['equipe_id'] = $equipe;
+            $escolha = $this->escolha('equipe', $bruto['equipe']);
+            match (true) {
+                $escolha === 'vazio' => null,
+                $escolha === 'recusar' => $motivos[] = "Equipe \"{$bruto['equipe']}\" recusada na relação dos valores.",
+                str_starts_with($escolha, 'equipe:') => $dados['equipe_id'] = (int) substr($escolha, 7),
+                default => $motivos[] = "Equipe \"{$bruto['equipe']}\" não cadastrada.",
+            };
         }
 
-        // Nível: pelo nome montado (ex.: "Instrutor Expert IV").
+        // Nível: pelo nome montado (ex.: "Instrutor Expert IV"), ou pela escolha da
+        // relação. A escolha pode ser uma ABRANGÊNCIA (o "Nacional" que a planilha
+        // do Canva punha na coluna Nível): aí a linha entra sem nível.
         $dados['nivel_id'] = null;
         if (isset($bruto['nivel'])) {
-            $nivel = Nivel::all()->first(fn (Nivel $n) => Str::lower($n->nome()) === Str::lower($bruto['nivel']));
-            $nivel === null
-                ? $motivos[] = "Nível \"{$bruto['nivel']}\" não existe (use, por ex., \"Instrutor Expert IV\")."
-                : $dados['nivel_id'] = $nivel->id;
+            $escolha = $this->escolha('nivel', $bruto['nivel']);
+            match (true) {
+                $escolha === 'vazio' => null,
+                $escolha === 'recusar' => $motivos[] = "Nível \"{$bruto['nivel']}\" recusado na relação dos valores.",
+                str_starts_with($escolha, 'nivel:') => $dados['nivel_id'] = (int) substr($escolha, 6),
+                str_starts_with($escolha, 'abrangencia:') => $dados['abrangencia'] = substr($escolha, 12),
+                default => $motivos[] = "Nível \"{$bruto['nivel']}\" não existe (relacione na etapa dos valores).",
+            };
         }
 
-        // Áreas: nomes separados por vírgula; as que não existirem são avisadas.
+        // Áreas: nomes separados por vírgula; cada um pelo nome ou pela escolha da relação.
         $dados['areas'] = [];
         if (isset($bruto['areas'])) {
             foreach (array_filter(array_map('trim', explode(',', $bruto['areas']))) as $nomeArea) {
-                $area = $this->idPorNome(AreaAtuacao::class, $nomeArea);
-                $area === null
-                    ? $motivos[] = "Área \"{$nomeArea}\" não cadastrada."
-                    : $dados['areas'][] = $area;
+                $escolha = $this->escolha('areas', $nomeArea);
+                match (true) {
+                    $escolha === 'ignorar' => null,
+                    $escolha === 'recusar' => $motivos[] = "Área \"{$nomeArea}\" recusada na relação dos valores.",
+                    str_starts_with($escolha, 'area:') => $dados['areas'][] = (int) substr($escolha, 5),
+                    default => $motivos[] = "Área \"{$nomeArea}\" não cadastrada.",
+                };
             }
+            // A mesma área escolhida duas vezes (ex.: "Kapap" e "KAPAP") entra uma vez só.
+            $dados['areas'] = array_values(array_unique($dados['areas']));
         }
 
         // Registro: se a planilha já traz o número, ele é mantido (a carteirinha não muda).
@@ -277,6 +357,135 @@ class ImportarFiliados
         }
 
         return [$dados, $motivos];
+    }
+
+    /**
+     * A escolha valendo para um valor: a da etapa "relacionar os valores", se houver;
+     * senão, o cadastro com o mesmo nome; senão, '' (não encontrado).
+     *
+     * @param  string  $campo  'equipe', 'nivel' ou 'areas'.
+     * @param  string  $valor  Como veio da planilha. Ex.: 'Expert Nível 3'
+     * @return string Ex.: 'nivel:12', 'abrangencia:nacional', 'recusar', 'vazio', 'ignorar' ou ''.
+     */
+    private function escolha(string $campo, string $valor): string
+    {
+        $relacionada = $this->relacoes[$campo][$this->chave($valor)] ?? null;
+        if (is_string($relacionada) && $relacionada !== '') {
+            return $relacionada;
+        }
+
+        $id = $this->idDireto($campo, $valor);
+        $prefixo = ['equipe' => 'equipe:', 'nivel' => 'nivel:', 'areas' => 'area:'][$campo];
+
+        return $id !== null ? $prefixo.$id : '';
+    }
+
+    /**
+     * Número do cadastro com EXATAMENTE este nome (sem diferenciar maiúsculas e acentos).
+     *
+     * @param  string  $campo  'equipe', 'nivel' ou 'areas'.
+     */
+    private function idDireto(string $campo, string $valor): ?int
+    {
+        return match ($campo) {
+            'equipe' => $this->idPorNome(Equipe::class, $valor),
+            'areas' => $this->idPorNome(AreaAtuacao::class, $valor),
+            'nivel' => Nivel::all()->first(fn (Nivel $n) => $this->chave($n->nome()) === $this->chave($valor))?->id,
+            default => null,
+        };
+    }
+
+    /**
+     * Opções de cada campo na etapa "relacionar os valores".
+     *
+     * @return array<string, list<array{valor: string, rotulo: string}>>
+     */
+    private function opcoesDeRelacao(): array
+    {
+        $equipes = Equipe::query()->orderBy('nome')->get()
+            ->map(fn (Equipe $e) => ['valor' => "equipe:{$e->id}", 'rotulo' => $e->nome])->all();
+        $niveis = Nivel::emOrdem(Nivel::all())
+            ->map(fn (Nivel $n) => ['valor' => "nivel:{$n->id}", 'rotulo' => $n->nome()])->all();
+        $areas = AreaAtuacao::query()->orderBy('nome')->get()
+            ->map(fn (AreaAtuacao $a) => ['valor' => "area:{$a->id}", 'rotulo' => $a->nome])->all();
+
+        return [
+            'equipe' => [...$equipes, ['valor' => 'vazio', 'rotulo' => '(sem equipe)'], ['valor' => 'recusar', 'rotulo' => 'Recusar a linha']],
+            'nivel' => [
+                ...$niveis,
+                ['valor' => 'abrangencia:nacional', 'rotulo' => 'Abrangência: Nacional (sem nível)'],
+                ['valor' => 'abrangencia:internacional', 'rotulo' => 'Abrangência: Internacional (sem nível)'],
+                ['valor' => 'vazio', 'rotulo' => '(sem nível)'],
+                ['valor' => 'recusar', 'rotulo' => 'Recusar a linha'],
+            ],
+            'areas' => [...$areas, ['valor' => 'ignorar', 'rotulo' => 'Ignorar só esta área'], ['valor' => 'recusar', 'rotulo' => 'Recusar a linha']],
+        ];
+    }
+
+    /**
+     * Sugere a opção mais parecida com o valor da planilha.
+     *
+     * @param  string  $valor  Ex.: 'Expert Nível 3'
+     * @param  list<array{valor: string, rotulo: string}>  $opcoes
+     * @return string|null O "valor" da opção sugerida (ex.: 'nivel:12'), ou null se nenhuma parece.
+     */
+    private function sugerir(string $valor, array $opcoes): ?string
+    {
+        $procurado = $this->normalizarParaComparar($valor);
+
+        // "Nacional" / "Internacional" na coluna Nível: é abrangência.
+        if (in_array($procurado, ['nacional', 'internacional'], true)) {
+            return "abrangencia:{$procurado}";
+        }
+
+        $melhor = null;
+        $maiorParecenca = 0.0;
+
+        foreach ($opcoes as $opcao) {
+            $candidato = $this->normalizarParaComparar($opcao['rotulo']);
+
+            // Termina igual (ex.: "expert iii" no fim de "instrutor expert iii"): sugere direto.
+            if ($procurado !== '' && str_ends_with($candidato, ' '.$procurado)) {
+                return $opcao['valor'];
+            }
+
+            // Quanto os dois nomes se parecem, de 0 a 100% ("Facas" × "Faca" ≈ 97%).
+            similar_text($procurado, $candidato, $parecenca);
+            if ($parecenca > $maiorParecenca) {
+                $maiorParecenca = $parecenca;
+                $melhor = $opcao['valor'];
+            }
+        }
+
+        // Sugere a partir de 80% de parecença (Gleyson, 08/10/2026): "Kraaav Maga"
+        // (90%) e "Facas" (97%) ganham sugestão; "Operador de Drones" (74%) fica para
+        // a pessoa escolher na tela. Abaixo disso, sem sugestão (evita besteira).
+        return $maiorParecenca >= 80 ? $melhor : null;
+    }
+
+    /**
+     * "Chave" de um texto: sem acento, minúsculas e sem espaços nas pontas.
+     *
+     * @return string Ex.: 'Expert Nível 3' vira 'expert nivel 3'
+     */
+    private function chave(string $texto): string
+    {
+        return Str::lower(Str::ascii(trim($texto)));
+    }
+
+    /**
+     * Texto pronto para comparar nomes de nível: tira a palavra "nível" e troca
+     * o número do grau pelo algarismo romano.
+     *
+     * @return string Ex.: 'Expert Nível 3' vira 'expert iii'
+     */
+    private function normalizarParaComparar(string $texto): string
+    {
+        $texto = preg_replace('/\bnivel\b/', '', $this->chave($texto)) ?? '';
+        $texto = strtr($texto, ['1' => 'i', '2' => 'ii', '3' => 'iii', '4' => 'iv', '5' => 'v']);
+
+        // Junta espaços repetidos (sobram onde a palavra "nível" saiu).
+        return trim((string) preg_replace('/\s+/', ' ', $texto));
     }
 
     /**

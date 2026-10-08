@@ -138,6 +138,7 @@ class FiliadoController extends Controller
                 'uf' => $filiado->uf,
                 'equipe_id' => $filiado->equipe_id,
                 'nivel_id' => $filiado->nivel_id,
+                'abrangencia' => $filiado->abrangencia,
                 'areas' => $filiado->areas()->pluck('areas_atuacao.id'),
                 'status' => $filiado->status,
                 // true quando a pessoa já criou a senha pelo convite (e-mail confirmado).

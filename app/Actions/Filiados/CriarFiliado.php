@@ -26,7 +26,7 @@ class CriarFiliado
      * $dados = os campos do formulário ou de uma linha da planilha.
      * Ex.: ['nome' => 'Fulano', 'email' => 'fulano@exemplo.com', 'cpf' => '529.982.247-25', ...]
      *
-     * @param  array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>, registro?: string|null}  $dados
+     * @param  array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, abrangencia?: string|null, areas?: list<int>, registro?: string|null}  $dados
      * @return Filiado O filiado criado, já com a conta (usuario) ligada.
      */
     public function executar(array $dados): Filiado
@@ -48,6 +48,8 @@ class CriarFiliado
                 'uf' => strtoupper($dados['uf']),
                 'equipe_id' => $dados['equipe_id'] ?? null,
                 'nivel_id' => $dados['nivel_id'] ?? null,
+                // nacional, internacional ou null (não se aplica).
+                'abrangencia' => $dados['abrangencia'] ?? null,
                 'status' => 'ativo',
             ]);
             // Campos que o formulário não preenche: a conta e o número de registro.

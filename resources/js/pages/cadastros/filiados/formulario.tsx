@@ -26,6 +26,8 @@ type FiliadoFormulario = {
     uf: string;
     equipe_id: number | null;
     nivel_id: number | null;
+    // Abrangência do instrutor: 'nacional', 'internacional' ou null.
+    abrangencia: string | null;
     areas: number[];
     status: string;
     // true quando a pessoa já criou a senha pelo convite.
@@ -307,6 +309,29 @@ export default function FiliadoFormularioTela({
                                         </select>
                                         <InputError message={errors.nivel_id} />
                                     </div>
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="abrangencia">
+                                        Abrangência (instrutor)
+                                    </Label>
+                                    <select
+                                        id="abrangencia"
+                                        name="abrangencia"
+                                        defaultValue={
+                                            filiado?.abrangencia ?? ''
+                                        }
+                                        className={classeSelect}
+                                    >
+                                        <option value="">Não se aplica</option>
+                                        <option value="nacional">
+                                            Nacional
+                                        </option>
+                                        <option value="internacional">
+                                            Internacional
+                                        </option>
+                                    </select>
+                                    <InputError message={errors.abrangencia} />
                                 </div>
 
                                 <div className="grid gap-2">

@@ -8,10 +8,13 @@
  */
 
 use App\Actions\Filiados\ImportarFiliados;
+use App\Models\AreaAtuacao;
 use App\Models\Filiado;
+use App\Models\Nivel;
 use App\Notifications\ConviteFiliado;
 use App\Support\Importacao\LeitorCsv;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 /**
  * Uma planilha inventada, com o cabeçalho igual ao da planilha do Canva (+ E-mail).
@@ -137,4 +140,65 @@ test('equipe em MAIÚSCULAS com acento é encontrada ("TÁTICOS" = "Táticos")',
     expect($resultado['recusadas'])->toBe([]);
     expect($resultado['validas'][0]['equipe_id'])->not->toBeNull();
     expect($resultado['validas'][0]['areas'])->toHaveCount(2);
+});
+
+/**
+ * Linhas inventadas com os mesmos tipos de valor fora do padrão da planilha do Canva.
+ *
+ * @return list<array<string, string>>
+ */
+function linhasComValoresForaDoPadrao(): array
+{
+    $base = ['Nascimento' => '20/05/1990', 'Município' => 'Recife', 'UF' => 'PE', 'Equipe' => 'Vulcan'];
+
+    return [
+        [...$base, 'Nome' => 'Teste A', 'E-mail' => 'a@ibto.test', 'CPF' => '529.982.247-25', 'Nível' => 'Expert Nível 3', 'Área de Atuação' => 'Combate com Facas, Krav Maga'],
+        [...$base, 'Nome' => 'Teste B', 'E-mail' => 'b@ibto.test', 'CPF' => '111.444.777-35', 'Nível' => 'Nacional', 'Área de Atuação' => 'Kraaav Maga'],
+        [...$base, 'Nome' => 'Teste C', 'E-mail' => 'c@ibto.test', 'CPF' => '390.533.447-05', 'Nível' => 'Instrutor Nivel 2', 'Área de Atuação' => 'TCCC'],
+    ];
+}
+
+test('acha cada valor fora do padrão UMA vez, com a sugestão certa', function () {
+    $importar = app(ImportarFiliados::class);
+    $linhas = linhasComValoresForaDoPadrao();
+
+    $resultado = $importar->valoresParaRelacionar($linhas, $importar->sugerirMapa(array_keys($linhas[0])));
+
+    // [campo|valor => sugestão], para conferir fácil.
+    $sugestoes = collect($resultado['valores'])->mapWithKeys(fn ($v) => [$v['campo'].'|'.$v['valor'] => $v['sugestao']]);
+    $nivelId = fn (string $nome) => 'nivel:'.Nivel::all()->first(fn (Nivel $n) => $n->nome() === $nome)->id;
+    $areaId = fn (string $nome) => 'area:'.AreaAtuacao::where('nome', $nome)->value('id');
+
+    expect($sugestoes['nivel|Expert Nível 3'])->toBe($nivelId('Instrutor Expert III'));
+    expect($sugestoes['nivel|Instrutor Nivel 2'])->toBe($nivelId('Instrutor II'));
+    expect($sugestoes['nivel|Nacional'])->toBe('abrangencia:nacional');
+    expect($sugestoes['areas|Combate com Facas'])->toBe($areaId('Combate com Faca'));
+    expect($sugestoes['areas|Kraaav Maga'])->toBe($areaId('Krav Maga'));
+    // "TCCC" não se parece com o nome completo: sem sugestão, quem escolhe é a pessoa.
+    expect($sugestoes['areas|TCCC'])->toBeNull();
+    // "Krav Maga" e "Vulcan" já batem com o cadastro: não aparecem para relacionar.
+    expect($sugestoes->has('areas|Krav Maga'))->toBeFalse();
+    expect($sugestoes->has('equipe|Vulcan'))->toBeFalse();
+});
+
+test('com os valores relacionados, as linhas entram (e "Nacional" vira abrangência)', function () {
+    $importar = app(ImportarFiliados::class);
+    $linhas = linhasComValoresForaDoPadrao();
+    $mapa = $importar->sugerirMapa(array_keys($linhas[0]));
+
+    // Sem relacionar: as 3 são recusadas.
+    expect($importar->conferir($linhas, $mapa)['validas'])->toHaveCount(0);
+
+    // Aceita todas as sugestões e escolhe a área do "TCCC" à mão.
+    $relacoes = [];
+    foreach ($importar->valoresParaRelacionar($linhas, $mapa)['valores'] as $valor) {
+        $relacoes[$valor['campo']][Str::lower(Str::ascii($valor['valor']))] = $valor['sugestao']
+            ?? 'area:'.AreaAtuacao::where('nome', 'Tactical Combat Casualty Care')->value('id');
+    }
+
+    $resultado = $importar->conferir($linhas, $mapa, $relacoes);
+
+    expect($resultado['recusadas'])->toBe([]);
+    expect($resultado['validas'][1]['abrangencia'])->toBe('nacional');
+    expect($resultado['validas'][1]['nivel_id'])->toBeNull();
 });

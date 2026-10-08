@@ -77,6 +77,8 @@ class FiliadoRequest extends FormRequest
             'areas' => ['nullable', 'array'],
             'areas.*' => ['integer', 'distinct', Rule::exists('areas_atuacao', 'id')],
             'status' => ['required', Rule::in(['ativo', 'inativo'])],
+            // Abrangência do instrutor (opcional): nacional ou internacional.
+            'abrangencia' => ['nullable', Rule::in(['nacional', 'internacional'])],
         ];
     }
 

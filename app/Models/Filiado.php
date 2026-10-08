@@ -31,12 +31,13 @@ use Illuminate\Support\Carbon;
  * @property string $uf
  * @property int|null $equipe_id
  * @property int|null $nivel_id
+ * @property string|null $abrangencia
  * @property string $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
-#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'nivel_id', 'status'])]
+#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'nivel_id', 'abrangencia', 'status'])]
 class Filiado extends Model
 {
     /**
