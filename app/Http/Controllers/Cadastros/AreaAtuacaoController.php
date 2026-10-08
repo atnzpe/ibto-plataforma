@@ -14,9 +14,9 @@ namespace App\Http\Controllers\Cadastros;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cadastros\AreaAtuacaoRequest;
 use App\Models\AreaAtuacao;
+use App\Support\ImagemPublica;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -98,39 +98,14 @@ class AreaAtuacaoController extends Controller
     }
 
     /**
-     * Guarda a imagem nova da área e apaga a antiga (para não acumular arquivos).
+     * Guarda a imagem nova da área e apaga a antiga (regra comum em App\Support\ImagemPublica).
      *
      * @param  AreaAtuacao  $area  A área dona da imagem.
      * @param  UploadedFile|null  $imagem  O arquivo enviado, ou null se a pessoa não escolheu imagem.
      */
     private function guardarImagem(AreaAtuacao $area, ?UploadedFile $imagem): void
     {
-        // Nenhuma imagem nova escolhida: mantém a atual (ou nenhuma).
-        if ($imagem === null) {
-            return;
-        }
-
-        $disco = Storage::disk('public');
-
-        // Guarda com um nome aleatório (ex.: "areas-atuacao/a1b2c3.webp"): o nome
-        // original do arquivo pode ter acentos, espaços ou até dados pessoais.
-        $caminhoNovo = $disco->putFile(self::PASTA_IMAGENS, $imagem);
-
-        // Falhou ao gravar (ex.: disco cheio): não deixa passar em silêncio (#58).
-        if ($caminhoNovo === false) {
-            throw new \RuntimeException('AREA_IMAGEM_NAO_GRAVADA');
-        }
-
-        // Lembra o caminho antigo antes de trocar, para apagar depois.
-        $caminhoAntigo = $area->imagem;
-
-        // forceFill: "imagem" não é preenchível pelo formulário (ver o Model).
-        $area->forceFill(['imagem' => $caminhoNovo])->save();
-
-        // Só apaga a antiga depois que a nova foi gravada e salva no banco.
-        if ($caminhoAntigo !== null) {
-            $disco->delete($caminhoAntigo);
-        }
+        ImagemPublica::trocar($area, 'imagem', self::PASTA_IMAGENS, $imagem);
     }
 
     /**

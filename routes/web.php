@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
+use App\Http\Controllers\Cadastros\EquipeController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\EquipeLogoController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -12,6 +14,11 @@ Route::inertia('/', 'welcome')->name('home');
 Route::get('imagens/areas-atuacao/{area}', AreaAtuacaoImagemController::class)
     ->middleware('throttle:120,1')
     ->name('areas-atuacao.imagem');
+
+// Logo de uma equipe (#37): pública pelo mesmo motivo (rede nacional do site).
+Route::get('imagens/equipes/{equipe}/logo', EquipeLogoController::class)
+    ->middleware('throttle:120,1')
+    ->name('equipes.logo');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
@@ -33,6 +40,10 @@ Route::middleware(['auth', 'verified', 'can:administrar'])
         Route::resource('niveis', NivelController::class)
             ->except(['show', 'destroy'])
             ->parameters(['niveis' => 'nivel']);
+
+        // Equipes filiadas (situação: em homologação, ativa ou inativa).
+        Route::resource('equipes', EquipeController::class)
+            ->except(['show', 'destroy']);
     });
 
 require __DIR__.'/settings.php';

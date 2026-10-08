@@ -1,5 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Medal, Tags } from 'lucide-react';
+import {
+    BookOpen,
+    FolderGit2,
+    LayoutGrid,
+    Medal,
+    Tags,
+    Users,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -18,6 +25,8 @@ import { dashboard } from '@/routes';
 import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 // Lista dos níveis (#37), para o item do menu.
 import { index as niveis } from '@/routes/cadastros/niveis';
+// Lista das equipes filiadas (#37), para o item do menu.
+import { index as equipes } from '@/routes/cadastros/equipes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -52,6 +61,11 @@ const cadastrosNavItems: NavItem[] = [
         title: 'Níveis',
         href: niveis(),
         icon: Medal,
+    },
+    {
+        title: 'Equipes',
+        href: equipes(),
+        icon: Users,
     },
 ];
 
