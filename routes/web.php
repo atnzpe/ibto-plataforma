@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
+use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\EquipeLogoController;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,11 @@ Route::middleware(['auth', 'verified'])
         Route::resource('equipes', EquipeController::class)
             ->except(['show', 'destroy'])
             ->middleware('can:cadastros.equipes');
+
+        // Filiados (registro da carteirinha + conta do app), #37.
+        Route::resource('filiados', FiliadoController::class)
+            ->except(['show', 'destroy'])
+            ->middleware('can:filiados.gerenciar');
     });
 
 // Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".

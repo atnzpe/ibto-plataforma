@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    ContactRound,
     FolderGit2,
     KeyRound,
     LayoutGrid,
@@ -29,6 +30,8 @@ import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 import { index as niveis } from '@/routes/cadastros/niveis';
 // Lista das equipes filiadas (#37), para o item do menu.
 import { index as equipes } from '@/routes/cadastros/equipes';
+// Lista de filiados (#37), para o item do menu.
+import { index as filiados } from '@/routes/cadastros/filiados';
 // Grade de papéis × permissões (#36), para o item do menu.
 import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
 // Lista de usuários (#36), para o item do menu.
@@ -78,6 +81,13 @@ const cadastrosNavItems: (NavItem & {
         href: equipes(),
         icon: Users,
         permissao: 'cadastros_equipes',
+    },
+    // Filiados (#37): registro da carteirinha + conta do app.
+    {
+        title: 'Filiados',
+        href: filiados(),
+        icon: ContactRound,
+        permissao: 'filiados_gerenciar',
     },
     // Administração (#36): papéis de cada pessoa.
     {
