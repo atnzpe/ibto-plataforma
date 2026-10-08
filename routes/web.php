@@ -6,6 +6,7 @@ use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
+use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
@@ -60,6 +61,20 @@ Route::middleware(['auth', 'verified'])
         Route::resource('equipes', EquipeController::class)
             ->except(['show', 'destroy'])
             ->middleware('can:cadastros.equipes');
+
+        // Importação da planilha de filiados (#37, F4): enviar → relacionar colunas
+        // → prévia → confirmar. Só quem cuida de TODOS os filiados.
+        Route::middleware('can:filiados.gerenciar')
+            ->prefix('filiados/importar')
+            ->name('filiados.importar.')
+            ->controller(ImportacaoFiliadosController::class)
+            ->group(function () {
+                Route::get('/', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('{codigo}/colunas', 'colunas')->name('colunas');
+                Route::post('{codigo}/previa', 'previa')->name('previa');
+                Route::post('{codigo}/confirmar', 'confirmar')->name('confirmar');
+            });
 
         // Filiados (registro da carteirinha + conta do app), #37.
         Route::resource('filiados', FiliadoController::class)

@@ -6,6 +6,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { create, edit, index } from '@/routes/cadastros/filiados';
+// Tela 1 da importação da planilha (#37, F4).
+import { create as importar } from '@/routes/cadastros/filiados/importar';
 
 /** Um filiado na lista. */
 type FiliadoLista = {
@@ -44,7 +46,8 @@ export default function FiliadosIndex({
     equipes: { id: number; nome: string }[];
     equipe_escolhida: number | null;
 }) {
-    const { sucesso } = usePage().props;
+    // Mensagem da última ação e o que a pessoa pode fazer (para o botão de importar).
+    const { sucesso, pode } = usePage().props;
 
     /**
      * Troca o filtro: recarrega a lista com ?equipe=N (ou sem filtro).
@@ -73,9 +76,17 @@ export default function FiliadosIndex({
                         </p>
                     </div>
 
-                    <Button asChild>
-                        <Link href={create()}>Novo filiado</Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        {/* Importar: só para quem cuida de TODOS os filiados. */}
+                        {pode.filiados_gerenciar && (
+                            <Button asChild variant="secondary">
+                                <Link href={importar()}>Importar planilha</Link>
+                            </Button>
+                        )}
+                        <Button asChild>
+                            <Link href={create()}>Novo filiado</Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {sucesso && (
