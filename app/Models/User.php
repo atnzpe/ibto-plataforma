@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -75,6 +76,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         // Entrega a notificação a este usuário; como ConfirmarEmail é
         // "ShouldQueue", o Laravel só guarda o pedido na tabela `jobs`.
         $this->notify(new ConfirmarEmail);
+    }
+
+    /**
+     * O registro de filiado desta conta (#37), ou nada se a pessoa não é filiada.
+     *
+     * @return HasOne<Filiado, $this>
+     */
+    public function filiado(): HasOne
+    {
+        return $this->hasOne(Filiado::class, 'user_id');
     }
 
     /**
