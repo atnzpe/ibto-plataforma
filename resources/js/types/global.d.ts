@@ -19,6 +19,7 @@ declare module '@inertiajs/core' {
                 cadastros_niveis: boolean;
                 cadastros_equipes: boolean;
                 filiados_gerenciar: boolean;
+                filiados_acessar: boolean;
                 usuarios_gerenciar: boolean;
                 permissoes_gerenciar: boolean;
             };

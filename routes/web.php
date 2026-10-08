@@ -64,11 +64,11 @@ Route::middleware(['auth', 'verified'])
         // Filiados (registro da carteirinha + conta do app), #37.
         Route::resource('filiados', FiliadoController::class)
             ->except(['show', 'destroy'])
-            ->middleware('can:filiados.gerenciar');
+            ->middleware('can:filiados.acessar');
 
         // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
-            ->middleware(['can:filiados.gerenciar', 'throttle:6,1'])
+            ->middleware(['can:filiados.acessar', 'throttle:6,1'])
             ->name('filiados.convite');
     });
 

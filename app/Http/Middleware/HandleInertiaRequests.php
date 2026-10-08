@@ -18,6 +18,7 @@ class HandleInertiaRequests extends Middleware
         'cadastros.niveis',
         'cadastros.equipes',
         'filiados.gerenciar',
+        'filiados.acessar',
         'usuarios.gerenciar',
         'permissoes.gerenciar',
     ];

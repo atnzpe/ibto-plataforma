@@ -87,7 +87,7 @@ const cadastrosNavItems: (NavItem & {
         title: 'Filiados',
         href: filiados(),
         icon: ContactRound,
-        permissao: 'filiados_gerenciar',
+        permissao: 'filiados_acessar',
     },
     // Administração (#36): papéis de cada pessoa.
     {
