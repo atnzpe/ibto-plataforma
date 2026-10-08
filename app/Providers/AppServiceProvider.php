@@ -32,23 +32,30 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Regras de permissão ("Gates": portões que dizem quem pode passar).
      *
-     * "administrar" (provisório, #37, até a #36 trazer os papéis): libera os
-     * cadastros de apoio só para quem está na lista ADMIN_EMAILS do .env E já
-     * confirmou o e-mail. A confirmação é obrigatória: sem ela, qualquer pessoa
-     * poderia criar uma conta com o e-mail de um administrador e entrar.
-     * Uso numa rota: ->middleware('can:administrar').
+     * Gate::before roda ANTES de qualquer conferência (#36): é o "porteiro geral".
+     * - Chave de emergência (e-mail do ADMIN_EMAILS, confirmado): passa sempre.
+     * - Quem tem a permissão pedida por algum dos seus papéis: passa.
+     * - Senão, devolve null: "não decido aqui", e o Laravel segue para as
+     *   outras regras (se nenhuma liberar, a resposta é 403 Proibido).
+     * Uso numa rota: ->middleware('can:cadastros.equipes').
      */
     protected function configurarPermissoes(): void
     {
-        Gate::define('administrar', function (User $usuario): bool {
-            // E-mail ainda não confirmado: barra, mesmo que esteja na lista.
-            if (! $usuario->hasVerifiedEmail()) {
-                return false;
+        Gate::before(function (User $usuario, string $habilidade): ?bool {
+            // Chave de emergência: ninguém fica trancado do lado de fora.
+            if ($usuario->ehChaveDeEmergencia()) {
+                return true;
             }
 
-            // Confirmado: passa só se o e-mail (em minúsculas) estiver na lista.
-            return in_array(strtolower($usuario->email), config('app.admin_emails'), true);
+            // Tem a permissão: libera (true). Não tem: "não decido aqui" (null),
+            // para o Laravel continuar procurando (como o porteiro que liga para o apartamento).
+            return $usuario->temPermissao($habilidade) ? true : null;
         });
+
+        // "administrar" (provisório, #37): as rotas de cadastro ainda pedem esta
+        // habilidade até o bloco 2 da #36. Só a chave de emergência passa por ela
+        // (o Gate::before acima já liberou), então aqui a resposta é sempre "não".
+        Gate::define('administrar', fn (User $usuario): bool => false);
     }
 
     /**

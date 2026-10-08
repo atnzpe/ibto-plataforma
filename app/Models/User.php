@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -34,6 +35,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /**
+     * Permissões já buscadas no banco nesta requisição (ver temPermissao()).
+     * null = ainda não buscou.
+     *
+     * @var array<int, string>|null
+     */
+    private ?array $slugsDasPermissoes = null;
 
     /**
      * Get the attributes that should be cast.
@@ -65,5 +74,59 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         // Entrega a notificação a este usuário; como ConfirmarEmail é
         // "ShouldQueue", o Laravel só guarda o pedido na tabela `jobs`.
         $this->notify(new ConfirmarEmail);
+    }
+
+    /**
+     * Papéis desta pessoa (#36). Ex.: Administrador e Instrutor.
+     *
+     * @return BelongsToMany<Papel, $this>
+     */
+    public function papeis(): BelongsToMany
+    {
+        return $this->belongsToMany(Papel::class, 'papel_usuario', 'user_id', 'papel_id');
+    }
+
+    /**
+     * Diz se algum papel desta pessoa tem a permissão pedida.
+     *
+     * Na primeira pergunta, busca no banco TODAS as permissões dela de uma vez e
+     * guarda (como o PDV que carrega a tabela de preços uma vez por venda, e não
+     * a cada item); as próximas perguntas usam o que ficou guardado.
+     *
+     * @param  string  $slug  A permissão. Ex.: 'cadastros.equipes'
+     * @return bool true se algum papel dela tem essa permissão.
+     */
+    public function temPermissao(string $slug): bool
+    {
+        $this->slugsDasPermissoes ??= Permissao::query()
+            // Permissões ligadas a algum papel que esta pessoa tem.
+            ->whereHas('papeis.usuarios', fn ($consulta) => $consulta->whereKey($this->id))
+            // Só a coluna slug; cada linha vira o texto do slug (ex.: 'cadastros.areas').
+            ->get(['slug'])
+            ->map(fn (Permissao $permissao): string => $permissao->slug)
+            ->values()
+            ->all();
+
+        return in_array($slug, $this->slugsDasPermissoes, true);
+    }
+
+    /**
+     * Chave de emergência: e-mail da lista ADMIN_EMAILS do .env, já confirmado.
+     * Tem todas as permissões, para ninguém ficar trancado do lado de fora se
+     * alguém tirar as permissões da Tecnologia sem querer.
+     *
+     * A confirmação do e-mail é obrigatória: sem ela, qualquer pessoa poderia
+     * criar uma conta com o e-mail de um administrador e entrar.
+     *
+     * @return bool true se é chave de emergência.
+     */
+    public function ehChaveDeEmergencia(): bool
+    {
+        // E-mail não confirmado: não é chave, mesmo estando na lista.
+        if (! $this->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return in_array(strtolower($this->email), config('app.admin_emails'), true);
     }
 }
