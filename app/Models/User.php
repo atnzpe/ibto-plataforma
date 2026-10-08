@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -127,6 +128,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             return false;
         }
 
-        return in_array(strtolower($this->email), config('app.admin_emails'), true);
+        $lista = config('app.admin_emails');
+
+        // Lista que não é lista (ex.: cache de configuração antigo, como no erro
+        // 500 de 07/10/2026): ninguém é chave, a página NÃO quebra, e o problema
+        // fica anotado no log (nada em silêncio, #58).
+        if (! is_array($lista)) {
+            Log::error('ADMIN_EMAILS_CONFIG_INVALIDA', ['tipo' => get_debug_type($lista)]);
+
+            return false;
+        }
+
+        return in_array(strtolower($this->email), $lista, true);
     }
 }

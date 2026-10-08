@@ -7,6 +7,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
     // Lista de administradores do teste (como se viesse do .env, já em minúsculas).
@@ -43,4 +44,14 @@ test('lista vazia: ninguém é administrador', function () {
     $usuario = User::factory()->create(['email' => 'admin@ibto.test']);
 
     expect(Gate::forUser($usuario)->allows('cadastros.areas'))->toBeFalse();
+});
+
+test('lista de administradores inválida (cache antigo) não quebra: ninguém é chave e fica anotado no log', function () {
+    // Simula o erro de 07/10/2026: configuração em cache sem a lista (null).
+    config(['app.admin_emails' => null]);
+    Log::spy();
+    $usuario = User::factory()->create(['email' => 'admin@ibto.test']);
+
+    expect(Gate::forUser($usuario)->allows('cadastros.areas'))->toBeFalse();
+    Log::shouldHaveReceived('error')->with('ADMIN_EMAILS_CONFIG_INVALIDA', ['tipo' => 'null']);
 });
