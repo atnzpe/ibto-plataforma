@@ -41,6 +41,15 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // O que o usuário logado pode fazer, para a tela mostrar ou esconder
+            // menus (ex.: "Cadastros" só para administradores). Só esconde o
+            // menu: quem garante a permissão de verdade são as rotas.
+            'pode' => [
+                'administrar' => $request->user()?->can('administrar') ?? false,
+            ],
+            // Mensagem de sucesso da última ação (ex.: "Área cadastrada."),
+            // mostrada uma vez na tela seguinte.
+            'sucesso' => fn () => $request->session()->get('sucesso'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
