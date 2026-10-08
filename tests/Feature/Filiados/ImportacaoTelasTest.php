@@ -11,6 +11,7 @@ use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -149,4 +150,22 @@ test('arquivo que não é CSV é recusado com mensagem em português', function 
             'planilha' => UploadedFile::fake()->create('foto.png', 10, 'image/png'),
         ])
         ->assertSessionHasErrors(['planilha' => 'Envie um arquivo CSV (no Excel: Salvar como → CSV).']);
+});
+
+test('erro transparente: envio que não chegou ao servidor explica o motivo e anota no log', function () {
+    Log::spy();
+
+    // Simula o PHP sem conseguir gravar o arquivo temporário (código 7, UPLOAD_ERR_CANT_WRITE),
+    // o mesmo erro do computador de desenvolvimento no Windows em 08/10/2026.
+    $arquivo = new UploadedFile(__FILE__, 'filiados.csv', 'text/csv', UPLOAD_ERR_CANT_WRITE, true);
+
+    $this->actingAs($this->admin)
+        ->post(route('cadastros.filiados.importar.store'), ['planilha' => $arquivo])
+        ->assertSessionHasErrors([
+            'planilha' => 'O arquivo não chegou ao servidor: o servidor não conseguiu gravar o arquivo temporário (código IMPORTACAO_UPLOAD_FALHOU, detalhes no log).',
+        ]);
+
+    Log::shouldHaveReceived('error')->withArgs(
+        fn (string $codigo, array $contexto) => $codigo === 'IMPORTACAO_UPLOAD_FALHOU' && $contexto['codigo_php'] === UPLOAD_ERR_CANT_WRITE,
+    );
 });

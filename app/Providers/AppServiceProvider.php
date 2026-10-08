@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Filiado;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Só no computador de desenvolvimento (Windows), 08/10/2026: o "php artisan
+        // serve" inicia o servidor SEM repassar TEMP e TMP (onde fica a pasta
+        // temporária). Sem elas, o PHP não consegue guardar os arquivos enviados
+        // (planilha, imagens, logos) e todo upload falha com "unable to create a
+        // temporary file". Aqui a lista do que é repassado ganha as duas.
+        // No servidor (HostGator) o serve não é usado: isto não muda nada lá.
+        ServeCommand::$passthroughVariables = array_values(array_unique([
+            ...ServeCommand::$passthroughVariables,
+            'TEMP',
+            'TMP',
+        ]));
     }
 
     /**

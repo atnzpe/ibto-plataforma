@@ -49,10 +49,28 @@ class ImportacaoFiliadosController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // O arquivo veio, mas o PHP não conseguiu recebê-lo (ex.: sem pasta
+        // temporária, arquivo maior que o limite do servidor). Erro transparente
+        // (pedido do Gleyson, 08/10/2026): mensagem em português com um código, e o
+        // motivo técnico exato no log (sem dados pessoais, #58).
+        $arquivo = $request->file('planilha');
+        if ($arquivo !== null && ! $arquivo->isValid()) {
+            logger()->error('IMPORTACAO_UPLOAD_FALHOU', [
+                // Código do PHP (ex.: 7 = não conseguiu gravar no disco) e o texto dele.
+                'codigo_php' => $arquivo->getError(),
+                'motivo' => $arquivo->getErrorMessage(),
+            ]);
+
+            return back()->withErrors(['planilha' => 'O arquivo não chegou ao servidor: '
+                .$this->motivoDoUpload($arquivo->getError())
+                .' (código IMPORTACAO_UPLOAD_FALHOU, detalhes no log).']);
+        }
+
         $request->validate(
             ['planilha' => ['required', 'file', 'mimes:csv,txt', 'max:2048']],
             [
                 'planilha.required' => 'Escolha o arquivo da planilha.',
+                'planilha.uploaded' => 'O arquivo não chegou ao servidor. Tente de novo (código IMPORTACAO_UPLOAD_FALHOU).',
                 'planilha.mimes' => 'Envie um arquivo CSV (no Excel: Salvar como → CSV).',
                 'planilha.max' => 'O arquivo pode ter no máximo 2 MB.',
             ],
@@ -282,6 +300,25 @@ class ImportacaoFiliadosController extends Controller
         unset($pacote['usuario_id']);
 
         return $pacote;
+    }
+
+    /**
+     * Explica, em português, por que o PHP não recebeu o arquivo.
+     * Os números são os códigos oficiais de erro de upload do PHP (UPLOAD_ERR_*).
+     *
+     * @param  int  $codigo  Ex.: 7 (UPLOAD_ERR_CANT_WRITE)
+     * @return string Ex.: 'o servidor não conseguiu gravar o arquivo temporário'
+     */
+    private function motivoDoUpload(int $codigo): string
+    {
+        return match ($codigo) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'o arquivo é maior que o limite do servidor',
+            UPLOAD_ERR_PARTIAL => 'o envio foi interrompido no meio (conexão caiu?)',
+            UPLOAD_ERR_NO_FILE => 'nenhum arquivo foi escolhido',
+            UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE => 'o servidor não conseguiu gravar o arquivo temporário',
+            UPLOAD_ERR_EXTENSION => 'uma configuração do servidor bloqueou o envio',
+            default => 'motivo desconhecido',
+        };
     }
 
     /**
