@@ -80,7 +80,8 @@ export default function AcoesLancamento({
         setAberta(abrir ? acao : null);
 
     return (
-        <div className="flex flex-wrap justify-end gap-2">
+        // Uma linha só (sem quebrar): a coluna da tabela cresce para caber os botões.
+        <div className="flex flex-nowrap justify-end gap-2">
             {emAberto && (
                 <>
                     {/* Editar: abre o formulário preenchido (só pendente). */}

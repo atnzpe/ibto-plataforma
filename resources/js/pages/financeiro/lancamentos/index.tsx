@@ -303,7 +303,7 @@ export default function LancamentosIndex({
                                     </td>
                                     {/* Ações só para quem pode lançar (o servidor também confere). */}
                                     {pode_lancar && (
-                                        <td className="px-4 py-2">
+                                        <td className="w-px px-4 py-2 whitespace-nowrap">
                                             <AcoesLancamento
                                                 lancamento={lancamento}
                                                 formas={formas}
