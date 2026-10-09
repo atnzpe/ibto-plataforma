@@ -34,12 +34,13 @@ use Illuminate\Support\Carbon;
  * @property CategoriaFiliado|null $categoria
  * @property int|null $nivel_id
  * @property string|null $abrangencia
+ * @property bool $documentacao_emitida
  * @property string $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
-#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'status'])]
+#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status'])]
 class Filiado extends Model
 {
     /**
@@ -54,6 +55,8 @@ class Filiado extends Model
             'telefone' => 'encrypted',
             // O texto do banco vira uma das opções da lista (ex.: CategoriaFiliado::Instrutor).
             'categoria' => CategoriaFiliado::class,
+            // 0/1 do banco vira false/true.
+            'documentacao_emitida' => 'boolean',
         ];
     }
 

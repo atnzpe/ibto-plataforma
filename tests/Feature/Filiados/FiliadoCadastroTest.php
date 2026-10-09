@@ -129,3 +129,16 @@ test('categoria (função) é gravada, aparece na lista e recusa valor fora da l
         ->post(route('cadastros.filiados.store'), formularioFiliado(['email' => 'x@ibto.test', 'cpf' => '111.444.777-35', 'categoria' => 'grao_mestre']))
         ->assertSessionHasErrors('categoria');
 });
+
+test('documentação do IBTO: padrão "sim"; desmarcada fica "não"; a edição sem o campo mantém', function () {
+    // Sem o campo: vale o padrão (a maioria dos filiados já tem carteirinha).
+    $this->actingAs($this->administradora)->post(route('cadastros.filiados.store'), formularioFiliado());
+    $comPadrao = Filiado::firstOrFail();
+    expect($comPadrao->documentacao_emitida)->toBeTrue();
+
+    // Veio de outra entidade: desmarcada (a tela manda "0").
+    $this->actingAs($this->administradora)->post(route('cadastros.filiados.store'), formularioFiliado([
+        'email' => 'outra@ibto.test', 'cpf' => '111.444.777-35', 'documentacao_emitida' => '0',
+    ]));
+    expect(Filiado::whereHas('usuario', fn ($q) => $q->where('email', 'outra@ibto.test'))->value('documentacao_emitida'))->toBeFalse();
+});

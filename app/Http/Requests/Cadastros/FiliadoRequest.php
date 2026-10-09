@@ -80,6 +80,9 @@ class FiliadoRequest extends FormRequest
             'status' => ['required', Rule::in(['ativo', 'inativo'])],
             // Categoria = a função no IBTO (opcional): só uma da lista CategoriaFiliado.
             'categoria' => ['nullable', Rule::enum(CategoriaFiliado::class)],
+            // Já recebeu carteirinha/certificado do IBTO? (sim/não). A tela sempre manda 0 ou 1;
+            // se não vier (ex.: outro sistema), vale o padrão no cadastro e o atual na edição.
+            'documentacao_emitida' => ['sometimes', 'boolean'],
             // Abrangência do instrutor (opcional): nacional ou internacional.
             'abrangencia' => ['nullable', Rule::in(['nacional', 'internacional'])],
         ];

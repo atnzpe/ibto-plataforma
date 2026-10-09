@@ -51,13 +51,27 @@ test('cria o filiado e a conta juntos, com o primeiro registro do ano', function
     expect($filiado->areas()->pluck('nome')->all())->toBe(['Krav Maga']);
 });
 
-test('a sequência do registro é do ano inteiro, não por estado', function () {
+test('a sequência do registro é única, não por estado', function () {
     app(CriarFiliado::class)->executar(filiadoInventado());
     $segundo = app(CriarFiliado::class)->executar(filiadoInventado([
         'email' => 'outro@ibto.test', 'cpf' => '111.444.777-35', 'uf' => 'SP',
     ]));
 
     expect($segundo->registro)->toBe('BR'.now()->format('Y').'0002SP');
+});
+
+test('regra do Mestre: na virada do ano o ano muda, mas a sequência CONTINUA', function () {
+    // O último registro de 2026 é o 0045 (como na planilha corrigida).
+    $this->travelTo('2026-12-31 10:00');
+    app(CriarFiliado::class)->executar(filiadoInventado(['registro' => 'BR20260045SC']));
+
+    // Em 2027, o próximo é o 0046 (e não 0001), com o ano novo e a UF da pessoa.
+    $this->travelTo('2027-01-02 10:00');
+    $novo = app(CriarFiliado::class)->executar(filiadoInventado([
+        'email' => 'novo@ibto.test', 'cpf' => '111.444.777-35', 'uf' => 'PE',
+    ]));
+
+    expect($novo->registro)->toBe('BR20270046PE');
 });
 
 test('LGPD: CPF, nascimento e telefone ficam criptografados no banco', function () {

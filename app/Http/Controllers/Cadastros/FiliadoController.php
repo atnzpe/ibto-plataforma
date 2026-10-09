@@ -104,6 +104,11 @@ class FiliadoController extends Controller
     {
         /** @var array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>} $dados */
         $dados = $request->safe()->except(['status']);
+        // O formulário manda "0" ou "1"; aqui vira false ou true de verdade.
+        // Se não veio, fica de fora e o CriarFiliado usa o padrão.
+        if ($request->has('documentacao_emitida')) {
+            $dados['documentacao_emitida'] = $request->boolean('documentacao_emitida');
+        }
 
         // Com limite, a equipe é SEMPRE a dele (ignora o que veio do formulário).
         $limite = $this->equipeLimitada($request);
@@ -143,6 +148,7 @@ class FiliadoController extends Controller
                 'categoria' => $filiado->categoria?->value,
                 'nivel_id' => $filiado->nivel_id,
                 'abrangencia' => $filiado->abrangencia,
+                'documentacao_emitida' => $filiado->documentacao_emitida,
                 'areas' => $filiado->areas()->pluck('areas_atuacao.id'),
                 'status' => $filiado->status,
                 // true quando a pessoa já criou a senha pelo convite (e-mail confirmado).

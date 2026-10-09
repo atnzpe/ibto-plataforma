@@ -48,6 +48,7 @@ class ImportarFiliados
         'categoria' => 'Categoria (função: Aluno, Instrutor...)',
         'nivel' => 'Nível (ex.: Instrutor Expert IV)',
         'abrangencia' => 'Abrangência (Nacional ou Internacional)',
+        'documentacao' => 'Documentação do IBTO emitida (sim ou não)',
         'areas' => 'Áreas de atuação (separadas por vírgula)',
     ];
 
@@ -69,6 +70,7 @@ class ImportarFiliados
         'categoria' => ['categoria', 'funcao'],
         'nivel' => ['nivel', 'graduacao'],
         'abrangencia' => ['abrangencia'],
+        'documentacao' => ['documentacao', 'documentacao emitida', 'carteirinha'],
         'areas' => ['area de atuacao', 'areas de atuacao', 'area', 'areas'],
     ];
 
@@ -301,6 +303,17 @@ class ImportarFiliados
             in_array($abrangencia, ['nacional', 'internacional'], true)
                 ? $dados['abrangencia'] = $abrangencia
                 : $motivos[] = "Abrangência \"{$bruto['abrangencia']}\" inválida (use Nacional ou Internacional).";
+        }
+
+        // Documentação do IBTO emitida (coluna opcional): sim ou não. Sem a coluna,
+        // a chave fica de fora e o CriarFiliado usa o padrão.
+        if (isset($bruto['documentacao'])) {
+            $resposta = $this->chave($bruto['documentacao']);
+            match (true) {
+                in_array($resposta, ['sim', 's', 'yes', 'x', '1'], true) => $dados['documentacao_emitida'] = true,
+                in_array($resposta, ['nao', 'n', 'no', '0'], true) => $dados['documentacao_emitida'] = false,
+                default => $motivos[] = "Documentação \"{$bruto['documentacao']}\" inválida (use sim ou não).",
+            };
         }
 
         // Equipe: pelo nome, ou pela escolha da etapa "relacionar os valores". "-" = sem equipe.

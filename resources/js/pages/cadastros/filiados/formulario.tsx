@@ -30,6 +30,8 @@ type FiliadoFormulario = {
     nivel_id: number | null;
     // Abrangência do instrutor: 'nacional', 'internacional' ou null.
     abrangencia: string | null;
+    // true = já recebeu carteirinha/certificado do IBTO.
+    documentacao_emitida: boolean;
     areas: number[];
     status: string;
     // true quando a pessoa já criou a senha pelo convite.
@@ -383,6 +385,40 @@ export default function FiliadoFormularioTela({
                                         <option value="inativo">Inativo</option>
                                     </select>
                                     <InputError message={errors.status} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    {/* "0" escondido: caixa desmarcada não é enviada pelo navegador. */}
+                                    <input
+                                        type="hidden"
+                                        name="documentacao_emitida"
+                                        value="0"
+                                    />
+                                    <label className="flex items-start gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            name="documentacao_emitida"
+                                            value="1"
+                                            // Novo filiado começa marcado (a maioria já tem carteirinha).
+                                            defaultChecked={
+                                                filiado?.documentacao_emitida ??
+                                                true
+                                            }
+                                            className="mt-0.5 size-4"
+                                        />
+                                        <span>
+                                            Documentação do IBTO emitida
+                                            (carteirinha e certificado)
+                                            <span className="block text-muted-foreground">
+                                                Desmarque se a pessoa entrou já
+                                                graduada por outra entidade e
+                                                ainda não recebeu nada do IBTO.
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <InputError
+                                        message={errors.documentacao_emitida}
+                                    />
                                 </div>
 
                                 <fieldset className="space-y-2">

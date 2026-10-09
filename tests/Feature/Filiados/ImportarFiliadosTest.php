@@ -224,3 +224,18 @@ test('categoria: "INSTRUTOR EXPERT" e "PRATICANTE" batem sozinhos; "ALUNO" pede 
     expect($resultado['recusadas'])->toBe([]);
     expect(array_column($resultado['validas'], 'categoria'))->toBe(['instrutor_expert', 'praticante', 'praticante']);
 });
+
+test('importação: coluna "Documentação" com sim/não; sem a coluna, vale o padrão', function () {
+    $importar = app(ImportarFiliados::class);
+    $base = ['Nascimento' => '20/05/1990', 'Município' => 'Recife', 'UF' => 'PE'];
+    $linhas = [
+        [...$base, 'Nome' => 'Teste A', 'E-mail' => 'a@ibto.test', 'CPF' => '529.982.247-25', 'Documentação' => 'Não'],
+        [...$base, 'Nome' => 'Teste B', 'E-mail' => 'b@ibto.test', 'CPF' => '111.444.777-35', 'Documentação' => 'SIM'],
+        [...$base, 'Nome' => 'Teste C', 'E-mail' => 'c@ibto.test', 'CPF' => '390.533.447-05', 'Documentação' => 'talvez'],
+    ];
+
+    $resultado = $importar->conferir($linhas, $importar->sugerirMapa(array_keys($linhas[0])));
+
+    expect(array_column($resultado['validas'], 'documentacao_emitida'))->toBe([false, true]);
+    expect($resultado['recusadas'][0]['motivos'])->toContain('Documentação "talvez" inválida (use sim ou não).');
+});
