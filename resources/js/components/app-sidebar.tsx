@@ -1,5 +1,15 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    ContactRound,
+    FolderGit2,
+    KeyRound,
+    LayoutGrid,
+    Medal,
+    Tags,
+    UserCog,
+    Users,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,6 +24,18 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+// Lista das áreas de atuação (#37), para o item do menu.
+import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
+// Lista dos níveis (#37), para o item do menu.
+import { index as niveis } from '@/routes/cadastros/niveis';
+// Lista das equipes filiadas (#37), para o item do menu.
+import { index as equipes } from '@/routes/cadastros/equipes';
+// Lista de filiados (#37), para o item do menu.
+import { index as filiados } from '@/routes/cadastros/filiados';
+// Grade de papéis × permissões (#36), para o item do menu.
+import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
+// Lista de usuários (#36), para o item do menu.
+import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -37,7 +59,66 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
+// Itens dos cadastros de apoio (#37), cada um com a permissão que ele pede (#36).
+// "permissao" é o nome em "pode" (o ponto do slug vira "_").
+const cadastrosNavItems: (NavItem & {
+    permissao: keyof SharedProps['pode'];
+})[] = [
+    {
+        title: 'Áreas de atuação',
+        href: areasAtuacao(),
+        icon: Tags,
+        permissao: 'cadastros_areas',
+    },
+    {
+        title: 'Níveis',
+        href: niveis(),
+        icon: Medal,
+        permissao: 'cadastros_niveis',
+    },
+    {
+        title: 'Equipes',
+        href: equipes(),
+        icon: Users,
+        permissao: 'cadastros_equipes',
+    },
+    // Filiados (#37): registro da carteirinha + conta do app.
+    {
+        title: 'Filiados',
+        href: filiados(),
+        icon: ContactRound,
+        permissao: 'filiados_acessar',
+    },
+    // Administração (#36): papéis de cada pessoa.
+    {
+        title: 'Usuários',
+        href: usuariosAdmin(),
+        icon: UserCog,
+        permissao: 'usuarios_gerenciar',
+    },
+    // Administração (#36): grade de papéis × permissões.
+    {
+        title: 'Permissões',
+        href: permissoesAdmin(),
+        icon: KeyRound,
+        permissao: 'permissoes_gerenciar',
+    },
+];
+
+// Formato das informações que o servidor manda para todas as telas.
+type SharedProps = ReturnType<typeof usePage>['props'];
+
 export function AppSidebar() {
+    // pode vem do servidor (HandleInertiaRequests). Só esconde o menu; a rota
+    // continua barrando quem não tem a permissão (403).
+    const { pode } = usePage().props;
+
+    // Menu principal + só os cadastros que esta pessoa pode abrir.
+    const itens = [
+        ...mainNavItems,
+        ...cadastrosNavItems.filter((item) => pode[item.permissao]),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +134,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={itens} />
             </SidebarContent>
 
             <SidebarFooter>
