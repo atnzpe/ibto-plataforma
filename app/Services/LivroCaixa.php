@@ -33,17 +33,8 @@ class LivroCaixa
      */
     public function lancar(array $dados): FinLancamento
     {
-        // Valor zero ou negativo não é conta: recusa.
-        if ($dados['valor_centavos'] <= 0) {
-            throw new RegraFinanceira('VALOR_INVALIDO', 'O valor precisa ser maior que zero.');
-        }
-
-        // A categoria tem que existir e ser do mesmo tipo (ex.: "Anuidade" não
-        // pode ser usada numa despesa). Se não for, recusa.
-        $categoria = FinCategoria::find($dados['categoria_id']);
-        if ($categoria === null || $categoria->tipo !== $dados['tipo']) {
-            throw new RegraFinanceira('CATEGORIA_INVALIDA', 'Escolha uma categoria do mesmo tipo do lançamento.');
-        }
+        // Valor maior que zero e categoria do mesmo tipo (ver abaixo).
+        $this->conferirValorECategoria($dados);
 
         return DB::transaction(function () use ($dados): FinLancamento {
             $lancamento = new FinLancamento;
@@ -62,6 +53,43 @@ class LivroCaixa
             ])->save();
 
             Auditoria::registrar('LANCAMENTO_CRIADO', $this->resumo($lancamento));
+
+            return $lancamento;
+        });
+    }
+
+    /**
+     * EDITA um lançamento PENDENTE (ainda sem dinheiro envolvido). Pago não se
+     * edita (só estorno) e cancelado também não (já saiu das contas).
+     *
+     * @param  FinLancamento  $lancamento  O lançamento pendente.
+     * @param  array{tipo: string, categoria_id: int, descricao: string, valor_centavos: int, vencimento: string, equipe_id?: int|null}  $dados  Os dados novos (mesmo formato de lancar()).
+     * @return FinLancamento O mesmo lançamento, atualizado.
+     */
+    public function editar(FinLancamento $lancamento, array $dados): FinLancamento
+    {
+        // Só pendente pode ser editado.
+        if ($lancamento->situacao !== 'pendente') {
+            throw new RegraFinanceira('LANCAMENTO_NAO_PENDENTE', 'Só um lançamento pendente pode ser editado. Se já foi pago, faça um estorno.');
+        }
+        // Mesmas regras do lançamento novo: valor maior que zero e categoria do mesmo tipo.
+        $this->conferirValorECategoria($dados);
+
+        return DB::transaction(function () use ($lancamento, $dados): FinLancamento {
+            // Como estava antes, para a auditoria mostrar o "antes e depois".
+            $antes = $this->resumo($lancamento) + ['vencimento' => $lancamento->vencimento->toDateString(), 'categoria_id' => $lancamento->categoria_id];
+
+            $lancamento->forceFill([
+                'tipo' => $dados['tipo'],
+                'categoria_id' => $dados['categoria_id'],
+                'descricao' => $dados['descricao'],
+                'valor_centavos' => $dados['valor_centavos'],
+                'vencimento' => $dados['vencimento'],
+                'equipe_id' => $dados['equipe_id'] ?? null,
+            ])->save();
+
+            $depois = $this->resumo($lancamento) + ['vencimento' => $lancamento->vencimento->toDateString(), 'categoria_id' => $lancamento->categoria_id];
+            Auditoria::registrar('LANCAMENTO_EDITADO', ['lancamento_id' => $lancamento->id, 'antes' => $antes, 'depois' => $depois]);
 
             return $lancamento;
         });
@@ -195,6 +223,26 @@ class LivroCaixa
             ->whereBetween('pago_em', [$inicio->toDateString(), $fim->toDateString()])
             ->get()
             ->sum(fn (FinLancamento $lancamento) => $lancamento->valorNoSaldo());
+    }
+
+    /**
+     * Regras comuns de lançar e editar: valor maior que zero e categoria que
+     * exista e seja do mesmo tipo (ex.: "Anuidade" não pode ser usada numa despesa).
+     *
+     * @param  array{tipo: string, categoria_id: int, valor_centavos: int}  $dados
+     */
+    private function conferirValorECategoria(array $dados): void
+    {
+        // Valor zero ou negativo não é conta: recusa.
+        if ($dados['valor_centavos'] <= 0) {
+            throw new RegraFinanceira('VALOR_INVALIDO', 'O valor precisa ser maior que zero.');
+        }
+
+        // Categoria inexistente ou de outro tipo: recusa.
+        $categoria = FinCategoria::find($dados['categoria_id']);
+        if ($categoria === null || $categoria->tipo !== $dados['tipo']) {
+            throw new RegraFinanceira('CATEGORIA_INVALIDA', 'Escolha uma categoria do mesmo tipo do lançamento.');
+        }
     }
 
     /**

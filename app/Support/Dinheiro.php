@@ -12,13 +12,23 @@ class Dinheiro
     /**
      * Texto em reais → centavos. Aceita o jeito brasileiro de escrever.
      *
-     * @param  string  $texto  O que a pessoa digitou. Ex.: '90', '90,5', 'R$ 1.234,56'
-     * @return int|null Os centavos (ex.: 9000, 9050, 123456), ou null se não for um valor válido.
+     * @param  string  $texto  O que a pessoa digitou. Ex.: '90', '90,5', 'R$ 1.234,56', '12.50'
+     * @return int|null Os centavos (ex.: 9000, 9050, 123456, 1250), ou null se não for um valor válido.
      */
     public static function paraCentavos(string $texto): ?int
     {
-        // Tira "R$", espaços e os pontos de milhar: 'R$ 1.234,56' → '1234,56'.
-        $limpo = str_replace(['R$', ' ', '.'], '', trim($texto));
+        // Tira "R$" e espaços: 'R$ 1.234,56' → '1.234,56'.
+        $limpo = str_replace(['R$', ' '], '', trim($texto));
+
+        // Sem vírgula e terminando em ponto + 1 ou 2 números (ex.: '12.50', jeito
+        // comum no celular): o ponto é a vírgula dos centavos → '12,50'. Com 3
+        // números depois do ponto (ex.: '1.250'), ele continua sendo de milhar.
+        if (! str_contains($limpo, ',') && preg_match('/^(\d+)\.(\d{1,2})$/', $limpo) === 1) {
+            $limpo = str_replace('.', ',', $limpo);
+        }
+
+        // Tira os pontos de milhar que sobraram: '1.234,56' → '1234,56'.
+        $limpo = str_replace('.', '', $limpo);
 
         // Só aceita números, com no máximo 2 casas depois da vírgula. Se não
         // for assim (ex.: 'abc' ou '1,234'), devolve null e o formulário mostra o erro.
@@ -31,5 +41,17 @@ class Dinheiro
         $centavos = (int) str_pad($partes[2] ?? '0', 2, '0');
 
         return $reais * 100 + $centavos;
+    }
+
+    /**
+     * Centavos → texto para o campo do formulário (sem "R$" e sem milhar).
+     *
+     * @param  int  $centavos  Ex.: 1250
+     * @return string Ex.: '12,50'
+     */
+    public static function paraCampo(int $centavos): string
+    {
+        // number_format(valor, 2 casas, vírgula nos centavos, sem separador de milhar).
+        return number_format($centavos / 100, 2, ',', '');
     }
 }

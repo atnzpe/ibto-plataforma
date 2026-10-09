@@ -19,6 +19,7 @@ use App\Models\FinCategoria;
 use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
 use App\Services\LivroCaixa;
+use App\Support\Dinheiro;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -94,10 +95,24 @@ class LancamentoController extends Controller
     public function create(): Response
     {
         return Inertia::render('financeiro/lancamentos/formulario', [
+            ...$this->opcoesDoFormulario(),
+            // Sem lançamento: formulário vazio (novo).
+            'lancamento' => null,
+        ]);
+    }
+
+    /**
+     * As listas de escolha do formulário (novo e edição).
+     *
+     * @return array{categorias: mixed, equipes: mixed}
+     */
+    private function opcoesDoFormulario(): array
+    {
+        return [
             // Só categorias ativas, separadas na tela pelo tipo.
             'categorias' => FinCategoria::where('ativa', true)->orderBy('nome')->get(['id', 'nome', 'tipo']),
             'equipes' => Equipe::orderBy('nome')->get(['id', 'nome']),
-        ]);
+        ];
     }
 
     /**
@@ -119,6 +134,55 @@ class LancamentoController extends Controller
 
         return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
             ->with('sucesso', 'Lançamento cadastrado.');
+    }
+
+    /**
+     * Formulário preenchido para EDITAR um lançamento pendente.
+     *
+     * @param  FinLancamento  $lancamento  O lançamento do endereço (ex.: /financeiro/lancamentos/7/editar).
+     * @return Response|RedirectResponse O formulário; ou de volta à lista, se não estiver pendente.
+     */
+    public function edit(FinLancamento $lancamento): Response|RedirectResponse
+    {
+        // Pago ou cancelado não abre para edição: volta com o aviso e o código.
+        if ($lancamento->situacao !== 'pendente') {
+            return to_route('financeiro.lancamentos.index')
+                ->withErrors(['acao' => 'Só um lançamento pendente pode ser editado. (LANCAMENTO_NAO_PENDENTE)']);
+        }
+
+        return Inertia::render('financeiro/lancamentos/formulario', [
+            ...$this->opcoesDoFormulario(),
+            'lancamento' => [
+                'id' => $lancamento->id,
+                'tipo' => $lancamento->tipo,
+                'categoria_id' => $lancamento->categoria_id,
+                'descricao' => $lancamento->descricao,
+                // Valor no formato do campo. Ex.: 1250 → '12,50'.
+                'valor' => Dinheiro::paraCampo($lancamento->valor_centavos),
+                'vencimento' => $lancamento->vencimento->toDateString(),
+                'equipe_id' => $lancamento->equipe_id,
+            ],
+        ]);
+    }
+
+    /**
+     * Grava a edição pelo LivroCaixa e volta para a lista do mês do vencimento.
+     *
+     * @param  LancamentoRequest  $request  O formulário, já conferido.
+     * @param  FinLancamento  $lancamento  O lançamento que está sendo editado.
+     * @param  LivroCaixa  $caixa  O livro-caixa (regras + auditoria com antes e depois).
+     * @return RedirectResponse A lista, com a mensagem; ou de volta ao formulário com o erro da regra.
+     */
+    public function update(LancamentoRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
+    {
+        try {
+            $caixa->editar($lancamento, $request->paraLivroCaixa());
+        } catch (RegraFinanceira $erro) {
+            return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
+        }
+
+        return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
+            ->with('sucesso', 'Lançamento atualizado.');
     }
 
     /**

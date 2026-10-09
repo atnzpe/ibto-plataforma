@@ -36,6 +36,19 @@ export type FiltrosFinanceiro = {
     visao: 'todos' | 'receber' | 'pagar' | 'vencidos';
 };
 
+/** Um lançamento pendente aberto para EDIÇÃO (valor já no formato do campo). */
+export type LancamentoEdicao = {
+    id: number;
+    tipo: 'receita' | 'despesa';
+    categoria_id: number;
+    descricao: string;
+    // Ex.: '12,50'.
+    valor: string;
+    // Ex.: '2027-03-31'.
+    vencimento: string;
+    equipe_id: number | null;
+};
+
 /** Uma categoria para o formulário. */
 export type CategoriaFinanceira = {
     id: number;

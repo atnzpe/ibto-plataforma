@@ -74,7 +74,9 @@ export default function LancamentosIndex({
     formas: { id: number; nome: string }[];
 }) {
     // Mensagem da última ação (ex.: 'Lançamento cadastrado.'), ou null.
-    const { sucesso } = usePage().props;
+    // errors.acao: aviso de regra que volta para a lista (ex.: tentar editar um pago).
+    const { sucesso, errors } = usePage().props;
+    const avisoDeRegra = (errors as Record<string, string> | undefined)?.acao;
 
     /**
      * Recarrega a lista com um filtro trocado, mantendo o outro.
@@ -136,6 +138,16 @@ export default function LancamentosIndex({
                         className="rounded-md border border-green-600/40 bg-green-600/10 px-4 py-2 text-sm"
                     >
                         {sucesso}
+                    </p>
+                )}
+
+                {/* Aviso de regra (com código), anunciado na hora pelo leitor de tela. */}
+                {avisoDeRegra && (
+                    <p
+                        role="alert"
+                        className="rounded-md border border-red-600/40 bg-red-600/10 px-4 py-2 text-sm"
+                    >
+                        {avisoDeRegra}
                     </p>
                 )}
 

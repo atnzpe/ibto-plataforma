@@ -1,6 +1,7 @@
 /**
- * Tela de NOVO LANÇAMENTO do financeiro (#59): uma conta a receber (receita)
- * ou a pagar (despesa). Nasce PENDENTE; a baixa (pagamento) é outra ação.
+ * Tela de LANÇAMENTO do financeiro (#59): cadastrar (lancamento = null) ou
+ * EDITAR um pendente. Uma conta a receber (receita) ou a pagar (despesa).
+ * Nasce PENDENTE; a baixa (pagamento) é outra ação. Pago não se edita (estorno).
  * A caixa de categorias mostra só as do tipo escolhido; a regra de verdade é
  * conferida no servidor (LancamentoRequest + LivroCaixa).
  */
@@ -12,45 +13,57 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index } from '@/routes/financeiro/lancamentos';
-import type { CategoriaFinanceira } from '@/types/financeiro';
+import type { CategoriaFinanceira, LancamentoEdicao } from '@/types/financeiro';
 
 // Visual comum das caixas de escolha (select), igual ao dos campos de texto.
 const classeSelect =
     'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring';
 
 /**
+ * @param lancamento O lançamento pendente a editar, ou null para cadastrar um novo.
  * @param categorias As categorias ativas. Ex.: [{ id: 1, nome: 'Anuidade', tipo: 'receita' }]
  * @param equipes As equipes, para ligar o lançamento a uma (opcional).
  * @returns A tela do formulário.
  */
 export default function LancamentoFormulario({
+    lancamento,
     categorias,
     equipes,
 }: {
+    lancamento: LancamentoEdicao | null;
     categorias: CategoriaFinanceira[];
     equipes: { id: number; nome: string }[];
 }) {
-    // Tipo escolhido agora: a lista de categorias depende dele.
-    const [tipo, setTipo] = useState<'receita' | 'despesa'>('despesa');
+    // true quando estamos editando.
+    const editando = lancamento !== null;
+    const titulo = editando ? 'Editar lançamento' : 'Novo lançamento';
+
+    // Tipo escolhido agora (começa com o do lançamento, ou despesa): a lista de
+    // categorias depende dele.
+    const [tipo, setTipo] = useState<'receita' | 'despesa'>(
+        lancamento?.tipo ?? 'despesa',
+    );
 
     // Só as categorias do tipo escolhido.
     const categoriasDoTipo = categorias.filter(
         (categoria) => categoria.tipo === tipo,
     );
 
+    // Para onde o formulário envia: atualizar (edição) ou gravar (novo).
+    const destino = editando
+        ? LancamentoController.update.form(lancamento.id)
+        : LancamentoController.store.form();
+
     return (
         <>
-            <Head title="Novo lançamento" />
+            <Head title={titulo} />
 
             <div className="flex max-w-xl flex-col gap-6 p-4">
                 <h1 className="text-xl font-semibold tracking-tight">
-                    Novo lançamento
+                    {titulo}
                 </h1>
 
-                <Form
-                    {...LancamentoController.store.form()}
-                    className="space-y-6"
-                >
+                <Form {...destino} className="space-y-6">
                     {({ processing, errors }) => (
                         <>
                             <fieldset className="grid gap-2">
@@ -90,9 +103,14 @@ export default function LancamentoFormulario({
                                 <select
                                     id="categoria_id"
                                     name="categoria_id"
-                                    // key: ao trocar o tipo, a caixa volta para "Escolha".
+                                    // key: ao trocar o tipo, a caixa volta ao começo.
                                     key={tipo}
-                                    defaultValue=""
+                                    // Na edição, começa na categoria atual (se ela for do tipo escolhido).
+                                    defaultValue={
+                                        lancamento?.tipo === tipo
+                                            ? lancamento.categoria_id
+                                            : ''
+                                    }
                                     className={classeSelect}
                                 >
                                     <option value="" disabled>
@@ -116,6 +134,7 @@ export default function LancamentoFormulario({
                                     id="descricao"
                                     name="descricao"
                                     maxLength={200}
+                                    defaultValue={lancamento?.descricao}
                                     placeholder="Ex.: Hospedagem do site (outubro)"
                                 />
                                 <InputError message={errors.descricao} />
@@ -129,8 +148,18 @@ export default function LancamentoFormulario({
                                         id="valor"
                                         name="valor"
                                         inputMode="decimal"
+                                        defaultValue={lancamento?.valor}
                                         placeholder="90,00"
+                                        aria-describedby="valor-dica"
                                     />
+                                    {/* Dica para não confundir centavos com milhar. */}
+                                    <p
+                                        id="valor-dica"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        Centavos com vírgula: 12,50. Mil reais:
+                                        1.000,00.
+                                    </p>
                                     <InputError message={errors.valor} />
                                 </div>
 
@@ -142,6 +171,7 @@ export default function LancamentoFormulario({
                                         id="vencimento"
                                         name="vencimento"
                                         type="date"
+                                        defaultValue={lancamento?.vencimento}
                                     />
                                     <InputError message={errors.vencimento} />
                                 </div>
@@ -154,7 +184,7 @@ export default function LancamentoFormulario({
                                 <select
                                     id="equipe_id"
                                     name="equipe_id"
-                                    defaultValue=""
+                                    defaultValue={lancamento?.equipe_id ?? ''}
                                     className={classeSelect}
                                 >
                                     <option value="">Nenhuma</option>
@@ -171,7 +201,7 @@ export default function LancamentoFormulario({
                             </div>
 
                             <div className="flex items-center gap-4">
-                                {/* Desabilitado enquanto envia, para não lançar duas vezes. */}
+                                {/* Desabilitado enquanto envia, para não gravar duas vezes. */}
                                 <Button disabled={processing}>Salvar</Button>
                                 <Link
                                     href={index()}

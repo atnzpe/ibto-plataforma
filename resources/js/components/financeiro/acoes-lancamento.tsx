@@ -5,7 +5,7 @@
  * Quais botões aparecem depende da situação (pendente, vencido, pago...). Isso
  * só ajuda quem usa: a regra de verdade é conferida no servidor (LivroCaixa).
  */
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import LancamentoController from '@/actions/App/Http/Controllers/Financeiro/LancamentoController';
 import InputError from '@/components/input-error';
@@ -22,6 +22,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatarReais } from '@/lib/dinheiro';
+// Endereço da tela de edição de um lançamento. Ex.: edit(7) → /financeiro/lancamentos/7/editar
+import { edit } from '@/routes/financeiro/lancamentos';
 import type { Lancamento } from '@/types/financeiro';
 
 // As três ações possíveis.
@@ -81,6 +83,15 @@ export default function AcoesLancamento({
         <div className="flex flex-wrap justify-end gap-2">
             {emAberto && (
                 <>
+                    {/* Editar: abre o formulário preenchido (só pendente). */}
+                    <Button size="sm" variant="outline" asChild>
+                        <Link
+                            href={edit(lancamento.id)}
+                            aria-label={`Editar ${nome}`}
+                        >
+                            Editar
+                        </Link>
+                    </Button>
                     <Dialog
                         open={aberta === 'pagar'}
                         onOpenChange={controlar('pagar')}

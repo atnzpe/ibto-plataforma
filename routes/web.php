@@ -109,6 +109,9 @@ Route::middleware(['auth', 'verified'])
         // Ações sobre um lançamento: baixa (pendente → pago), cancelar (pendente)
         // e estornar (pago). As regras ficam no LivroCaixa.
         Route::middleware('can:financeiro.lancar')->group(function () {
+            // Editar (só pendente; a regra fica no LivroCaixa).
+            Route::get('lancamentos/{lancamento}/editar', [LancamentoController::class, 'edit'])->name('lancamentos.edit');
+            Route::put('lancamentos/{lancamento}', [LancamentoController::class, 'update'])->name('lancamentos.update');
             Route::post('lancamentos/{lancamento}/pagar', [LancamentoController::class, 'pagar'])->name('lancamentos.pagar');
             Route::post('lancamentos/{lancamento}/cancelar', [LancamentoController::class, 'cancelar'])->name('lancamentos.cancelar');
             Route::post('lancamentos/{lancamento}/estornar', [LancamentoController::class, 'estornar'])->name('lancamentos.estornar');
