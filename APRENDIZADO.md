@@ -43,3 +43,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Tela React que quebra fica BRANCA, a menos que exista uma "rede de proteção" (error boundary): um componente de classe que troca a tela por um aviso e avisa o servidor.
 - Todo aviso automático precisa de freio dos dois lados: o navegador manda no máximo 5 por página e o servidor aceita 10 por minuto, para um erro em "loop" não lotar o log.
 - Ao apagar uma linha de dica, use Ctrl+Shift+K (apaga a linha inteira): uma barra `/` que sobra quebra o arquivo todo.
+
+## 09/10/2026 — #36 login reforçado e Aluno automático
+
+- A trava de login conta TODA tentativa, até a com senha certa: o limite por computador tem que caber uma turma inteira no mesmo Wi-Fi (por isso 50, e não 10).
+- Uma consulta sem `return` é uma pergunta cuja resposta vai para o lixo: o `return` é quem entrega o resultado para quem chamou a função.
+- Papel se busca pelo SLUG (`'aluno'`), o apelido fixo do sistema; o nome da tela ("Aluno") pode mudar.
