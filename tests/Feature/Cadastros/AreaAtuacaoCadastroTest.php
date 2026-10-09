@@ -6,6 +6,8 @@
  */
 
 use App\Models\AreaAtuacao;
+use App\Models\Papel;
+use App\Models\Permissao;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -100,14 +102,38 @@ test('administrador abre o formulário de nova área e o de edição', function 
             ->where('area', ['id' => $area->id, 'nome' => 'Área sem imagem', 'ativa' => true, 'imagem_url' => null]));
 });
 
-test('o menu "Áreas de atuação" só é liberado para o administrador', function () {
-    // Administrador: pode.administrar = true (o menu aparece).
+test('o menu "Áreas de atuação" só é liberado para quem tem a permissão', function () {
+    // Chave de emergência: pode.cadastros_areas = true (o menu aparece).
     $this->actingAs($this->admin)
         ->get(route('dashboard'))
-        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.administrar', true));
+        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.cadastros_areas', true));
 
-    // Usuário comum: false (o menu fica escondido).
+    // Usuário comum, sem papel: false (o menu fica escondido).
     $this->actingAs(User::factory()->create())
         ->get(route('dashboard'))
-        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.administrar', false));
+        ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.cadastros_areas', false));
+});
+
+test('papel Administrador (sem ser chave de emergência) abre os cadastros; Aluno não', function () {
+    $administradora = User::factory()->create();
+    $administradora->papeis()->attach(Papel::where('slug', 'administrador')->value('id'));
+
+    $this->actingAs($administradora)->get(route('cadastros.areas-atuacao.index'))->assertOk();
+    $this->actingAs($administradora)->get(route('cadastros.equipes.index'))->assertOk();
+
+    $aluno = User::factory()->create();
+    $aluno->papeis()->attach(Papel::where('slug', 'aluno')->value('id'));
+
+    $this->actingAs($aluno)->get(route('cadastros.equipes.index'))->assertForbidden();
+});
+
+test('papel com só UMA permissão de cadastro abre só aquela tela', function () {
+    // Papel novo, só com "cadastros.equipes" (como alguém que cuida só das equipes).
+    $papel = Papel::create(['slug' => 'secretaria', 'nome' => 'Secretaria']);
+    $papel->permissoes()->attach(Permissao::where('slug', 'cadastros.equipes')->value('id'));
+    $pessoa = User::factory()->create();
+    $pessoa->papeis()->attach($papel->id);
+
+    $this->actingAs($pessoa)->get(route('cadastros.equipes.index'))->assertOk();
+    $this->actingAs($pessoa)->get(route('cadastros.niveis.index'))->assertForbidden();
 });

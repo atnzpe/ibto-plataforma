@@ -4,7 +4,7 @@
  * Telas do cadastro de equipes filiadas (#37): lista, nova equipe e edição.
  *
  * Sem "apagar": a situação "Inativa" tira a equipe das escolhas sem perder o
- * histórico dos filiados. Só administradores entram (Gate "administrar").
+ * histórico dos filiados. Só entra quem tem a permissão "cadastros.equipes" (routes/web.php).
  * LGPD: telefone, e-mail e documento do responsável só aparecem no formulário
  * de edição (para o administrador), nunca na lista.
  */

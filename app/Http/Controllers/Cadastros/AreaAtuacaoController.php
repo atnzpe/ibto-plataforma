@@ -6,7 +6,7 @@
  *
  * Não existe "apagar": desativar (ativa = false) tira a área das listas de
  * escolha sem deixar equipes e filiados antigos "órfãos". Quem pode abrir
- * estas telas é decidido nas rotas (Gate "administrar", em routes/web.php).
+ * estas telas é decidido nas rotas (permissão "cadastros.areas", em routes/web.php).
  */
 
 namespace App\Http\Controllers\Cadastros;
