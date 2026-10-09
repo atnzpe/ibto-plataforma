@@ -25,6 +25,8 @@ type FiliadoFormulario = {
     municipio: string;
     uf: string;
     equipe_id: number | null;
+    // Função no IBTO (ex.: 'instrutor'), ou null.
+    categoria: string | null;
     nivel_id: number | null;
     // Abrangência do instrutor: 'nacional', 'internacional' ou null.
     abrangencia: string | null;
@@ -47,6 +49,7 @@ const classeSelect =
  * @param niveis Os níveis ativos, na ordem da hierarquia.
  * @param areas As áreas de atuação ativas.
  * @param ufs As 27 siglas de estado.
+ * @param categorias As 5 categorias (funções). Ex.: [{ valor: 'instrutor', rotulo: 'Instrutor' }]
  * @returns A tela do formulário.
  */
 export default function FiliadoFormularioTela({
@@ -55,12 +58,14 @@ export default function FiliadoFormularioTela({
     niveis,
     areas,
     ufs,
+    categorias,
 }: {
     filiado: FiliadoFormulario | null;
     equipes: Opcao[];
     niveis: Opcao[];
     areas: Opcao[];
     ufs: string[];
+    categorias: { valor: string; rotulo: string }[];
 }) {
     // Mensagem da última ação (ex.: "Convite reenviado."), ou null.
     const { sucesso } = usePage().props;
@@ -288,7 +293,37 @@ export default function FiliadoFormularioTela({
                                         />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="nivel_id">Nível</Label>
+                                        {/* Categoria = a FUNÇÃO no IBTO (o que a pessoa faz). */}
+                                        <Label htmlFor="categoria">
+                                            Categoria (função)
+                                        </Label>
+                                        <select
+                                            id="categoria"
+                                            name="categoria"
+                                            defaultValue={
+                                                filiado?.categoria ?? ''
+                                            }
+                                            className={classeSelect}
+                                        >
+                                            <option value="">—</option>
+                                            {categorias.map((categoria) => (
+                                                <option
+                                                    key={categoria.valor}
+                                                    value={categoria.valor}
+                                                >
+                                                    {categoria.rotulo}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <InputError
+                                            message={errors.categoria}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        {/* Nível = a GRADUAÇÃO (cadastro de níveis). */}
+                                        <Label htmlFor="nivel_id">
+                                            Nível (graduação)
+                                        </Label>
                                         <select
                                             id="nivel_id"
                                             name="nivel_id"

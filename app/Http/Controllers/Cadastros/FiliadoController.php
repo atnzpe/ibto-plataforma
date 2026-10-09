@@ -16,6 +16,7 @@
 namespace App\Http\Controllers\Cadastros;
 
 use App\Actions\Filiados\CriarFiliado;
+use App\Enums\CategoriaFiliado;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cadastros\EquipeRequest;
 use App\Http\Requests\Cadastros\FiliadoRequest;
@@ -64,6 +65,8 @@ class FiliadoController extends Controller
                 'registro' => $filiado->registro,
                 'nome' => $filiado->usuario?->name,
                 'equipe' => $filiado->equipe?->nome,
+                // Função (ex.: "Instrutor") e graduação (ex.: "Instrutor Expert IV").
+                'categoria' => $filiado->categoria?->rotulo(),
                 'nivel' => $filiado->nivel?->nome(),
                 'local' => "{$filiado->municipio}/{$filiado->uf}",
                 'status' => $filiado->status,
@@ -137,6 +140,7 @@ class FiliadoController extends Controller
                 'municipio' => $filiado->municipio,
                 'uf' => $filiado->uf,
                 'equipe_id' => $filiado->equipe_id,
+                'categoria' => $filiado->categoria?->value,
                 'nivel_id' => $filiado->nivel_id,
                 'abrangencia' => $filiado->abrangencia,
                 'areas' => $filiado->areas()->pluck('areas_atuacao.id'),
@@ -251,6 +255,11 @@ class FiliadoController extends Controller
                 ->map(fn (Nivel $nivel) => ['id' => $nivel->id, 'nome' => $nivel->nome()])
                 ->values(),
             'areas' => AreaAtuacao::ativas()->get(['id', 'nome']),
+            // As 5 categorias (funções), na ordem da lista: [{valor, rotulo}].
+            'categorias' => array_map(
+                fn (CategoriaFiliado $categoria) => ['valor' => $categoria->value, 'rotulo' => $categoria->rotulo()],
+                CategoriaFiliado::cases(),
+            ),
             'ufs' => EquipeRequest::UFS,
         ];
     }

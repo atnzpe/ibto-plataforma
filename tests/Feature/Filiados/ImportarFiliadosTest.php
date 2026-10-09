@@ -29,9 +29,9 @@ function planilhaInventada(): string
         // Linha 3: nível "Nacional" (problema real da planilha) e data impossível.
         'BR20260002SP;Aluno Dois;31/02/1985;SP;Campinas;Instrutor;111.444.777-35;Krav Maga;Nacional;Vulcan;;dois@ibto.test',
         // Linha 4: sem equipe ("-") e sem registro: entra, e ganha um registro novo.
-        ';Aluno Tres;01/01/2000;RJ;Niterói;Praticante;390.533.447-05;;Praticante;-;;tres@ibto.test',
+        ';Aluno Tres;01/01/2000;RJ;Niterói;Aluno;390.533.447-05;;Praticante;-;;tres@ibto.test',
         // Linha 5: CPF repetido dentro da própria planilha (o mesmo da linha 2).
-        'BR20260004MG;Aluno Quatro;02/02/1992;MG;BH;Praticante;52998224725;;Praticante;Vulcan;;quatro@ibto.test',
+        'BR20260004MG;Aluno Quatro;02/02/1992;MG;BH;Aluno;52998224725;;Praticante;Vulcan;;quatro@ibto.test',
     ]);
 }
 
@@ -43,7 +43,7 @@ test('o leitor entende o BOM, o separador ";" e o cabeçalho', function () {
     expect($csv['linhas'][0]['Nome completo'])->toBe('Aluno Um');
 });
 
-test('sugere o campo de cada coluna pelo nome; "Categoria" fica para ignorar', function () {
+test('sugere o campo de cada coluna pelo nome, inclusive a Categoria', function () {
     $colunas = LeitorCsv::ler(planilhaInventada())['colunas'];
     $mapa = app(ImportarFiliados::class)->sugerirMapa($colunas);
 
@@ -51,8 +51,8 @@ test('sugere o campo de cada coluna pelo nome; "Categoria" fica para ignorar', f
     expect($mapa['Área de Atuação'])->toBe('areas');
     expect($mapa['Município'])->toBe('municipio');
     expect($mapa['E-mail'])->toBe('email');
-    // A categoria já vem no nível (ex.: "Instrutor Expert IV"): não vai para nenhum campo.
-    expect($mapa['Categoria'])->toBe('ignorar');
+    // "Categoria" = a função (Aluno, Instrutor...): campo próprio desde 09/10/2026.
+    expect($mapa['Categoria'])->toBe('categoria');
 });
 
 test('confere linha a linha: entram 2, recusa 2 com o motivo e sem dados pessoais', function () {
@@ -201,4 +201,24 @@ test('com os valores relacionados, as linhas entram (e "Nacional" vira abrangên
     expect($resultado['recusadas'])->toBe([]);
     expect($resultado['validas'][1]['abrangencia'])->toBe('nacional');
     expect($resultado['validas'][1]['nivel_id'])->toBeNull();
+});
+
+test('categoria: "INSTRUTOR EXPERT" bate sozinho; "PRATICANTE" pede relação (ex.: vira Aluno)', function () {
+    $importar = app(ImportarFiliados::class);
+    $base = ['Nascimento' => '20/05/1990', 'Município' => 'Recife', 'UF' => 'PE'];
+    $linhas = [
+        [...$base, 'Nome' => 'Teste A', 'E-mail' => 'a@ibto.test', 'CPF' => '529.982.247-25', 'Categoria' => 'INSTRUTOR EXPERT'],
+        [...$base, 'Nome' => 'Teste B', 'E-mail' => 'b@ibto.test', 'CPF' => '111.444.777-35', 'Categoria' => 'PRATICANTE'],
+    ];
+    $mapa = $importar->sugerirMapa(array_keys($linhas[0]));
+
+    // Só o "PRATICANTE" aparece para relacionar (não é uma das 5 categorias).
+    $valores = $importar->valoresParaRelacionar($linhas, $mapa)['valores'];
+    expect(array_column($valores, 'valor'))->toBe(['PRATICANTE']);
+
+    // Relacionando "PRATICANTE" → Aluno, as duas linhas entram.
+    $resultado = $importar->conferir($linhas, $mapa, ['categoria' => ['praticante' => 'categoria:aluno']]);
+
+    expect($resultado['recusadas'])->toBe([]);
+    expect(array_column($resultado['validas'], 'categoria'))->toBe(['instrutor_expert', 'aluno']);
 });

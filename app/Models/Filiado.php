@@ -12,6 +12,7 @@
 
 namespace App\Models;
 
+use App\Enums\CategoriaFiliado;
 use App\Support\Documento;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $municipio
  * @property string $uf
  * @property int|null $equipe_id
+ * @property CategoriaFiliado|null $categoria
  * @property int|null $nivel_id
  * @property string|null $abrangencia
  * @property string $status
@@ -37,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
-#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'nivel_id', 'abrangencia', 'status'])]
+#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'status'])]
 class Filiado extends Model
 {
     /**
@@ -50,6 +52,8 @@ class Filiado extends Model
             'cpf' => 'encrypted',
             'nascimento' => 'encrypted',
             'telefone' => 'encrypted',
+            // O texto do banco vira uma das opções da lista (ex.: CategoriaFiliado::Instrutor).
+            'categoria' => CategoriaFiliado::class,
         ];
     }
 

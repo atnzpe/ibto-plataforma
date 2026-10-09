@@ -15,6 +15,8 @@ type FiliadoLista = {
     registro: string;
     nome: string | null;
     equipe: string | null;
+    // Função (ex.: 'Instrutor'), ou null.
+    categoria: string | null;
     nivel: string | null;
     local: string;
     status: string;
@@ -142,6 +144,12 @@ export default function FiliadosIndex({
                                     scope="col"
                                     className="px-4 py-2 font-medium"
                                 >
+                                    Categoria
+                                </th>
+                                <th
+                                    scope="col"
+                                    className="px-4 py-2 font-medium"
+                                >
                                     Nível
                                 </th>
                                 <th
@@ -168,7 +176,7 @@ export default function FiliadosIndex({
                             {filiados.data.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={7}
+                                        colSpan={8}
                                         className="px-4 py-6 text-center text-muted-foreground"
                                     >
                                         Nenhum filiado ainda.
@@ -192,6 +200,9 @@ export default function FiliadosIndex({
                                                 Sem equipe
                                             </span>
                                         )}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        {filiado.categoria ?? '—'}
                                     </td>
                                     <td className="px-4 py-2">
                                         {filiado.nivel ?? '—'}

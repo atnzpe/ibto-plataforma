@@ -16,6 +16,7 @@
 
 namespace App\Actions\Filiados;
 
+use App\Enums\CategoriaFiliado;
 use App\Http\Requests\Cadastros\EquipeRequest;
 use App\Models\AreaAtuacao;
 use App\Models\Equipe;
@@ -44,6 +45,7 @@ class ImportarFiliados
         'municipio' => 'Município',
         'uf' => 'UF (estado)',
         'equipe' => 'Equipe (nome)',
+        'categoria' => 'Categoria (função: Aluno, Instrutor...)',
         'nivel' => 'Nível (ex.: Instrutor Expert IV)',
         'abrangencia' => 'Abrangência (Nacional ou Internacional)',
         'areas' => 'Áreas de atuação (separadas por vírgula)',
@@ -51,7 +53,7 @@ class ImportarFiliados
 
     // Campos cujos valores são escolhas de um cadastro e podem ser RELACIONADOS
     // na etapa "relacionar os valores" (ex.: "Expert Nível 3" → Instrutor Expert III).
-    public const CAMPOS_RELACIONAVEIS = ['equipe', 'nivel', 'areas'];
+    public const CAMPOS_RELACIONAVEIS = ['equipe', 'categoria', 'nivel', 'areas'];
 
     // Palavras que, no nome da coluna, indicam cada campo (para a sugestão).
     private const PISTAS = [
@@ -64,6 +66,7 @@ class ImportarFiliados
         'municipio' => ['municipio', 'cidade'],
         'uf' => ['uf', 'estado'],
         'equipe' => ['equipe', 'academia', 'time'],
+        'categoria' => ['categoria', 'funcao'],
         'nivel' => ['nivel', 'graduacao'],
         'abrangencia' => ['abrangencia'],
         'areas' => ['area de atuacao', 'areas de atuacao', 'area', 'areas'],
@@ -312,6 +315,19 @@ class ImportarFiliados
             };
         }
 
+        // Categoria (função): pelo nome (ex.: "INSTRUTOR EXPERT"), ou pela escolha da
+        // relação (ex.: "PRATICANTE" → Aluno). Vazia = sem categoria.
+        $dados['categoria'] = null;
+        if (isset($bruto['categoria'])) {
+            $escolha = $this->escolha('categoria', $bruto['categoria']);
+            match (true) {
+                $escolha === 'vazio' => null,
+                $escolha === 'recusar' => $motivos[] = "Categoria \"{$bruto['categoria']}\" recusada na relação dos valores.",
+                str_starts_with($escolha, 'categoria:') => $dados['categoria'] = substr($escolha, 10),
+                default => $motivos[] = "Categoria \"{$bruto['categoria']}\" não existe (relacione na etapa dos valores).",
+            };
+        }
+
         // Nível: pelo nome montado (ex.: "Instrutor Expert IV"), ou pela escolha da
         // relação. A escolha pode ser uma ABRANGÊNCIA (o "Nacional" que a planilha
         // do Canva punha na coluna Nível): aí a linha entra sem nível.
@@ -363,7 +379,7 @@ class ImportarFiliados
      * A escolha valendo para um valor: a da etapa "relacionar os valores", se houver;
      * senão, o cadastro com o mesmo nome; senão, '' (não encontrado).
      *
-     * @param  string  $campo  'equipe', 'nivel' ou 'areas'.
+     * @param  string  $campo  'equipe', 'categoria', 'nivel' ou 'areas'.
      * @param  string  $valor  Como veio da planilha. Ex.: 'Expert Nível 3'
      * @return string Ex.: 'nivel:12', 'abrangencia:nacional', 'recusar', 'vazio', 'ignorar' ou ''.
      */
@@ -375,22 +391,27 @@ class ImportarFiliados
         }
 
         $id = $this->idDireto($campo, $valor);
-        $prefixo = ['equipe' => 'equipe:', 'nivel' => 'nivel:', 'areas' => 'area:'][$campo];
+        $prefixo = ['equipe' => 'equipe:', 'categoria' => 'categoria:', 'nivel' => 'nivel:', 'areas' => 'area:'][$campo];
 
         return $id !== null ? $prefixo.$id : '';
     }
 
     /**
-     * Número do cadastro com EXATAMENTE este nome (sem diferenciar maiúsculas e acentos).
+     * O item do cadastro com EXATAMENTE este nome (sem diferenciar maiúsculas e acentos).
      *
-     * @param  string  $campo  'equipe', 'nivel' ou 'areas'.
+     * @param  string  $campo  'equipe', 'categoria', 'nivel' ou 'areas'.
+     * @return int|string|null O número (equipe, nível, área) ou o valor da categoria
+     *                         (ex.: 'instrutor_expert'); null se não existe.
      */
-    private function idDireto(string $campo, string $valor): ?int
+    private function idDireto(string $campo, string $valor): int|string|null
     {
         return match ($campo) {
             'equipe' => $this->idPorNome(Equipe::class, $valor),
             'areas' => $this->idPorNome(AreaAtuacao::class, $valor),
             'nivel' => Nivel::all()->first(fn (Nivel $n) => $this->chave($n->nome()) === $this->chave($valor))?->id,
+            // "INSTRUTOR EXPERT" bate com o nome "Instrutor Expert" da categoria.
+            'categoria' => collect(CategoriaFiliado::cases())
+                ->first(fn (CategoriaFiliado $c) => $this->chave($c->rotulo()) === $this->chave($valor))?->value,
             default => null,
         };
     }
@@ -408,9 +429,14 @@ class ImportarFiliados
             ->map(fn (Nivel $n) => ['valor' => "nivel:{$n->id}", 'rotulo' => $n->nome()])->all();
         $areas = AreaAtuacao::query()->orderBy('nome')->get()
             ->map(fn (AreaAtuacao $a) => ['valor' => "area:{$a->id}", 'rotulo' => $a->nome])->all();
+        $categorias = array_map(
+            fn (CategoriaFiliado $c) => ['valor' => "categoria:{$c->value}", 'rotulo' => $c->rotulo()],
+            CategoriaFiliado::cases(),
+        );
 
         return [
             'equipe' => [...$equipes, ['valor' => 'vazio', 'rotulo' => '(sem equipe)'], ['valor' => 'recusar', 'rotulo' => 'Recusar a linha']],
+            'categoria' => [...$categorias, ['valor' => 'vazio', 'rotulo' => '(sem categoria)'], ['valor' => 'recusar', 'rotulo' => 'Recusar a linha']],
             'nivel' => [
                 ...$niveis,
                 ['valor' => 'abrangencia:nacional', 'rotulo' => 'Abrangência: Nacional (sem nível)'],

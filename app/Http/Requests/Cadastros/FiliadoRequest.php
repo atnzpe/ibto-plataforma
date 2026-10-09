@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Cadastros;
 
+use App\Enums\CategoriaFiliado;
 use App\Models\Filiado;
 use App\Support\Documento;
 use Closure;
@@ -77,6 +78,8 @@ class FiliadoRequest extends FormRequest
             'areas' => ['nullable', 'array'],
             'areas.*' => ['integer', 'distinct', Rule::exists('areas_atuacao', 'id')],
             'status' => ['required', Rule::in(['ativo', 'inativo'])],
+            // Categoria = a função no IBTO (opcional): só uma da lista CategoriaFiliado.
+            'categoria' => ['nullable', Rule::enum(CategoriaFiliado::class)],
             // Abrangência do instrutor (opcional): nacional ou internacional.
             'abrangencia' => ['nullable', Rule::in(['nacional', 'internacional'])],
         ];

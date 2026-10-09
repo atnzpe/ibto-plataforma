@@ -6,6 +6,7 @@
  * LGPD (a lista não leva CPF, nascimento nem telefone). Dados INVENTADOS.
  */
 
+use App\Enums\CategoriaFiliado;
 use App\Models\Equipe;
 use App\Models\Filiado;
 use App\Models\Papel;
@@ -111,4 +112,20 @@ test('quem não tem filiados.gerenciar recebe 403', function () {
     $aluno->papeis()->attach(Papel::where('slug', 'aluno')->value('id'));
 
     $this->actingAs($aluno)->get(route('cadastros.filiados.index'))->assertForbidden();
+});
+
+test('categoria (função) é gravada, aparece na lista e recusa valor fora da lista', function () {
+    $this->actingAs($this->administradora)
+        ->post(route('cadastros.filiados.store'), formularioFiliado(['categoria' => 'adm_equipe']))
+        ->assertSessionHasNoErrors();
+
+    expect(Filiado::firstOrFail()->categoria)->toBe(CategoriaFiliado::AdmEquipe);
+
+    $this->actingAs($this->administradora)
+        ->get(route('cadastros.filiados.index'))
+        ->assertInertia(fn (Assert $pagina) => $pagina->where('filiados.data.0.categoria', 'Administrador de Equipe'));
+
+    $this->actingAs($this->administradora)
+        ->post(route('cadastros.filiados.store'), formularioFiliado(['email' => 'x@ibto.test', 'cpf' => '111.444.777-35', 'categoria' => 'grao_mestre']))
+        ->assertSessionHasErrors('categoria');
 });
