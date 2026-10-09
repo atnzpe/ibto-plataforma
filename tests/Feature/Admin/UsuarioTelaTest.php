@@ -48,7 +48,9 @@ test('dar o papel Filiado grava e registra na auditoria (só números e códigos
 
     $linha = Auditoria::latest('id')->firstOrFail();
     expect($linha->acao)->toBe('PAPEL_CONCEDIDO');
-    expect($linha->detalhes)->toBe(['usuario_id' => $pessoa->id, 'papel' => 'filiado']);
+    // toEqual (e não toBe): compara o conteúdo sem ligar para a ORDEM das chaves,
+    // porque o MySQL (servidor e CI) reordena as chaves de um JSON e o SQLite não.
+    expect($linha->detalhes)->toEqual(['usuario_id' => $pessoa->id, 'papel' => 'filiado']);
     // LGPD: o e-mail não vai para a auditoria.
     expect(json_encode($linha->detalhes))->not->toContain('pessoa@ibto.test');
 });
