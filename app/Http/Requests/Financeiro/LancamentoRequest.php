@@ -8,6 +8,7 @@
 
 namespace App\Http\Requests\Financeiro;
 
+use App\Services\LivroCaixa;
 use App\Support\Dinheiro;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -41,8 +42,9 @@ class LancamentoRequest extends FormRequest
             'vencimento' => ['required', 'date_format:Y-m-d'],
             // Equipe é opcional.
             'equipe_id' => ['nullable', 'integer', Rule::exists('equipes', 'id')],
-            // Em quantas vezes (só no lançamento novo): vazio ou 1 = à vista; até 24.
-            'parcelas' => ['nullable', 'integer', 'min:1', 'max:24'],
+            // Em quantas vezes, digitado pela pessoa (só no lançamento novo): vazio
+            // ou 1 = à vista; o teto vem do LivroCaixa (um lugar só).
+            'parcelas' => ['nullable', 'integer', 'min:1', 'max:'.LivroCaixa::PARCELAS_MAXIMO],
         ];
     }
 
@@ -97,8 +99,9 @@ class LancamentoRequest extends FormRequest
             'categoria_id.exists' => 'Escolha uma categoria ativa.',
             'descricao.required' => 'Descreva o lançamento.',
             'vencimento.date_format' => 'Informe a data de vencimento.',
-            'parcelas.min' => 'Escolha de 1 a 24 parcelas.',
-            'parcelas.max' => 'Escolha de 1 a 24 parcelas.',
+            'parcelas.integer' => 'Digite o número de parcelas (só números).',
+            'parcelas.min' => 'Escolha de 1 a '.LivroCaixa::PARCELAS_MAXIMO.' parcelas.',
+            'parcelas.max' => 'Escolha de 1 a '.LivroCaixa::PARCELAS_MAXIMO.' parcelas.',
         ];
     }
 }

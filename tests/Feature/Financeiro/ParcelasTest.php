@@ -74,12 +74,30 @@ test('cada parcela tem a sua baixa: pagar a 1ª não mexe nas outras', function 
     expect(FinLancamento::where('situacao', 'pendente')->count())->toBe(2);
 });
 
-test('parcelas fora de 2 a 24 são recusadas', function () {
+test('parcelas fora de 2 ao máximo do LivroCaixa são recusadas', function () {
     expect(fn () => app(LivroCaixa::class)->lancarParcelado([
         'tipo' => 'despesa',
         'categoria_id' => $this->categoria,
         'descricao' => 'X',
         'valor_centavos' => 1000,
         'vencimento' => '2026-10-09',
-    ], 25))->toThrow(RegraFinanceira::class);
+    ], LivroCaixa::PARCELAS_MAXIMO + 1))->toThrow(RegraFinanceira::class);
+});
+
+test('a pessoa digita quantas vezes: 36x é aceito; acima do máximo volta com erro', function () {
+    $campos = [
+        'tipo' => 'despesa',
+        'categoria_id' => $this->categoria,
+        'descricao' => 'Equipamento',
+        'valor' => '3.600,00',
+        'vencimento' => '2026-11-10',
+    ];
+
+    $this->post(route('financeiro.lancamentos.store'), $campos + ['parcelas' => 36])
+        ->assertSessionHas('sucesso', 'Lançamento cadastrado em 36 parcelas.');
+    expect(FinLancamento::count())->toBe(36);
+
+    $this->post(route('financeiro.lancamentos.store'), $campos + ['parcelas' => LivroCaixa::PARCELAS_MAXIMO + 1])
+        ->assertSessionHasErrors('parcelas');
+    expect(FinLancamento::count())->toBe(36);
 });

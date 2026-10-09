@@ -26,6 +26,11 @@ use Illuminate\Support\Str;
 
 class LivroCaixa
 {
+    // Máximo de parcelas de um título: 120 (10 anos de parcelas mensais). Fica
+    // num lugar SÓ: a conferência do formulário e a tela leem daqui (sem repetir
+    // o número). O banco aceita até 255 nessa coluna.
+    public const PARCELAS_MAXIMO = 120;
+
     /**
      * Cria um lançamento PENDENTE (uma conta a receber ou a pagar).
      *
@@ -67,14 +72,14 @@ class LivroCaixa
      *
      * @param  array{tipo: string, categoria_id: int, descricao: string, valor_centavos: int, vencimento: string, equipe_id?: int|null}  $dados
      *                                                                                                                                           O título inteiro (valor TOTAL e o 1º vencimento).
-     * @param  int  $parcelas  Em quantas vezes. Ex.: 3 (de 2 a 24).
+     * @param  int  $parcelas  Em quantas vezes, escolhido pela pessoa. Ex.: 3 (de 2 a PARCELAS_MAXIMO).
      * @return list<FinLancamento> As parcelas criadas, na ordem (1/N primeiro).
      */
     public function lancarParcelado(array $dados, int $parcelas): array
     {
-        // Entre 2 e 24 parcelas (1 é "à vista": usa lancar()).
-        if ($parcelas < 2 || $parcelas > 24) {
-            throw new RegraFinanceira('PARCELAS_INVALIDAS', 'Escolha de 2 a 24 parcelas.');
+        // Entre 2 e o máximo (1 é "à vista": usa lancar()).
+        if ($parcelas < 2 || $parcelas > self::PARCELAS_MAXIMO) {
+            throw new RegraFinanceira('PARCELAS_INVALIDAS', 'Escolha de 2 a '.self::PARCELAS_MAXIMO.' parcelas.');
         }
         // Mesmas regras do lançamento comum.
         $this->conferirValorECategoria($dados);

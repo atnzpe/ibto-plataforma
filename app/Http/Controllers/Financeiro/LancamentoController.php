@@ -112,6 +112,8 @@ class LancamentoController extends Controller
             // Só categorias ativas, separadas na tela pelo tipo.
             'categorias' => FinCategoria::where('ativa', true)->orderBy('nome')->get(['id', 'nome', 'tipo']),
             'equipes' => Equipe::orderBy('nome')->get(['id', 'nome']),
+            // Teto de parcelas, vindo do LivroCaixa (a tela não repete o número).
+            'parcelas_maximo' => LivroCaixa::PARCELAS_MAXIMO,
         ];
     }
 

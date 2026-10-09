@@ -23,16 +23,19 @@ const classeSelect =
  * @param lancamento O lançamento pendente a editar, ou null para cadastrar um novo.
  * @param categorias As categorias ativas. Ex.: [{ id: 1, nome: 'Anuidade', tipo: 'receita' }]
  * @param equipes As equipes, para ligar o lançamento a uma (opcional).
+ * @param parcelas_maximo O teto de parcelas, vindo do servidor. Ex.: 120
  * @returns A tela do formulário.
  */
 export default function LancamentoFormulario({
     lancamento,
     categorias,
     equipes,
+    parcelas_maximo,
 }: {
     lancamento: LancamentoEdicao | null;
     categorias: CategoriaFinanceira[];
     equipes: { id: number; nome: string }[];
+    parcelas_maximo: number;
 }) {
     // true quando estamos editando.
     const editando = lancamento !== null;
@@ -180,34 +183,28 @@ export default function LancamentoFormulario({
                             {/* Parcelas: só no lançamento novo (cada parcela vira uma conta). */}
                             {!editando && (
                                 <div className="grid gap-2">
-                                    <Label htmlFor="parcelas">Parcelas</Label>
-                                    <select
+                                    <Label htmlFor="parcelas">
+                                        Número de parcelas
+                                    </Label>
+                                    {/* A pessoa digita quantas vezes (1 = à vista); o teto vem do servidor. */}
+                                    <Input
                                         id="parcelas"
                                         name="parcelas"
-                                        defaultValue="1"
+                                        type="number"
+                                        inputMode="numeric"
+                                        min={1}
+                                        max={parcelas_maximo}
+                                        step={1}
+                                        defaultValue={1}
                                         aria-describedby="parcelas-dica"
-                                        className={classeSelect}
-                                    >
-                                        {/* 1 a 24: "1" é à vista. */}
-                                        {Array.from(
-                                            { length: 24 },
-                                            (_, i) => i + 1,
-                                        ).map((quantidade) => (
-                                            <option
-                                                key={quantidade}
-                                                value={quantidade}
-                                            >
-                                                {quantidade === 1
-                                                    ? 'À vista (1x)'
-                                                    : `${quantidade}x`}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        className="max-w-32"
+                                    />
                                     <p
                                         id="parcelas-dica"
                                         className="text-xs text-muted-foreground"
                                     >
-                                        O valor é o TOTAL. Cada parcela vira uma
+                                        1 = à vista; de 1 a {parcelas_maximo}. O
+                                        valor é o TOTAL: cada parcela vira uma
                                         conta, uma por mês, a partir do
                                         vencimento acima.
                                     </p>
