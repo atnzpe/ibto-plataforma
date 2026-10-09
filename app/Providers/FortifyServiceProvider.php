@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -16,6 +18,12 @@ use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    // LOGIN REFORÇADO (#36): limite de tentativas de login por computador, para a trava 2.
+    // 50 por minuto (Gleyson, 09/10/2026): conta TODA tentativa, até a com senha certa;
+    // uma turma inteira no mesmo Wi-Fi entra com folga para erros de digitação, e um
+    // robô testando centenas de e-mails trava logo no começo.
+    private const LOGIN_TENTATIVAS_POR_IP = 50;
+
     /**
      * Register any application services.
      */
@@ -85,10 +93,24 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
 
+        // LOGIN REFORÇADO (#36): duas travas, conferidas a cada tentativa de entrar.
         RateLimiter::for('login', function (Request $request) {
+            // Chave da trava 1: o e-mail digitado (minúsculo, sem acento) + o IP
+            // (endereço do computador na internet). Ex.: "ana@ibto.org|200.1.2.3".
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            return [
+                // Trava 1: 5 tentativas por minuto para o MESMO e-mail no mesmo
+                // computador. Protege a conta de quem tenta adivinhar a senha.
+                Limit::perMinute(5)->by($throttleKey)
+                    ->response(fn (Request $request, array $headers) => $this->loginBloqueado($request, $headers, 'email')),
+
+                // Trava 2: soma TODOS os e-mails tentados a partir do mesmo computador.
+                // Protege contra quem testa uma senha comum em muitos e-mails
+                // (cada e-mail ficaria abaixo de 5 e a trava 1 nunca dispararia).
+                Limit::perMinute(self::LOGIN_TENTATIVAS_POR_IP)->by('ip|'.$request->ip())
+                    ->response(fn (Request $request, array $headers) => $this->loginBloqueado($request, $headers, 'ip')),
+            ];
         });
 
         RateLimiter::for('passkeys', function (Request $request) {
@@ -96,5 +118,36 @@ class FortifyServiceProvider extends ServiceProvider
                 ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
             );
         });
+    }
+
+    /**
+     * O que acontece quando uma trava de login dispara (#36): anota no log de
+     * segurança e volta para a tela de login com uma mensagem clara, com código.
+     *
+     * @param  Request  $request  A tentativa de login que foi barrada.
+     * @param  array<string, mixed>  $headers  Cabeçalhos do Laravel; o "Retry-After" diz
+     *                                         quantos segundos faltam. Ex.: ['Retry-After' => 42]
+     * @param  string  $trava  Qual trava disparou: 'email' (trava 1) ou 'ip' (trava 2).
+     * @return RedirectResponse De volta ao login, com o erro no campo de e-mail.
+     */
+    private function loginBloqueado(Request $request, array $headers, string $trava): RedirectResponse
+    {
+        // Quantos segundos faltam para poder tentar de novo (60 se o Laravel não disser).
+        $segundos = (int) ($headers['Retry-After'] ?? 60);
+
+        // Registro no log "seguranca" (nada em silêncio, #58). Sem e-mail nem IP
+        // (LGPD): só o código, qual trava disparou e o tempo de espera.
+        Log::channel('seguranca')->info('LOGIN_BLOQUEADO', [
+            'trava' => $trava,
+            'espera_segundos' => $segundos,
+        ]);
+
+        // Volta para o login com a mensagem embaixo do campo de e-mail; o e-mail
+        // digitado continua preenchido (withInput) para a pessoa não redigitar.
+        return back()
+            ->withInput($request->only(Fortify::username()))
+            ->withErrors([
+                Fortify::username() => "Muitas tentativas de entrar. Espere {$segundos} segundos e tente de novo. (código LOGIN_BLOQUEADO)",
+            ]);
     }
 }
