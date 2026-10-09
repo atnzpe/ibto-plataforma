@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use App\Notifications\ConfirmarEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\SendQueuedNotifications;
@@ -38,6 +39,24 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    /**
+     * Quem se cadastra pelo site já nasce com o papel "aluno" (#36), e só ele:
+     * nenhum outro papel (filiado, instrutor...) é dado sozinho.
+     */
+    public function test_new_users_get_the_aluno_role(): void
+    {
+        $this->post(route('register.store'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        // Busca a conta criada e confere a lista de papéis (só os slugs).
+        $usuario = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertSame(['aluno'], $usuario->papeis()->pluck('slug')->all());
     }
 
     /**
