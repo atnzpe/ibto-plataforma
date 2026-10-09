@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -46,8 +47,19 @@ class AppServiceProvider extends ServiceProvider
                 return false;
             }
 
+            $lista = config('app.admin_emails');
+
+            // Lista que não é lista (ex.: cache de configuração antigo, como no
+            // erro 500 de 07/10/2026): ninguém é administrador, a página NÃO
+            // quebra, e o problema fica anotado no log (nada em silêncio, #58).
+            if (! is_array($lista)) {
+                Log::error('ADMIN_EMAILS_CONFIG_INVALIDA', ['tipo' => get_debug_type($lista)]);
+
+                return false;
+            }
+
             // Confirmado: passa só se o e-mail (em minúsculas) estiver na lista.
-            return in_array(strtolower($usuario->email), config('app.admin_emails'), true);
+            return in_array(strtolower($usuario->email), $lista, true);
         });
     }
 
