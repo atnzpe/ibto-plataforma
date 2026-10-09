@@ -29,9 +29,9 @@ function planilhaInventada(): string
         // Linha 3: nível "Nacional" (problema real da planilha) e data impossível.
         'BR20260002SP;Aluno Dois;31/02/1985;SP;Campinas;Instrutor;111.444.777-35;Krav Maga;Nacional;Vulcan;;dois@ibto.test',
         // Linha 4: sem equipe ("-") e sem registro: entra, e ganha um registro novo.
-        ';Aluno Tres;01/01/2000;RJ;Niterói;Aluno;390.533.447-05;;Praticante;-;;tres@ibto.test',
+        ';Aluno Tres;01/01/2000;RJ;Niterói;Praticante;390.533.447-05;;Praticante;-;;tres@ibto.test',
         // Linha 5: CPF repetido dentro da própria planilha (o mesmo da linha 2).
-        'BR20260004MG;Aluno Quatro;02/02/1992;MG;BH;Aluno;52998224725;;Praticante;Vulcan;;quatro@ibto.test',
+        'BR20260004MG;Aluno Quatro;02/02/1992;MG;BH;Praticante;52998224725;;Praticante;Vulcan;;quatro@ibto.test',
     ]);
 }
 
@@ -203,22 +203,24 @@ test('com os valores relacionados, as linhas entram (e "Nacional" vira abrangên
     expect($resultado['validas'][1]['nivel_id'])->toBeNull();
 });
 
-test('categoria: "INSTRUTOR EXPERT" bate sozinho; "PRATICANTE" pede relação (ex.: vira Aluno)', function () {
+test('categoria: "INSTRUTOR EXPERT" e "PRATICANTE" batem sozinhos; "ALUNO" pede relação', function () {
     $importar = app(ImportarFiliados::class);
     $base = ['Nascimento' => '20/05/1990', 'Município' => 'Recife', 'UF' => 'PE'];
     $linhas = [
         [...$base, 'Nome' => 'Teste A', 'E-mail' => 'a@ibto.test', 'CPF' => '529.982.247-25', 'Categoria' => 'INSTRUTOR EXPERT'],
         [...$base, 'Nome' => 'Teste B', 'E-mail' => 'b@ibto.test', 'CPF' => '111.444.777-35', 'Categoria' => 'PRATICANTE'],
+        [...$base, 'Nome' => 'Teste C', 'E-mail' => 'c@ibto.test', 'CPF' => '390.533.447-05', 'Categoria' => 'ALUNO'],
     ];
     $mapa = $importar->sugerirMapa(array_keys($linhas[0]));
 
-    // Só o "PRATICANTE" aparece para relacionar (não é uma das 5 categorias).
+    // Só o "ALUNO" aparece para relacionar: não é uma das 5 categorias (Aluno é PAPEL,
+    // de quem não é filiado). "PRATICANTE" é categoria desde 09/10/2026.
     $valores = $importar->valoresParaRelacionar($linhas, $mapa)['valores'];
-    expect(array_column($valores, 'valor'))->toBe(['PRATICANTE']);
+    expect(array_column($valores, 'valor'))->toBe(['ALUNO']);
 
-    // Relacionando "PRATICANTE" → Aluno, as duas linhas entram.
-    $resultado = $importar->conferir($linhas, $mapa, ['categoria' => ['praticante' => 'categoria:aluno']]);
+    // Relacionando "ALUNO" → Praticante, as três linhas entram.
+    $resultado = $importar->conferir($linhas, $mapa, ['categoria' => ['aluno' => 'categoria:praticante']]);
 
     expect($resultado['recusadas'])->toBe([]);
-    expect(array_column($resultado['validas'], 'categoria'))->toBe(['instrutor_expert', 'aluno']);
+    expect(array_column($resultado['validas'], 'categoria'))->toBe(['instrutor_expert', 'praticante', 'praticante']);
 });

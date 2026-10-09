@@ -1,7 +1,7 @@
 <?php
 
 /*
- * CATEGORIA do filiado (#37, Gleyson 09/10/2026): a FUNÇÃO no IBTO (aluno,
+ * CATEGORIA do filiado (#37, Gleyson 09/10/2026): a FUNÇÃO no IBTO (praticante,
  * monitor, instrutor, instrutor expert, adm de equipe). O NÍVEL (graduação)
  * continua no campo nivel_id. Valores em App\Enums\CategoriaFiliado.
  * Vazia (null) enquanto não informada (ex.: filiado antigo).
