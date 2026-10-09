@@ -11,9 +11,12 @@ namespace App\Http\Controllers\Financeiro;
 
 use App\Exceptions\RegraFinanceira;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Financeiro\BaixaRequest;
 use App\Http\Requests\Financeiro\LancamentoRequest;
+use App\Http\Requests\Financeiro\MotivoRequest;
 use App\Models\Equipe;
 use App\Models\FinCategoria;
+use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
 use App\Services\LivroCaixa;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +51,8 @@ class LancamentoController extends Controller
         $fim = $mes->copy()->endOfMonth()->toDateString();
 
         // Consulta da lista, já com a categoria (evita uma consulta por linha).
-        $consulta = FinLancamento::query()->with('categoria')->orderBy('vencimento')->orderBy('id');
+        // withExists('estorno'): junto, o banco diz se cada um já foi estornado (estorno_exists).
+        $consulta = FinLancamento::query()->with('categoria')->withExists('estorno')->orderBy('vencimento')->orderBy('id');
 
         if ($visao === 'vencidos') {
             // Vencidos de qualquer mês: quem está atrasado não pode sumir da lista.
@@ -77,6 +81,8 @@ class LancamentoController extends Controller
                 'vencidos' => FinLancamento::query()->vencidos()->count(),
             ],
             'pode_lancar' => $request->user()?->can('financeiro.lancar') ?? false,
+            // Formas ativas, para a janela de baixa.
+            'formas' => FinFormaPagamento::where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
         ]);
     }
 
@@ -116,6 +122,77 @@ class LancamentoController extends Controller
     }
 
     /**
+     * Dá BAIXA: marca o lançamento pendente como pago (dia e forma).
+     *
+     * @param  BaixaRequest  $request  O formulário, já conferido. Ex.: pago_em '2027-03-15', forma = PIX.
+     * @param  FinLancamento  $lancamento  O lançamento do endereço (ex.: /financeiro/lancamentos/7/pagar).
+     * @param  LivroCaixa  $caixa  O livro-caixa (regras + auditoria).
+     * @return RedirectResponse De volta à lista, com a mensagem de sucesso ou o erro da regra.
+     */
+    public function pagar(BaixaRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
+    {
+        return $this->executar(
+            fn () => $caixa->pagar($lancamento, $request->string('pago_em')->toString(), $request->integer('forma_pagamento_id')),
+            'Baixa registrada.',
+        );
+    }
+
+    /**
+     * CANCELA um lançamento pendente, com motivo.
+     *
+     * @param  MotivoRequest  $request  O formulário, já conferido.
+     * @param  FinLancamento  $lancamento  O lançamento do endereço.
+     * @param  LivroCaixa  $caixa  O livro-caixa.
+     * @return RedirectResponse De volta à lista.
+     */
+    public function cancelar(MotivoRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
+    {
+        return $this->executar(
+            fn () => $caixa->cancelar($lancamento, $request->string('motivo')->toString()),
+            'Lançamento cancelado.',
+        );
+    }
+
+    /**
+     * ESTORNA um lançamento pago, com motivo e dia (hoje, se não vier).
+     *
+     * @param  MotivoRequest  $request  O formulário, já conferido.
+     * @param  FinLancamento  $lancamento  O lançamento pago do endereço.
+     * @param  LivroCaixa  $caixa  O livro-caixa.
+     * @return RedirectResponse De volta à lista.
+     */
+    public function estornar(MotivoRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
+    {
+        // Dia do estorno: o informado, ou hoje.
+        $data = $request->filled('data') ? $request->string('data')->toString() : today()->toDateString();
+
+        return $this->executar(
+            fn () => $caixa->estornar($lancamento, $request->string('motivo')->toString(), $data),
+            'Estorno registrado.',
+        );
+    }
+
+    /**
+     * Roda uma ação do livro-caixa e volta para a lista. Se a REGRA recusar
+     * (ex.: estornar duas vezes), volta com a mensagem e o código, sem erro 500.
+     *
+     * @param  callable(): mixed  $acao  A ação. Ex.: fn () => $caixa->pagar(...)
+     * @param  string  $sucesso  A mensagem quando dá certo. Ex.: 'Baixa registrada.'
+     * @return RedirectResponse De volta à tela anterior.
+     */
+    private function executar(callable $acao, string $sucesso): RedirectResponse
+    {
+        try {
+            $acao();
+        } catch (RegraFinanceira $erro) {
+            // "acao" é o nome do erro que a janela mostra. Ex.: "Este lançamento já foi estornado. (JA_ESTORNADO)"
+            return back()->withErrors(['acao' => "{$erro->getMessage()} ({$erro->codigo})"]);
+        }
+
+        return back()->with('sucesso', $sucesso);
+    }
+
+    /**
      * Só o que a tela usa.
      *
      * @return array<string, mixed>
@@ -135,6 +212,8 @@ class LancamentoController extends Controller
             'pago_em' => $lancamento->pago_em?->toDateString(),
             'situacao' => $vencido ? 'vencido' : $lancamento->situacao,
             'estorno' => $lancamento->estorno_de_id !== null,
+            // true se este lançamento JÁ tem um estorno (vem do withExists da consulta).
+            'estornado' => (bool) ($lancamento->getAttribute('estorno_exists') ?? false),
         ];
     }
 }

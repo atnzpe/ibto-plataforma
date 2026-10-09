@@ -17,6 +17,8 @@ export type Lancamento = {
     situacao: 'pendente' | 'vencido' | 'pago' | 'cancelado';
     // true quando a linha é o estorno de outro lançamento.
     estorno: boolean;
+    // true quando este lançamento JÁ foi estornado (não pode estornar de novo).
+    estornado: boolean;
 };
 
 /** Totais do mês, no topo da lista (todos em centavos, menos "vencidos"). */

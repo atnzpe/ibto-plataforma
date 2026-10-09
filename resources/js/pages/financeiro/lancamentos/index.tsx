@@ -4,6 +4,8 @@
  * "financeiro.ver"; o botão "Novo lançamento" só aparece para "financeiro.lancar".
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
+// Botões e janelas de baixa, cancelar e estornar (#59).
+import AcoesLancamento from '@/components/financeiro/acoes-lancamento';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 import { create, index } from '@/routes/financeiro/lancamentos';
@@ -54,7 +56,8 @@ function dataBr(data: string): string {
  * @param lancamentos As linhas do filtro atual.
  * @param totais Os totais do mês (saldo, a receber, a pagar, vencidos).
  * @param filtros O mês e a visão escolhidos. Ex.: { mes: '2027-03', visao: 'todos' }
- * @param pode_lancar true se a pessoa pode criar lançamentos.
+ * @param pode_lancar true se a pessoa pode lançar, dar baixa, cancelar e estornar.
+ * @param formas As formas de pagamento ativas, para a janela de baixa.
  * @returns A tela do livro-caixa.
  */
 export default function LancamentosIndex({
@@ -62,11 +65,13 @@ export default function LancamentosIndex({
     totais,
     filtros,
     pode_lancar,
+    formas,
 }: {
     lancamentos: Lancamento[];
     totais: TotaisFinanceiro;
     filtros: FiltrosFinanceiro;
     pode_lancar: boolean;
+    formas: { id: number; nome: string }[];
 }) {
     // Mensagem da última ação (ex.: 'Lançamento cadastrado.'), ou null.
     const { sucesso } = usePage().props;
@@ -231,13 +236,21 @@ export default function LancamentosIndex({
                                 >
                                     Situação
                                 </th>
+                                {pode_lancar && (
+                                    <th
+                                        scope="col"
+                                        className="px-4 py-2 font-medium"
+                                    >
+                                        <span className="sr-only">Ações</span>
+                                    </th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
                             {lancamentos.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={5}
+                                        colSpan={pode_lancar ? 6 : 5}
                                         className="px-4 py-6 text-center text-muted-foreground"
                                     >
                                         Nenhum lançamento neste filtro.
@@ -274,7 +287,17 @@ export default function LancamentosIndex({
                                         {lancamento.estorno && ' (estorno)'}
                                         {lancamento.pago_em &&
                                             ` em ${dataBr(lancamento.pago_em)}`}
+                                        {lancamento.estornado && ' · estornado'}
                                     </td>
+                                    {/* Ações só para quem pode lançar (o servidor também confere). */}
+                                    {pode_lancar && (
+                                        <td className="px-4 py-2">
+                                            <AcoesLancamento
+                                                lancamento={lancamento}
+                                                formas={formas}
+                                            />
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

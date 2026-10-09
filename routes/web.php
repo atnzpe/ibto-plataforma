@@ -106,6 +106,13 @@ Route::middleware(['auth', 'verified'])
         Route::post('lancamentos', [LancamentoController::class, 'store'])
             ->middleware('can:financeiro.lancar')
             ->name('lancamentos.store');
+        // Ações sobre um lançamento: baixa (pendente → pago), cancelar (pendente)
+        // e estornar (pago). As regras ficam no LivroCaixa.
+        Route::middleware('can:financeiro.lancar')->group(function () {
+            Route::post('lancamentos/{lancamento}/pagar', [LancamentoController::class, 'pagar'])->name('lancamentos.pagar');
+            Route::post('lancamentos/{lancamento}/cancelar', [LancamentoController::class, 'cancelar'])->name('lancamentos.cancelar');
+            Route::post('lancamentos/{lancamento}/estornar', [LancamentoController::class, 'estornar'])->name('lancamentos.estornar');
+        });
     });
 
 // Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".
