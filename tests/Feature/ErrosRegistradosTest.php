@@ -75,3 +75,33 @@ test('erro 500 é gravado com usuário, rota e método', function () {
             && $contexto['metodo'] === 'GET';
     });
 });
+
+test('erro da tela é gravado no log com ERRO_TELA, sem a busca da página', function () {
+    Log::spy();
+    $usuario = User::factory()->create();
+
+    $this->actingAs($usuario)
+        ->postJson(route('api.erros-tela'), [
+            'mensagem' => 'TypeError: x is undefined',
+            'pagina' => '/cadastros/filiados?busca=fulano@exemplo.com',
+            'origem' => 'tela',
+        ])
+        ->assertNoContent();
+
+    Log::shouldHaveReceived('error')->withArgs(fn (string $codigo, array $contexto) => $codigo === 'ERRO_TELA'
+        && $contexto['pagina'] === '/cadastros/filiados'
+        && $contexto['origem'] === 'tela'
+        // LGPD: a busca (que tinha um e-mail) não chega ao log.
+        && ! str_contains(json_encode($contexto), 'exemplo.com'));
+});
+
+test('erro da tela com dados inválidos é recusado (422), e há limite de envios', function () {
+    $this->postJson(route('api.erros-tela'), ['pagina' => '/'])->assertStatus(422);
+
+    // 10 por minuto por IP: o pedido inválido acima também conta, então mais
+    // 9 passam e o seguinte (o 11º do minuto) é barrado (429).
+    for ($i = 0; $i < 9; $i++) {
+        $this->postJson(route('api.erros-tela'), ['mensagem' => 'x', 'pagina' => '/'])->assertNoContent();
+    }
+    $this->postJson(route('api.erros-tela'), ['mensagem' => 'x', 'pagina' => '/'])->assertStatus(429);
+});
