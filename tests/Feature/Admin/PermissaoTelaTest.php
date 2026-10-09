@@ -66,7 +66,9 @@ test('tirar uma permissão grava a mudança e registra na auditoria', function (
     $linha = Auditoria::latest('id')->firstOrFail();
     expect($linha->acao)->toBe('PERMISSAO_REMOVIDA');
     expect($linha->user_id)->toBe($this->tecnologia->id);
-    expect($linha->detalhes)->toBe(['papel' => 'administrador', 'permissao' => 'cadastros.equipes']);
+    // toEqual (e não toBe): compara o conteúdo sem ligar para a ORDEM das chaves,
+    // porque o MySQL (servidor e CI) reordena as chaves de um JSON e o SQLite não.
+    expect($linha->detalhes)->toEqual(['papel' => 'administrador', 'permissao' => 'cadastros.equipes']);
 });
 
 test('trava: mesmo enviando a grade vazia, a Tecnologia continua com permissoes.gerenciar', function () {
