@@ -55,3 +55,7 @@ test('lista de administradores inválida (cache antigo) não quebra: ninguém é
     expect(Gate::forUser($usuario)->allows('cadastros.areas'))->toBeFalse();
     Log::shouldHaveReceived('error')->with('ADMIN_EMAILS_CONFIG_INVALIDA', ['tipo' => 'null']);
 });
+
+test('LGPD: erros não guardam os valores passados às funções', function () {
+    expect(ini_get('zend.exception_ignore_args'))->toBe('1');
+});

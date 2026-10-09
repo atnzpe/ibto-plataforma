@@ -170,6 +170,26 @@ jobs:
             # Arquivos enviados pelas pessoas na plataforma (ex.: imagem de cada
             # área de atuação, #37): só existem no servidor, o deploy nunca mexe.
             storage/app/public/**
+            # VERSAO_DEPLOY vai no passo seguinte, POR ÚLTIMO (ver o comentário lá).
+            VERSAO_DEPLOY
+
+      # O VERSAO_DEPLOY é o "sinal verde" para o Cron aplicar a versão nova
+      # (migrations e caches). Se ele chegasse antes dos outros arquivos, o Cron
+      # podia rodar no meio do envio e guardar a configuração ANTIGA no cache:
+      # foi o que aconteceu em 07/10/2026 (erro 500, admin_emails = null). Por
+      # isso ele só é enviado depois que todo o resto chegou. curl manda um
+      # arquivo só por FTPS (--ssl-reqd = conexão sempre criptografada).
+      - name: Enviar VERSAO_DEPLOY por último
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          curl --fail --silent --show-error --ssl-reqd \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            -T pacote/VERSAO_DEPLOY \
+            "ftp://$FTP_SERVER/VERSAO_DEPLOY"
+          echo "VERSAO_DEPLOY enviado: $(cat pacote/VERSAO_DEPLOY)"
 
       - name: Conferir que está no ar e protegido
         run: |

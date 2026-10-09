@@ -8,6 +8,11 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 
+// LGPD: quando dá erro, o PHP do servidor escrevia no log os VALORES passados às
+// funções (em 07/10/2026 apareceu o começo do e-mail de uma usuária). Com isto
+// ligado, o log mostra só o caminho do erro (arquivo e linha), sem os valores.
+ini_set('zend.exception_ignore_args', '1');
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
