@@ -9,6 +9,7 @@ import {
     Tags,
     UserCog,
     Users,
+    Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -32,6 +33,8 @@ import { index as niveis } from '@/routes/cadastros/niveis';
 import { index as equipes } from '@/routes/cadastros/equipes';
 // Lista de filiados (#37), para o item do menu.
 import { index as filiados } from '@/routes/cadastros/filiados';
+// Livro-caixa (#59), para o item do menu.
+import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
 import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
 // Lista de usuários (#36), para o item do menu.
@@ -88,6 +91,13 @@ const cadastrosNavItems: (NavItem & {
         href: filiados(),
         icon: ContactRound,
         permissao: 'filiados_acessar',
+    },
+    // Financeiro (#59): livro-caixa (contas a receber e a pagar).
+    {
+        title: 'Financeiro',
+        href: financeiro(),
+        icon: Wallet,
+        permissao: 'financeiro_ver',
     },
     // Administração (#36): papéis de cada pessoa.
     {

@@ -21,6 +21,8 @@ class HandleInertiaRequests extends Middleware
         'filiados.acessar',
         'usuarios.gerenciar',
         'permissoes.gerenciar',
+        // Financeiro (#59).
+        'financeiro.ver',
     ];
 
     /**

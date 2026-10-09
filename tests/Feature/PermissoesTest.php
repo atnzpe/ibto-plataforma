@@ -23,10 +23,10 @@ function darPapel(User $usuario, string $slug): void
     $usuario->papeis()->attach(Papel::where('slug', $slug)->value('id'));
 }
 
-test('as migrations trazem os 6 papéis e as 7 permissões (com as de filiados)', function () {
+test('as migrations trazem os 6 papéis e as 9 permissões (com as de filiados e as do financeiro, #59)', function () {
     expect(Papel::pluck('slug')->sort()->values()->all())
         ->toBe(['admin_equipe', 'administrador', 'aluno', 'filiado', 'instrutor', 'tecnologia']);
-    expect(Permissao::count())->toBe(7);
+    expect(Permissao::count())->toBe(9);
 });
 
 test('só a Tecnologia começa com "permissoes.gerenciar"', function () {

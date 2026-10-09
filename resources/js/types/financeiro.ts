@@ -1,0 +1,42 @@
+/**
+ * Formatos dos dados do FINANCEIRO (#59) que o servidor manda para as telas.
+ */
+
+/** Uma linha do livro-caixa, como a lista mostra. */
+export type Lancamento = {
+    id: number;
+    tipo: 'receita' | 'despesa';
+    categoria: string | null;
+    descricao: string;
+    // Valor em centavos (9000 = R$ 90,00).
+    valor_centavos: number;
+    // Datas no formato '2027-03-31'.
+    vencimento: string;
+    pago_em: string | null;
+    // 'vencido' = pendente cujo vencimento já passou (calculado no servidor).
+    situacao: 'pendente' | 'vencido' | 'pago' | 'cancelado';
+    // true quando a linha é o estorno de outro lançamento.
+    estorno: boolean;
+};
+
+/** Totais do mês, no topo da lista (todos em centavos, menos "vencidos"). */
+export type TotaisFinanceiro = {
+    saldo_centavos: number;
+    a_receber_centavos: number;
+    a_pagar_centavos: number;
+    // Quantos lançamentos estão vencidos (de qualquer mês).
+    vencidos: number;
+};
+
+/** Os filtros da lista. Ex.: { mes: '2027-03', visao: 'pagar' } */
+export type FiltrosFinanceiro = {
+    mes: string;
+    visao: 'todos' | 'receber' | 'pagar' | 'vencidos';
+};
+
+/** Uma categoria para o formulário. */
+export type CategoriaFinanceira = {
+    id: number;
+    nome: string;
+    tipo: 'receita' | 'despesa';
+};

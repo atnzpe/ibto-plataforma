@@ -10,6 +10,7 @@ use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
+use App\Http\Controllers\Financeiro\LancamentoController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -88,6 +89,23 @@ Route::middleware(['auth', 'verified'])
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
             ->middleware(['can:filiados.acessar', 'throttle:6,1'])
             ->name('filiados.convite');
+    });
+
+// Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
+// "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.
+Route::middleware(['auth', 'verified'])
+    ->prefix('financeiro')
+    ->name('financeiro.')
+    ->group(function () {
+        Route::get('/', [LancamentoController::class, 'index'])
+            ->middleware('can:financeiro.ver')
+            ->name('lancamentos.index');
+        Route::get('lancamentos/novo', [LancamentoController::class, 'create'])
+            ->middleware('can:financeiro.lancar')
+            ->name('lancamentos.create');
+        Route::post('lancamentos', [LancamentoController::class, 'store'])
+            ->middleware('can:financeiro.lancar')
+            ->name('lancamentos.store');
     });
 
 // Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".
