@@ -37,3 +37,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Regras do Laravel numa LISTA: cada item é uma regra só (`['nullable', 'max:2048']`); juntar com `|` dentro da lista quebra (erro 500 "validateNullable|... does not exist").
 - O mesmo `max` muda de sentido: no texto conta letras (`max:100`), no arquivo conta KB (`max:2048` = 2 MB).
 - Regra de negócio fica no servidor e ganha teste: grau máximo por categoria (`match`) e "para ativar a equipe precisa de cidade, UF, responsável, telefone e uma área". A tela só ajuda; quem garante é o servidor.
+
+## 09/10/2026 — #58 nenhum erro em silêncio
+
+- Tela React que quebra fica BRANCA, a menos que exista uma "rede de proteção" (error boundary): um componente de classe que troca a tela por um aviso e avisa o servidor.
+- Todo aviso automático precisa de freio dos dois lados: o navegador manda no máximo 5 por página e o servidor aceita 10 por minuto, para um erro em "loop" não lotar o log.
+- Ao apagar uma linha de dica, use Ctrl+Shift+K (apaga a linha inteira): uma barra `/` que sobra quebra o arquivo todo.

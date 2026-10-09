@@ -87,6 +87,10 @@ class AuthenticationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
-        $response->assertTooManyRequests();
+        // Login reforçado (#36): em vez da página "429" em inglês, a pessoa volta
+        // para o login com a mensagem em português e o código LOGIN_BLOQUEADO.
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('email');
+        $this->assertStringContainsString('LOGIN_BLOQUEADO', session('errors')->first('email'));
     }
 }
