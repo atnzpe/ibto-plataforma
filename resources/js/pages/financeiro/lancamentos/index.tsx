@@ -125,7 +125,7 @@ export default function LancamentosIndex({
 
                     {/* Só quem pode lançar vê o botão (o servidor também confere). */}
                     {pode_lancar && (
-                        <Button asChild>
+                        <Button asChild className="w-full sm:w-auto">
                             <Link href={create()}>Novo lançamento</Link>
                         </Button>
                     )}
@@ -189,8 +189,9 @@ export default function LancamentosIndex({
 
                     <div
                         role="group"
+                        // Celular: 2 colunas iguais (2 x 2). Tela maior: lado a lado.
                         aria-label="Visão"
-                        className="flex flex-wrap gap-2"
+                        className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap"
                     >
                         {VISOES.map((visao) => (
                             <Button
@@ -211,7 +212,9 @@ export default function LancamentosIndex({
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-md border border-border">
+                {/* TABELA: só em tela larga (md = a partir de 768 px). No celular
+                    ela some e entram os cartões abaixo, sem rolagem lateral. */}
+                <div className="hidden overflow-x-auto rounded-md border border-border md:block">
                     <table className="w-full text-left text-sm">
                         <caption className="sr-only">
                             Lançamentos do filtro escolhido
@@ -315,6 +318,68 @@ export default function LancamentosIndex({
                         </tbody>
                     </table>
                 </div>
+
+                {/* CARTÕES: só em tela estreita (celular). Um lançamento por
+                    cartão, tudo na largura da tela, sem rolagem lateral. */}
+                <ul
+                    aria-label="Lançamentos do filtro escolhido"
+                    className="flex flex-col gap-3 md:hidden"
+                >
+                    {lancamentos.length === 0 && (
+                        <li className="rounded-md border border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                            Nenhum lançamento neste filtro.
+                        </li>
+                    )}
+                    {lancamentos.map((lancamento) => (
+                        <li
+                            key={lancamento.id}
+                            className="flex flex-col gap-3 rounded-md border border-border p-4"
+                        >
+                            {/* Linha 1: vencimento à esquerda, valor à direita. */}
+                            <div className="flex items-baseline justify-between gap-3">
+                                <span className="text-sm text-muted-foreground">
+                                    Vence {dataBr(lancamento.vencimento)}
+                                </span>
+                                <span className="text-base font-semibold whitespace-nowrap">
+                                    {lancamento.tipo === 'receita'
+                                        ? '+ '
+                                        : '− '}
+                                    {formatarReais(lancamento.valor_centavos)}
+                                </span>
+                            </div>
+
+                            {/* Linha 2: o que é e a categoria. */}
+                            <div className="flex flex-col gap-0.5">
+                                <span className="font-medium">
+                                    {lancamento.descricao}
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                    {lancamento.categoria}
+                                </span>
+                            </div>
+
+                            {/* Linha 3: situação escrita (não só cor). */}
+                            <span
+                                className={`text-sm ${SITUACOES[lancamento.situacao].classe}`}
+                            >
+                                {SITUACOES[lancamento.situacao].texto}
+                                {lancamento.estorno && ' (estorno)'}
+                                {lancamento.pago_em &&
+                                    ` em ${dataBr(lancamento.pago_em)}`}
+                                {lancamento.estornado && ' · estornado'}
+                            </span>
+
+                            {/* Linha 4: ações em grade de colunas iguais. */}
+                            {pode_lancar && (
+                                <AcoesLancamento
+                                    lancamento={lancamento}
+                                    formas={formas}
+                                    emGrade
+                                />
+                            )}
+                        </li>
+                    ))}
+                </ul>
             </div>
         </>
     );

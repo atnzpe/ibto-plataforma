@@ -39,14 +39,17 @@ const hoje = () => new Date().toLocaleDateString('sv-SE');
 /**
  * @param lancamento A linha da lista. Ex.: { id: 7, situacao: 'pendente', ... }
  * @param formas As formas de pagamento ativas, para a baixa. Ex.: [{ id: 1, nome: 'PIX' }]
+ * @param emGrade true dentro do cartão do celular: botões em colunas iguais, na largura toda.
  * @returns Os botões das ações permitidas (ou nada).
  */
 export default function AcoesLancamento({
     lancamento,
     formas,
+    emGrade = false,
 }: {
     lancamento: Lancamento;
     formas: { id: number; nome: string }[];
+    emGrade?: boolean;
 }) {
     // Qual janela está aberta agora (null = nenhuma).
     const [aberta, setAberta] = useState<Acao | null>(null);
@@ -80,8 +83,16 @@ export default function AcoesLancamento({
         setAberta(abrir ? acao : null);
 
     return (
-        // Uma linha só (sem quebrar): a coluna da tabela cresce para caber os botões.
-        <div className="flex flex-nowrap justify-end gap-2">
+        // Tabela: uma linha só, encostada à direita. Cartão (celular): grade de
+        // colunas iguais (uma por botão), na largura toda, tudo alinhado; cada botão
+        // com 44 px de altura (min-h-11), bom para o dedo no celular.
+        <div
+            className={
+                emGrade
+                    ? 'grid auto-cols-fr grid-flow-col gap-2 *:min-h-11'
+                    : 'flex flex-nowrap justify-end gap-2'
+            }
+        >
             {emAberto && (
                 <>
                     {/* Editar: abre o formulário preenchido (só pendente). */}
