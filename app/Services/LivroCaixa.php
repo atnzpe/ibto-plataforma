@@ -18,9 +18,11 @@ use App\Exceptions\RegraFinanceira;
 use App\Models\Auditoria;
 use App\Models\FinCategoria;
 use App\Models\FinLancamento;
+use App\Support\Dinheiro;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LivroCaixa
 {
@@ -55,6 +57,72 @@ class LivroCaixa
             Auditoria::registrar('LANCAMENTO_CRIADO', $this->resumo($lancamento));
 
             return $lancamento;
+        });
+    }
+
+    /**
+     * PARCELA um título: cria N lançamentos pendentes, um por mês, ligados pelo
+     * mesmo grupo. Ex.: R$ 900,00 em 3x com 1º vencimento em 10/11 → três de
+     * R$ 300,00 em 10/11, 10/12 e 10/01.
+     *
+     * @param  array{tipo: string, categoria_id: int, descricao: string, valor_centavos: int, vencimento: string, equipe_id?: int|null}  $dados
+     *                                                                                                                                           O título inteiro (valor TOTAL e o 1º vencimento).
+     * @param  int  $parcelas  Em quantas vezes. Ex.: 3 (de 2 a 24).
+     * @return list<FinLancamento> As parcelas criadas, na ordem (1/N primeiro).
+     */
+    public function lancarParcelado(array $dados, int $parcelas): array
+    {
+        // Entre 2 e 24 parcelas (1 é "à vista": usa lancar()).
+        if ($parcelas < 2 || $parcelas > 24) {
+            throw new RegraFinanceira('PARCELAS_INVALIDAS', 'Escolha de 2 a 24 parcelas.');
+        }
+        // Mesmas regras do lançamento comum.
+        $this->conferirValorECategoria($dados);
+        // Cada parcela precisa valer pelo menos 1 centavo.
+        if ($dados['valor_centavos'] < $parcelas) {
+            throw new RegraFinanceira('VALOR_INVALIDO', 'O valor é pequeno demais para tantas parcelas.');
+        }
+
+        // Valor de cada parcela (lacuna do Gleyson, ver Dinheiro::dividirEmParcelas).
+        $valores = Dinheiro::dividirEmParcelas($dados['valor_centavos'], $parcelas);
+        // Código do grupo: o mesmo em todas as parcelas deste título.
+        $grupo = (string) Str::uuid();
+        // 1º vencimento; os outros são "o mesmo dia nos meses seguintes".
+        $primeiro = Carbon::parse($dados['vencimento']);
+
+        return DB::transaction(function () use ($dados, $parcelas, $valores, $grupo, $primeiro): array {
+            $criadas = [];
+            foreach ($valores as $posicao => $valor) {
+                $numero = $posicao + 1;
+                $lancamento = new FinLancamento;
+                $lancamento->forceFill([
+                    'tipo' => $dados['tipo'],
+                    'categoria_id' => $dados['categoria_id'],
+                    // Ex.: 'Material (2/3)'.
+                    'descricao' => "{$dados['descricao']} ({$numero}/{$parcelas})",
+                    'valor_centavos' => $valor,
+                    // addMonthsNoOverflow: 31/01 + 1 mês = 28/02 (não "pula" para março).
+                    'vencimento' => $primeiro->copy()->addMonthsNoOverflow($posicao)->toDateString(),
+                    'parcela_numero' => $numero,
+                    'parcela_total' => $parcelas,
+                    'grupo_parcelas' => $grupo,
+                    'situacao' => 'pendente',
+                    'equipe_id' => $dados['equipe_id'] ?? null,
+                    'criado_por' => Auth::id(),
+                ])->save();
+                $criadas[] = $lancamento;
+            }
+
+            // Uma linha de auditoria para o título inteiro (sem a descrição: LGPD).
+            Auditoria::registrar('LANCAMENTO_PARCELADO', [
+                'grupo_parcelas' => $grupo,
+                'parcelas' => $parcelas,
+                'tipo' => $dados['tipo'],
+                'valor_total_centavos' => $dados['valor_centavos'],
+                'lancamento_ids' => array_map(fn (FinLancamento $l) => $l->id, $criadas),
+            ]);
+
+            return $criadas;
         });
     }
 

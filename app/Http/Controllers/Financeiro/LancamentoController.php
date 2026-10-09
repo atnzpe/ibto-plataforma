@@ -125,15 +125,22 @@ class LancamentoController extends Controller
      */
     public function store(LancamentoRequest $request, LivroCaixa $caixa): RedirectResponse
     {
+        // Quantas parcelas (vazio = 1, à vista).
+        $parcelas = $request->filled('parcelas') ? $request->integer('parcelas') : 1;
+
         try {
-            $lancamento = $caixa->lancar($request->paraLivroCaixa());
+            // À vista: um lançamento. Parcelado: N lançamentos, um por mês; a
+            // lista abre no mês da 1ª parcela.
+            $lancamento = $parcelas > 1
+                ? $caixa->lancarParcelado($request->paraLivroCaixa(), $parcelas)[0]
+                : $caixa->lancar($request->paraLivroCaixa());
         } catch (RegraFinanceira $erro) {
             // Regra recusou (ex.: categoria de outro tipo): volta com a mensagem e o código.
             return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
         return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
-            ->with('sucesso', 'Lançamento cadastrado.');
+            ->with('sucesso', $parcelas > 1 ? "Lançamento cadastrado em {$parcelas} parcelas." : 'Lançamento cadastrado.');
     }
 
     /**

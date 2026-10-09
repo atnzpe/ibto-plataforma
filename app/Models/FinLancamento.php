@@ -27,6 +27,9 @@ use Illuminate\Support\Carbon;
  * @property string $descricao
  * @property int $valor_centavos
  * @property Carbon $vencimento
+ * @property int|null $parcela_numero
+ * @property int|null $parcela_total
+ * @property string|null $grupo_parcelas
  * @property Carbon|null $pago_em
  * @property string $situacao
  * @property string|null $motivo

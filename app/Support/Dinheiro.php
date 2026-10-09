@@ -44,6 +44,30 @@ class Dinheiro
     }
 
     /**
+     * Divide um valor em parcelas que SOMAM EXATAMENTE o total. Os centavos que
+     * sobram da divisão vão para a 1ª parcela (como no cartão).
+     *
+     * @param  int  $totalCentavos  O valor inteiro. Ex.: 1000 (R$ 10,00)
+     * @param  int  $parcelas  Em quantas vezes. Ex.: 3
+     * @return list<int> Ex.: [334, 333, 333] (soma 1000)
+     */
+    public static function dividirEmParcelas(int $totalCentavos, int $parcelas): array
+    {
+        // Divisão inteira (Gleyson): quanto cada parcela vale, sem os centavos
+        // que sobram. Ex.: 1000 / 3 = 333,333... → 333 centavos por parcela.
+        $base = intdiv($totalCentavos, $parcelas);
+        // Resto da divisão (o "%"): os centavos que não dividiram. Ex.: 1000 % 3 = 1.
+        $sobra = $totalCentavos % $parcelas;
+
+        // Todas as parcelas começam com a base. Ex.: [333, 333, 333].
+        $valores = array_fill(0, $parcelas, $base);
+        // A sobra vai para a 1ª parcela. Ex.: [334, 333, 333].
+        $valores[0] += $sobra;
+
+        return $valores;
+    }
+
+    /**
      * Centavos → texto para o campo do formulário (sem "R$" e sem milhar).
      *
      * @param  int  $centavos  Ex.: 1250

@@ -177,6 +177,44 @@ export default function LancamentoFormulario({
                                 </div>
                             </div>
 
+                            {/* Parcelas: só no lançamento novo (cada parcela vira uma conta). */}
+                            {!editando && (
+                                <div className="grid gap-2">
+                                    <Label htmlFor="parcelas">Parcelas</Label>
+                                    <select
+                                        id="parcelas"
+                                        name="parcelas"
+                                        defaultValue="1"
+                                        aria-describedby="parcelas-dica"
+                                        className={classeSelect}
+                                    >
+                                        {/* 1 a 24: "1" é à vista. */}
+                                        {Array.from(
+                                            { length: 24 },
+                                            (_, i) => i + 1,
+                                        ).map((quantidade) => (
+                                            <option
+                                                key={quantidade}
+                                                value={quantidade}
+                                            >
+                                                {quantidade === 1
+                                                    ? 'À vista (1x)'
+                                                    : `${quantidade}x`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p
+                                        id="parcelas-dica"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        O valor é o TOTAL. Cada parcela vira uma
+                                        conta, uma por mês, a partir do
+                                        vencimento acima.
+                                    </p>
+                                    <InputError message={errors.parcelas} />
+                                </div>
+                            )}
+
                             <div className="grid gap-2">
                                 <Label htmlFor="equipe_id">
                                     Equipe (opcional)

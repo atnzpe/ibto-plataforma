@@ -41,6 +41,8 @@ class LancamentoRequest extends FormRequest
             'vencimento' => ['required', 'date_format:Y-m-d'],
             // Equipe é opcional.
             'equipe_id' => ['nullable', 'integer', Rule::exists('equipes', 'id')],
+            // Em quantas vezes (só no lançamento novo): vazio ou 1 = à vista; até 24.
+            'parcelas' => ['nullable', 'integer', 'min:1', 'max:24'],
         ];
     }
 
@@ -95,6 +97,8 @@ class LancamentoRequest extends FormRequest
             'categoria_id.exists' => 'Escolha uma categoria ativa.',
             'descricao.required' => 'Descreva o lançamento.',
             'vencimento.date_format' => 'Informe a data de vencimento.',
+            'parcelas.min' => 'Escolha de 1 a 24 parcelas.',
+            'parcelas.max' => 'Escolha de 1 a 24 parcelas.',
         ];
     }
 }
