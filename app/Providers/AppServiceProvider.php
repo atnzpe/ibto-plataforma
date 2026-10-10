@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\SituacaoCurso;
+use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
 use App\Models\Filiado;
 use App\Models\User;
@@ -114,12 +115,13 @@ class AppServiceProvider extends ServiceProvider
                 && in_array($curso->situacao, [SituacaoCurso::Rascunho, SituacaoCurso::Rejeitado], true);
         });
 
-        // "curso.conteudo" (#39): ver as aulas, o vídeo enviado e baixar a apostila.
-        // Por enquanto: o Comando Geral e quem propôs o curso; os INSCRITOS entram
-        // no bloco C5 (matrícula). Sem isso: 403, mesmo com o link.
+        // "curso.conteudo" (#39 / #41): ver as aulas, o vídeo enviado e baixar a apostila.
+        // Passam: o Comando Geral, quem chancela, quem propôs o curso e quem tem
+        // MATRÍCULA CONFIRMADA (aguardando pagamento ainda não). Sem isso: 403, mesmo com o link.
         Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
             || $usuario->temPermissao('cursos.chancelar')
-            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id)
+            || $curso->matriculas()->where('user_id', $usuario->id)->where('situacao', SituacaoMatricula::Confirmada->value)->exists());
     }
 
     /**

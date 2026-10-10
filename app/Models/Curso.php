@@ -145,6 +145,16 @@ class Curso extends Model
     }
 
     /**
+     * As matrículas do curso (#41), de todas as situações.
+     *
+     * @return HasMany<CursoMatricula, $this>
+     */
+    public function matriculas(): HasMany
+    {
+        return $this->hasMany(CursoMatricula::class);
+    }
+
+    /**
      * Os módulos do curso (#39), já na ordem.
      *
      * @return HasMany<CursoModulo, $this>
