@@ -249,7 +249,11 @@ class LancamentoController extends Controller
                 function () use ($caixa, $lancamento, $motivo, &$quantas): void {
                     $quantas = $caixa->cancelarParcelas($lancamento, $motivo);
                 },
-                fn () => "{$quantas} parcela(s) em aberto do título cancelada(s).",
+                // "function () use (&$quantas)", e não "fn () =>": a função curta
+                // copiaria $quantas ainda valendo 0; o "&" lê o valor depois da ação.
+                function () use (&$quantas): string {
+                    return "{$quantas} parcela(s) em aberto do título cancelada(s).";
+                },
             );
         }
 
