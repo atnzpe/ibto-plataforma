@@ -22,6 +22,7 @@ use App\Models\CursoAula;
 use App\Models\CursoModulo;
 use App\Models\Trilha;
 use App\Support\Calendario;
+use App\Support\DadosPagamento;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -318,11 +319,9 @@ class CatalogoController extends Controller
             'situacao_rotulo' => $matricula->situacao->rotulo(),
             'valor_centavos' => $matricula->valor_centavos,
             'tem_comprovante' => $matricula->comprovante !== null,
-            // Dados do PIX (config/app.php), só para quem precisa pagar.
-            'pix' => $aguardando ? [
-                'chave' => (string) config('app.pix.chave'),
-                'favorecido' => (string) config('app.pix.favorecido'),
-            ] : null,
+            // Dados para pagamento (do curso ou do IBTO, conforme a chave liga/desliga),
+            // só para quem precisa pagar. Ver App\Support\DadosPagamento.
+            'pagamento' => $aguardando ? DadosPagamento::doCurso($curso) : null,
         ];
     }
 

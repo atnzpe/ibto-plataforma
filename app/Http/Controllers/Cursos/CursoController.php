@@ -21,6 +21,7 @@ use App\Http\Requests\Cursos\CursoRequest;
 use App\Models\AreaAtuacao;
 use App\Models\Auditoria;
 use App\Models\Curso;
+use App\Models\PagamentoConfig;
 use App\Models\User;
 use App\Services\FluxoCurso;
 use App\Support\Dinheiro;
@@ -181,6 +182,17 @@ class CursoController extends Controller
                 // Os botões do fluxo que esta pessoa pode usar agora.
                 'acoes' => $fluxo->acoesPara($curso, $request->user()),
             ],
+            // Dados para pagamento PRÓPRIOS do curso (#41): só para quem tem
+            // "pagamentos.configurar" (null para os outros: o painel nem aparece).
+            'pagamento_curso' => Gate::allows('pagamentos.configurar') ? [
+                'pix_chave' => $curso->pag_pix_chave,
+                'favorecido' => $curso->pag_favorecido,
+                'banco' => $curso->pag_banco,
+                'agencia' => $curso->pag_agencia,
+                'conta' => $curso->pag_conta,
+                // A chave liga/desliga: desligada = estes dados ficam guardados, mas não valem.
+                'por_curso_ligado' => PagamentoConfig::atual()->por_curso,
+            ] : null,
             ...$this->opcoesDoFormulario(),
         ]);
     }

@@ -18,6 +18,7 @@ use App\Http\Controllers\Cursos\AulaArquivoController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
 use App\Http\Controllers\Cursos\MatriculaPainelController;
+use App\Http\Controllers\Cursos\PagamentoConfigController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
@@ -159,6 +160,20 @@ Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
     ->name('comando-geral.')
     ->group(function () {
         Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+    });
+
+// Dados para pagamento (#41, 10/10/2026): os do IBTO, a chave liga/desliga
+// "por curso" e os dados próprios de um curso. Só "pagamentos.configurar".
+// password.confirm:...,900 = pede a SENHA DE NOVO, que vale por 15 minutos
+// (900 segundos), mesmo para quem já está logado. Limite de 10 pedidos por minuto.
+Route::middleware(['auth', 'verified', 'can:pagamentos.configurar', 'password.confirm:password.confirm,900', 'throttle:10,1'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->controller(PagamentoConfigController::class)
+    ->group(function () {
+        Route::get('pagamento', 'edit')->name('pagamento.edit');
+        Route::put('pagamento', 'update')->name('pagamento.update');
+        Route::put('cursos/{curso}/pagamento', 'curso')->name('cursos.pagamento');
     });
 
 // Matrículas (#41, bloco C5c): a secretaria/tesouraria confere o comprovante,

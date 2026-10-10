@@ -10,6 +10,8 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import CursoController from '@/actions/App/Http/Controllers/Cursos/CursoController';
 // Painel da situação e dos botões do fluxo de chancela (#40).
+import PainelPagamentoCurso from '@/components/cursos/painel-pagamento-curso';
+import type { PagamentoDoCurso } from '@/components/cursos/painel-pagamento-curso';
 import PainelSituacao from '@/components/cursos/painel-situacao';
 import type { DadosSituacao } from '@/components/cursos/painel-situacao';
 import InputError from '@/components/input-error';
@@ -57,6 +59,7 @@ const classeSelect =
  * @param instrutores As contas com o papel Instrutor.
  * @param modalidades Presencial e online.
  * @param acessos Aberto ao público e só filiados.
+ * @param pagamento_curso Dados para pagamento próprios do curso (só para quem tem "pagamentos.configurar"; null ou ausente = sem painel).
  * @returns A tela do formulário.
  */
 export default function CursoFormulario({
@@ -65,12 +68,14 @@ export default function CursoFormulario({
     instrutores,
     modalidades,
     acessos,
+    pagamento_curso = null,
 }: {
     curso: CursoEdicao | null;
     areas: { id: number; nome: string }[];
     instrutores: { id: number; name: string }[];
     modalidades: Opcao[];
     acessos: Opcao[];
+    pagamento_curso?: PagamentoDoCurso | null;
 }) {
     const editando = curso !== null;
     const titulo = editando ? `Editar "${curso.titulo}"` : 'Novo curso';
@@ -573,6 +578,13 @@ export default function CursoFormulario({
                         </>
                     )}
                 </Form>
+                {/* Dados para pagamento do curso (#41): painel separado, só com a permissão. */}
+                {editando && pagamento_curso && (
+                    <PainelPagamentoCurso
+                        cursoId={curso.id}
+                        dados={pagamento_curso}
+                    />
+                )}
             </div>
         </>
     );

@@ -7,6 +7,7 @@ import {
     GraduationCap,
     KeyRound,
     ClipboardCheck,
+    Landmark,
     LayoutGrid,
     Medal,
     Tags,
@@ -41,6 +42,8 @@ import { index as filiados } from '@/routes/cadastros/filiados';
 import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
 // Matrículas (#41): conferir o PIX e confirmar, para o item do menu.
 import { index as matriculasAdmin } from '@/routes/comando-geral/matriculas';
+// Dados para pagamento (#41): PIX e conta, para o item do menu.
+import { edit as pagamentoAdmin } from '@/routes/comando-geral/pagamento';
 // Livro-caixa (#59), para o item do menu.
 import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
@@ -97,6 +100,13 @@ const cadastrosNavItems: (NavItem & {
         href: matriculasAdmin(),
         icon: ClipboardCheck,
         permissao: 'pagamentos_confirmar',
+    },
+    // Dados para pagamento (#41): PIX e conta do IBTO e a chave "por curso".
+    {
+        title: 'Dados para pagamento',
+        href: pagamentoAdmin(),
+        icon: Landmark,
+        permissao: 'pagamentos_configurar',
     },
     {
         title: 'Áreas de atuação',

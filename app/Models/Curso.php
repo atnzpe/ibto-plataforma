@@ -41,6 +41,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $instrutor_especialidade
  * @property string|null $chamada
  * @property string|null $contato_whatsapp
+ * @property string|null $pag_pix_chave Dados para pagamento PRÓPRIOS do curso (só com a chave "por curso" ligada; ver DadosPagamento).
+ * @property string|null $pag_favorecido
+ * @property string|null $pag_banco
+ * @property string|null $pag_agencia
+ * @property string|null $pag_conta
  * @property SituacaoCurso $situacao
  * @property string|null $motivo_situacao
  * @property int|null $responsavel_id

@@ -3,7 +3,8 @@
  * que a pessoa está:
  * - visitante: "Entrar para se inscrever";
  * - sem matrícula: "Garantir minha vaga" (ou "Vagas esgotadas");
- * - aguardando pagamento: o PIX (chave, favorecido e valor), o envio do
+ * - aguardando pagamento: os dados para pagar (PIX e/ou conta, do curso ou
+ *   do IBTO, conforme a chave liga/desliga do Comando Geral), o envio do
  *   comprovante e "Desistir";
  * - confirmada: o selo "Matrícula confirmada" (o botão de assistir fica na página).
  * Mensagens de sucesso e de erro (com o código) aparecem no topo do quadro.
@@ -25,8 +26,19 @@ export type MatriculaDaPessoa = {
     situacao_rotulo: string;
     valor_centavos: number;
     tem_comprovante: boolean;
-    // Só quando aguardando pagamento. chave vazia = o IBTO ainda não cadastrou.
-    pix: { chave: string; favorecido: string } | null;
+    // Só quando aguardando pagamento (ver App\Support\DadosPagamento). Campos vazios = não cadastrados.
+    pagamento: DadosParaPagar | null;
+};
+
+/** Os dados para pagar: do curso ou do IBTO (chave liga/desliga no Comando Geral). */
+type DadosParaPagar = {
+    origem: 'curso' | 'ibto';
+    pix_chave: string;
+    favorecido: string;
+    banco: string;
+    agencia: string;
+    conta: string;
+    instrucoes: string;
 };
 
 /**
@@ -160,41 +172,82 @@ export default function QuadroMatricula({
                         Vaga reservada · aguardando pagamento
                     </p>
 
-                    {matricula.pix && matricula.pix.chave !== '' ? (
+                    {/* Dados para pagar (do curso ou do IBTO). Sem PIX nem conta: orienta pelo WhatsApp. */}
+                    {matricula.pagamento &&
+                    (matricula.pagamento.pix_chave !== '' ||
+                        matricula.pagamento.conta !== '') ? (
                         <dl className="grid gap-1 text-sm">
                             <dt className="text-xs text-[#5c5644]">Valor</dt>
                             <dd className="text-lg font-semibold">
                                 {formatarReais(matricula.valor_centavos)}
                             </dd>
-                            <dt className="text-xs text-[#5c5644]">
-                                Chave PIX
-                            </dt>
-                            {/* overflow-wrap: chave comprida quebra a linha (sem rolagem lateral). */}
-                            <dd className="font-mono [overflow-wrap:anywhere]">
-                                {matricula.pix.chave}
-                            </dd>
-                            <dt className="text-xs text-[#5c5644]">
-                                Favorecido
-                            </dt>
-                            <dd>{matricula.pix.favorecido}</dd>
-                            <dd className="mt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="min-h-11 w-full"
-                                    onClick={() => copiar(matricula.pix!.chave)}
-                                >
-                                    {copiada
-                                        ? 'Copiada!'
-                                        : 'Copiar a chave PIX'}
-                                </Button>
-                            </dd>
+                            {matricula.pagamento.pix_chave !== '' && (
+                                <>
+                                    <dt className="text-xs text-[#5c5644]">
+                                        Chave PIX
+                                    </dt>
+                                    {/* overflow-wrap: chave comprida quebra a linha (sem rolagem lateral). */}
+                                    <dd className="font-mono [overflow-wrap:anywhere]">
+                                        {matricula.pagamento.pix_chave}
+                                    </dd>
+                                </>
+                            )}
+                            {matricula.pagamento.favorecido !== '' && (
+                                <>
+                                    <dt className="text-xs text-[#5c5644]">
+                                        Favorecido
+                                    </dt>
+                                    <dd>{matricula.pagamento.favorecido}</dd>
+                                </>
+                            )}
+                            {/* Transferência: banco, agência e conta (só o que estiver cadastrado). */}
+                            {matricula.pagamento.conta !== '' && (
+                                <>
+                                    <dt className="text-xs text-[#5c5644]">
+                                        Transferência
+                                    </dt>
+                                    <dd className="[overflow-wrap:anywhere]">
+                                        {[
+                                            matricula.pagamento.banco,
+                                            matricula.pagamento.agencia &&
+                                                `Ag. ${matricula.pagamento.agencia}`,
+                                            `Conta ${matricula.pagamento.conta}`,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')}
+                                    </dd>
+                                </>
+                            )}
+                            {matricula.pagamento.instrucoes !== '' && (
+                                <dd className="mt-1 text-xs text-[#5c5644]">
+                                    {matricula.pagamento.instrucoes}
+                                </dd>
+                            )}
+                            {matricula.pagamento.pix_chave !== '' && (
+                                <dd className="mt-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="min-h-11 w-full"
+                                        onClick={() =>
+                                            copiar(
+                                                matricula.pagamento
+                                                    ?.pix_chave ?? '',
+                                            )
+                                        }
+                                    >
+                                        {copiada
+                                            ? 'Copiada!'
+                                            : 'Copiar a chave PIX'}
+                                    </Button>
+                                </dd>
+                            )}
                         </dl>
                     ) : (
-                        // Chave ainda não cadastrada no servidor: orienta a falar com o IBTO.
+                        // Nada cadastrado ainda: orienta a falar com o IBTO.
                         <p className="text-sm">
                             Fale com o IBTO pelo WhatsApp do curso para receber
-                            os dados do PIX.
+                            os dados para pagamento.
                         </p>
                     )}
 

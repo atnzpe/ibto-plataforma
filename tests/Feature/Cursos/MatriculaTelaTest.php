@@ -11,6 +11,7 @@
 use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
+use App\Models\PagamentoConfig;
 use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('local');
-    config(['app.pix.chave' => 'financeiro@ibto.test', 'app.pix.favorecido' => 'IBTO Teste']);
+    // Dados para pagamento do IBTO (tela do Comando Geral).
+    PagamentoConfig::atual()->update(['pix_chave' => 'financeiro@ibto.test', 'favorecido' => 'IBTO Teste']);
 
     $this->curso = Curso::create([
         'titulo' => 'Tiro Defensivo', 'modalidade' => 'online', 'acesso' => 'aberto',
@@ -39,7 +41,7 @@ test('garantir a vaga: aguardando pagamento, com o PIX no quadro e as vagas rest
         ->assertInertia(fn ($tela) => $tela
             ->where('vagas_restantes', 1)
             ->where('matricula.situacao', 'aguardando_pagamento')
-            ->where('matricula.pix.chave', 'financeiro@ibto.test'));
+            ->where('matricula.pagamento.pix_chave', 'financeiro@ibto.test'));
 });
 
 test('visitante não vê matrícula nem PIX; quem não está logado não matricula', function () {
