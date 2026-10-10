@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -105,6 +106,16 @@ class Curso extends Model
     public function instrutor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instrutor_id');
+    }
+
+    /**
+     * Os módulos do curso (#39), já na ordem.
+     *
+     * @return HasMany<CursoModulo, $this>
+     */
+    public function modulos(): HasMany
+    {
+        return $this->hasMany(CursoModulo::class)->orderBy('ordem')->orderBy('id');
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Curso;
 use App\Models\Filiado;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -91,6 +92,11 @@ class AppServiceProvider extends ServiceProvider
             // unidade que só abre a ficha dos alunos da própria unidade).
             return $filiado->equipe_id === $minhaEquipe;
         });
+
+        // "curso.conteudo" (#39): ver as aulas, o vídeo enviado e baixar a apostila
+        // de um curso. Por enquanto, só quem cuida dos cursos (Comando Geral); os
+        // INSCRITOS entram no bloco C4 (matrícula). Sem isso: 403, mesmo com o link.
+        Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar'));
     }
 
     /**

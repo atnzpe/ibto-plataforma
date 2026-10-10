@@ -12,6 +12,8 @@ use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
+use App\Http\Controllers\Cursos\AulaArquivoController;
+use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
@@ -131,6 +133,28 @@ Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
     ->group(function () {
         Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
         Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+
+        // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
+        Route::controller(ConteudoController::class)->group(function () {
+            Route::get('cursos/{curso}/conteudo', 'show')->name('cursos.conteudo');
+            Route::post('cursos/{curso}/modulos', 'storeModulo')->name('modulos.store');
+            Route::put('modulos/{modulo}', 'updateModulo')->name('modulos.update');
+            Route::post('modulos/{modulo}/mover', 'moverModulo')->name('modulos.mover');
+            Route::post('modulos/{modulo}/aulas', 'storeAula')->name('aulas.store');
+            Route::put('aulas/{aula}', 'updateAula')->name('aulas.update');
+            Route::post('aulas/{aula}/mover', 'moverAula')->name('aulas.mover');
+        });
+    });
+
+// Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver
+// é conferido pelo Gate "curso.conteudo" (sem acesso: 403, mesmo com o link).
+Route::middleware(['auth', 'verified'])
+    ->prefix('cursos/aulas/{aula}')
+    ->name('cursos.aulas.')
+    ->controller(AulaArquivoController::class)
+    ->group(function () {
+        Route::get('apostila', 'apostila')->name('apostila');
+        Route::get('video', 'video')->name('video');
     });
 
 // Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.

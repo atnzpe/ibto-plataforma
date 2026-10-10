@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatarReais } from '@/lib/dinheiro';
-import { create, edit, index } from '@/routes/comando-geral/cursos';
+import { conteudo, create, edit, index } from '@/routes/comando-geral/cursos';
 import { index as trilhas } from '@/routes/comando-geral/trilhas';
 
 /** Um curso como a lista mostra. */
@@ -248,18 +248,33 @@ export default function CursosIndex({
                                         {curso.situacao_rotulo}
                                     </td>
                                     <td className="w-px px-4 py-2 text-right whitespace-nowrap">
-                                        <Button
-                                            asChild
-                                            size="sm"
-                                            variant="outline"
-                                        >
-                                            <Link
-                                                href={edit(curso.id)}
-                                                aria-label={`Editar ${curso.titulo}`}
+                                        {/* Conteúdo (módulos e aulas) e Editar, lado a lado. */}
+                                        <span className="flex justify-end gap-2">
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
                                             >
-                                                Editar
-                                            </Link>
-                                        </Button>
+                                                <Link
+                                                    href={conteudo(curso.id)}
+                                                    aria-label={`Conteúdo de ${curso.titulo}`}
+                                                >
+                                                    Conteúdo
+                                                </Link>
+                                            </Button>
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                variant="outline"
+                                            >
+                                                <Link
+                                                    href={edit(curso.id)}
+                                                    aria-label={`Editar ${curso.titulo}`}
+                                                >
+                                                    Editar
+                                                </Link>
+                                            </Button>
+                                        </span>
                                     </td>
                                 </tr>
                             ))}
@@ -300,18 +315,33 @@ export default function CursosIndex({
                             <span className="text-muted-foreground">
                                 {curso.tipo}
                             </span>
-                            <Button
-                                asChild
-                                variant="outline"
-                                className="min-h-11 w-full"
-                            >
-                                <Link
-                                    href={edit(curso.id)}
-                                    aria-label={`Editar ${curso.titulo}`}
+                            {/* 2 botões iguais, na largura toda. */}
+                            <span className="grid grid-cols-2 gap-2">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="min-h-11"
                                 >
-                                    Editar
-                                </Link>
-                            </Button>
+                                    <Link
+                                        href={conteudo(curso.id)}
+                                        aria-label={`Conteúdo de ${curso.titulo}`}
+                                    >
+                                        Conteúdo
+                                    </Link>
+                                </Button>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="min-h-11"
+                                >
+                                    <Link
+                                        href={edit(curso.id)}
+                                        aria-label={`Editar ${curso.titulo}`}
+                                    >
+                                        Editar
+                                    </Link>
+                                </Button>
+                            </span>
                         </li>
                     ))}
                 </ul>
