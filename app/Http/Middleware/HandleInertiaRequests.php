@@ -27,6 +27,8 @@ class HandleInertiaRequests extends Middleware
         'comando_geral.ver',
         // Cursos (#39 / #40): Comando Geral ou quem propõe (Gate cursos.acessar).
         'cursos.acessar',
+        // Matrículas (#41): quem confirma os pagamentos PIX.
+        'pagamentos.confirmar',
     ];
 
     /**

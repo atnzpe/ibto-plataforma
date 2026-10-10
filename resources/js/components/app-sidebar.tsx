@@ -6,6 +6,7 @@ import {
     Gauge,
     GraduationCap,
     KeyRound,
+    ClipboardCheck,
     LayoutGrid,
     Medal,
     Tags,
@@ -38,6 +39,8 @@ import { index as equipes } from '@/routes/cadastros/equipes';
 import { index as filiados } from '@/routes/cadastros/filiados';
 // Cursos e trilhas do Comando Geral (#39), para o item do menu.
 import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
+// Matrículas (#41): conferir o PIX e confirmar, para o item do menu.
+import { index as matriculasAdmin } from '@/routes/comando-geral/matriculas';
 // Livro-caixa (#59), para o item do menu.
 import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
@@ -87,6 +90,13 @@ const cadastrosNavItems: (NavItem & {
         href: cursosAdmin(),
         icon: GraduationCap,
         permissao: 'cursos_acessar',
+    },
+    // Matrículas (#41): quem confirma os pagamentos PIX (secretaria/tesouraria).
+    {
+        title: 'Matrículas',
+        href: matriculasAdmin(),
+        icon: ClipboardCheck,
+        permissao: 'pagamentos_confirmar',
     },
     {
         title: 'Áreas de atuação',

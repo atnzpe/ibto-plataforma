@@ -17,6 +17,7 @@ use App\Http\Controllers\Cursos\AssistirController;
 use App\Http\Controllers\Cursos\AulaArquivoController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
+use App\Http\Controllers\Cursos\MatriculaPainelController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
@@ -158,6 +159,18 @@ Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
     ->name('comando-geral.')
     ->group(function () {
         Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+    });
+
+// Matrículas (#41, bloco C5c): a secretaria/tesouraria confere o comprovante,
+// confirma o pagamento ou cancela (permissão pagamentos.confirmar).
+Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])
+    ->prefix('comando-geral/matriculas')
+    ->name('comando-geral.matriculas.')
+    ->controller(MatriculaPainelController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('{matricula}/confirmar', 'confirmar')->name('confirmar');
+        Route::post('{matricula}/cancelar', 'cancelar')->name('cancelar');
     });
 
 // Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver

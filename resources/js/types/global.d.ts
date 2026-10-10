@@ -25,6 +25,7 @@ declare module '@inertiajs/core' {
                 financeiro_ver: boolean;
                 comando_geral_ver: boolean;
                 cursos_acessar: boolean;
+                pagamentos_confirmar: boolean;
             };
             // Mensagem de sucesso da última ação (ex.: "Área cadastrada."), ou null.
             sucesso: string | null;
