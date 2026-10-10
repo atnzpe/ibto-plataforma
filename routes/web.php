@@ -186,6 +186,10 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
     // Trilha em fluxograma (#38, bloco C4b).
     Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
+    Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
+        ->whereNumber(['curso', 'aula'])
+        ->name('catalogo.lembrete');
 });
 
 // Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.

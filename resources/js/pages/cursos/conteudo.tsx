@@ -39,6 +39,8 @@ type Aula = {
     hora_inicio: string | null;
     hora_fim: string | null;
     quem_aplica: string | null;
+    // Introdução pública do encontro (janela do cronograma).
+    introducao: string | null;
     tem_apostila: boolean;
     ativa: boolean;
 };
@@ -422,6 +424,17 @@ function JanelaAula({
                                     aria-label="Quem aplica o encontro"
                                 />
                                 <InputError message={errors.quem_aplica} />
+                                {/* Introdução PÚBLICA: aparece na janela do cronograma para quem ainda não se inscreveu. */}
+                                <textarea
+                                    name="introducao"
+                                    rows={2}
+                                    maxLength={500}
+                                    defaultValue={aula?.introducao ?? ''}
+                                    placeholder="Introdução pública (aparece no cronograma). Ex.: Postura, guarda e deslocamento básico."
+                                    aria-label="Introdução pública do encontro"
+                                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
+                                />
+                                <InputError message={errors.introducao} />
                             </fieldset>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="grid gap-2">

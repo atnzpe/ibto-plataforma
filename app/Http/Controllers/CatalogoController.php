@@ -20,7 +20,11 @@ use App\Models\Curso;
 use App\Models\CursoAula;
 use App\Models\CursoModulo;
 use App\Models\Trilha;
+use App\Support\Calendario;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -115,6 +119,10 @@ class CatalogoController extends Controller
                         'hora_fim' => $aula->hora_fim !== null ? substr($aula->hora_fim, 0, 5) : null,
                         'quem_aplica' => $aula->quem_aplica,
                         'tem_video' => $aula->video() !== null,
+                        // Janela do cronograma (C4d): a introdução PÚBLICA e os links de lembrete.
+                        'introducao' => $aula->introducao,
+                        'lembrete_url' => $aula->data !== null ? route('catalogo.lembrete', ['curso' => $curso->id, 'aula' => $aula->id]) : null,
+                        'google_agenda_url' => $this->linkGoogleAgenda($curso, $aula),
                     ])->values(),
                 ])->values(),
                 // Trilhas de que este curso faz parte (com a etapa em cada uma).
@@ -222,5 +230,116 @@ class CatalogoController extends Controller
         }
 
         return 'https://wa.me/'.$numeros;
+    }
+
+    /**
+     * LEMBRETE do encontro (#38, bloco C4d): baixa o arquivo .ics para a
+     * agenda do celular ou do computador, com aviso 1 dia e 1 hora antes.
+     * Público para curso publicado (como o cronograma); prévia para a equipe.
+     *
+     * @param  Curso  $curso  Ex.: /cursos/7/aulas/31/lembrete → curso 7.
+     * @param  CursoAula  $aula  Ex.: aula 31.
+     * @return HttpResponse O arquivo "encontro-ibto-31.ics".
+     */
+    public function lembrete(Curso $curso, CursoAula $aula): HttpResponse
+    {
+        // Curso não publicado: só quem pode ver a prévia; os outros, 404.
+        abort_if($curso->situacao !== SituacaoCurso::Publicado && ! Gate::allows('curso.conteudo', $curso), 404);
+
+        $quando = $this->momentos($aula);
+        // Aula de outro curso, desativada, de módulo desativado ou sem data: 404.
+        abort_if(
+            $quando === null
+                || $aula->modulo->curso_id !== $curso->id
+                || ! $aula->ativa
+                || ! $aula->modulo->ativo,
+            404,
+        );
+
+        // A descrição: a introdução, quem aplica e o link da página do curso.
+        $descricao = implode("\n", array_filter([
+            $aula->introducao,
+            $aula->quem_aplica !== null ? "Com: {$aula->quem_aplica}" : null,
+            'Detalhes: '.route('catalogo.curso', $curso->id),
+        ]));
+
+        $ics = Calendario::evento(
+            uid: "aula-{$aula->id}@".request()->getHost(),
+            titulo: "{$curso->titulo} — {$aula->titulo}",
+            inicio: $quando['inicio'],
+            fim: $quando['fim'],
+            diaInteiro: $quando['dia_inteiro'],
+            local: $curso->local,
+            descricao: $descricao,
+            url: route('catalogo.curso', $curso->id),
+        );
+
+        // text/calendar: o celular reconhece e oferece "Adicionar à agenda".
+        return response($ics, 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"encontro-ibto-{$aula->id}.ics\"",
+        ]);
+    }
+
+    /**
+     * Link "Adicionar ao Google Agenda" (abre o Google com o encontro preenchido),
+     * ou null quando a aula não tem data.
+     *
+     * @param  Curso  $curso  Para o título e o local.
+     * @param  CursoAula  $aula  Para a data, o horário e a introdução.
+     * @return string|null Ex.: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=...'
+     */
+    private function linkGoogleAgenda(Curso $curso, CursoAula $aula): ?string
+    {
+        $quando = $this->momentos($aula);
+        // Sem data: sem link.
+        if ($quando === null) {
+            return null;
+        }
+
+        // Dia inteiro: só as datas, sem fuso (o fim é o dia seguinte). Com hora: em UTC ("Z").
+        $datas = $quando['dia_inteiro']
+            ? $quando['inicio']->format('Ymd').'/'.$quando['fim']->format('Ymd')
+            : $quando['inicio']->copy()->utc()->format('Ymd\THis\Z').'/'.$quando['fim']->copy()->utc()->format('Ymd\THis\Z');
+
+        return 'https://calendar.google.com/calendar/render?'.http_build_query([
+            'action' => 'TEMPLATE',
+            'text' => "{$curso->titulo} — {$aula->titulo}",
+            'dates' => $datas,
+            'details' => trim(($aula->introducao ?? '')."\n".route('catalogo.curso', $curso->id)),
+            'location' => $curso->local ?? '',
+        ]);
+    }
+
+    /**
+     * Começo e fim do encontro, no horário de Brasília (fuso da plataforma).
+     * Sem hora de início: o dia inteiro. Sem hora de fim: a duração da aula ou 1 hora.
+     *
+     * @param  CursoAula  $aula  A aula. Ex.: data 10/10/2026, das 09:00 às 12:00.
+     * @return array{inicio: CarbonInterface, fim: CarbonInterface, dia_inteiro: bool}|null null = aula sem data.
+     */
+    private function momentos(CursoAula $aula): ?array
+    {
+        // Sem data, não há encontro para lembrar.
+        if ($aula->data === null) {
+            return null;
+        }
+
+        $dia = $aula->data->toDateString();
+
+        // Sem hora de início: o evento ocupa o dia todo (fim = dia seguinte, regra do formato).
+        if ($aula->hora_inicio === null) {
+            $inicio = Carbon::parse($dia);
+
+            return ['inicio' => $inicio, 'fim' => $inicio->copy()->addDay(), 'dia_inteiro' => true];
+        }
+
+        $inicio = Carbon::parse("{$dia} {$aula->hora_inicio}");
+        // Fim: o horário digitado; senão, a duração; senão, 1 hora.
+        $fim = $aula->hora_fim !== null
+            ? Carbon::parse("{$dia} {$aula->hora_fim}")
+            : $inicio->copy()->addMinutes($aula->duracao_minutos ?? 60);
+
+        return ['inicio' => $inicio, 'fim' => $fim, 'dia_inteiro' => false];
     }
 }

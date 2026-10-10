@@ -29,12 +29,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $hora_inicio
  * @property string|null $hora_fim
  * @property string|null $quem_aplica
+ * @property string|null $introducao
  * @property bool $ativa
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 // "apostila" e "video_arquivo" ficam de fora: quem grava é o controlador (arquivos no disco privado).
-#[Fillable(['modulo_id', 'titulo', 'ordem', 'video_url', 'conteudo', 'duracao_minutos', 'data', 'hora_inicio', 'hora_fim', 'quem_aplica', 'ativa'])]
+#[Fillable(['modulo_id', 'titulo', 'ordem', 'video_url', 'conteudo', 'duracao_minutos', 'data', 'hora_inicio', 'hora_fim', 'quem_aplica', 'introducao', 'ativa'])]
 class CursoAula extends Model
 {
     protected $table = 'curso_aulas';

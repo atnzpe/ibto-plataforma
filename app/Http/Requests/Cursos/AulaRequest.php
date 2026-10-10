@@ -42,6 +42,8 @@ class AulaRequest extends FormRequest
             'hora_inicio' => ['nullable', 'date_format:H:i'],
             'hora_fim' => ['nullable', 'date_format:H:i', 'after:hora_inicio'],
             'quem_aplica' => ['nullable', 'string', 'max:100'],
+            // Introdução PÚBLICA do encontro (janela do cronograma, C4d): curta, até 500 letras.
+            'introducao' => ['nullable', 'string', 'max:500'],
             'ativa' => ['required', 'boolean'],
             // Só PDF, até 10 MB (10240 KB).
             'apostila' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],

@@ -9,6 +9,16 @@
  * outro no celular.
  */
 import { Head, Link } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+// Janela do encontro (C4d): componentes prontos de "janela" (modal) acessível.
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { formatarReais } from '@/lib/dinheiro';
 import { dataBr } from '@/pages/catalogo/index';
 import type { CartaoCurso } from '@/pages/catalogo/index';
@@ -25,6 +35,10 @@ type Aula = {
     hora_fim: string | null;
     quem_aplica: string | null;
     tem_video: boolean;
+    // Janela do cronograma (C4d): introdução pública e os links de lembrete (null sem data).
+    introducao: string | null;
+    lembrete_url: string | null;
+    google_agenda_url: string | null;
 };
 
 type CursoDetalhe = CartaoCurso & {
@@ -42,6 +56,93 @@ type CursoDetalhe = CartaoCurso & {
     trilhas: { id: number; nome: string; etapa: number }[];
 };
 
+/**
+ * JANELA DO ENCONTRO (#38, bloco C4d; conversa de 23/09/2026 com a Aline e o
+ * Eduardo): o encontro do cronograma vira um botão; ao tocar, abre uma janela
+ * com o dia, o horário, o local, quem aplica, a introdução e o LEMBRETE
+ * (arquivo de agenda .ics ou o Google Agenda).
+ *
+ * @param aula O encontro. Ex.: { titulo: 'Aula 1', data: '2026-10-10', hora_inicio: '09:00' }
+ * @param local Onde acontece (o local do curso). Ex.: 'Recife/PE'
+ * @returns O botão com a data e a janela.
+ */
+function JanelaEncontro({ aula, local }: { aula: Aula; local: string | null }) {
+    // Texto do horário. Ex.: "09:00 às 12:00", "a partir das 09:00" ou null (dia inteiro).
+    const horario = aula.hora_inicio
+        ? aula.hora_fim
+            ? `${aula.hora_inicio} às ${aula.hora_fim}`
+            : `a partir das ${aula.hora_inicio}`
+        : null;
+
+    return (
+        <Dialog>
+            {/* O botão mostra a data e a hora; 44 px de altura para o dedo. */}
+            <DialogTrigger asChild>
+                <button
+                    type="button"
+                    className="ml-1 inline-flex min-h-11 items-center rounded-lg border border-[#6b5d3a] px-2 text-xs text-[#c9bd94] hover:bg-[#2a2721]"
+                    aria-label={`Detalhes e lembrete do encontro ${aula.titulo}`}
+                >
+                    📅 {dataBr(aula.data ?? '')}
+                    {aula.hora_inicio ? ` ${aula.hora_inicio}` : ''}
+                </button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{aula.titulo}</DialogTitle>
+                    {aula.introducao && (
+                        <DialogDescription className="whitespace-pre-line">
+                            {aula.introducao}
+                        </DialogDescription>
+                    )}
+                </DialogHeader>
+
+                {/* Os detalhes em pares "nome: valor". */}
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                    <dt className="text-muted-foreground">Dia</dt>
+                    <dd>{dataBr(aula.data ?? '')}</dd>
+                    <dt className="text-muted-foreground">Horário</dt>
+                    <dd>{horario ?? 'O dia todo'}</dd>
+                    {local && (
+                        <>
+                            <dt className="text-muted-foreground">Local</dt>
+                            <dd>{local}</dd>
+                        </>
+                    )}
+                    {aula.quem_aplica && (
+                        <>
+                            <dt className="text-muted-foreground">
+                                Quem aplica
+                            </dt>
+                            <dd>{aula.quem_aplica}</dd>
+                        </>
+                    )}
+                </dl>
+
+                {/* Lembrete: 2 botões iguais (empilhados no celular). */}
+                <div className="grid gap-2 sm:grid-cols-2">
+                    {aula.lembrete_url && (
+                        <Button asChild className="min-h-11">
+                            {/* Link comum: o navegador baixa o .ics e o celular oferece "Adicionar à agenda". */}
+                            <a href={aula.lembrete_url}>Lembrete na agenda</a>
+                        </Button>
+                    )}
+                    {aula.google_agenda_url && (
+                        <Button asChild variant="outline" className="min-h-11">
+                            <a
+                                href={aula.google_agenda_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Google Agenda
+                            </a>
+                        </Button>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 // Classe comum dos "selos" (etiquetas arredondadas).
 const selo = 'rounded-full px-3 py-0.5 text-xs';
 
@@ -238,8 +339,15 @@ export default function PaginaCurso({
                                                         ) : (
                                                             aula.titulo
                                                         )}
-                                                        {aula.data &&
-                                                            ` — ${dataBr(aula.data)}${aula.hora_inicio ? ` ${aula.hora_inicio}` : ''}`}
+                                                        {/* Encontro com data: botão que abre a janela com detalhes e lembrete. */}
+                                                        {aula.data && (
+                                                            <JanelaEncontro
+                                                                aula={aula}
+                                                                local={
+                                                                    curso.local
+                                                                }
+                                                            />
+                                                        )}
                                                         {!aula.data &&
                                                             aula.duracao_minutos &&
                                                             ` — ${aula.duracao_minutos} min`}
