@@ -56,7 +56,7 @@ test('a edição abre com o valor no formato do campo', function () {
 
 test('editar um pendente corrige o valor e registra antes e depois', function () {
     $this->put(route('financeiro.lancamentos.update', $this->lancamento), camposEditados($this->categoria, '12,50'))
-        ->assertRedirect(route('financeiro.lancamentos.index', ['mes' => '2026-10']));
+        ->assertRedirect(route('financeiro.lancamentos.index', ['de' => '2026-10-01', 'ate' => '2026-10-31']));
 
     $atual = $this->lancamento->fresh();
     expect($atual->valor_centavos)->toBe(1250);

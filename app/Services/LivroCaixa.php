@@ -377,12 +377,24 @@ class LivroCaixa
     {
         // Primeiro e último dia do mês. Ex.: 2027-03-01 e 2027-03-31.
         $inicio = Carbon::create($ano, $mes, 1)->startOfDay();
-        $fim = $inicio->copy()->endOfMonth();
 
-        // Soma os pagos do mês, cada um com o sinal certo (ver FinLancamento::valorNoSaldo).
+        return $this->saldoEntre($inicio->toDateString(), $inicio->copy()->endOfMonth()->toDateString());
+    }
+
+    /**
+     * Saldo de um PERÍODO qualquer (filtro "de / até", pedido do Gleyson em
+     * 10/10/2026), com as mesmas regras do saldo do mês.
+     *
+     * @param  string  $de  1º dia. Ex.: '2027-09-15'
+     * @param  string  $ate  Último dia. Ex.: '2027-10-15'
+     * @return int Em centavos; negativo se saiu mais do que entrou.
+     */
+    public function saldoEntre(string $de, string $ate): int
+    {
+        // Soma os pagos do período, cada um com o sinal certo (ver FinLancamento::valorNoSaldo).
         return FinLancamento::query()
             ->where('situacao', 'pago')
-            ->whereBetween('pago_em', [$inicio->toDateString(), $fim->toDateString()])
+            ->whereBetween('pago_em', [$de, $ate])
             ->get()
             ->sum(fn (FinLancamento $lancamento) => $lancamento->valorNoSaldo());
     }

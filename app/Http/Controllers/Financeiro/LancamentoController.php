@@ -20,9 +20,9 @@ use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
 use App\Services\LivroCaixa;
 use App\Support\Dinheiro;
+use App\Support\Periodo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -52,13 +52,11 @@ class LancamentoController extends Controller
         // Visão pedida; se vier algo fora da lista, usa "todos".
         $visao = in_array($request->query('visao'), self::VISOES, true) ? (string) $request->query('visao') : 'todos';
 
-        // Mês pedido no formato "2027-03"; se vier vazio ou errado, usa o mês de hoje.
-        $mesTexto = (string) $request->query('mes', '');
-        $mes = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mesTexto) === 1
-            ? Carbon::createFromFormat('Y-m-d', $mesTexto.'-01')->startOfDay()
-            : now()->startOfMonth();
-        $inicio = $mes->copy()->startOfMonth()->toDateString();
-        $fim = $mes->copy()->endOfMonth()->toDateString();
+        // Período pedido ("de" e "até"; padrão = mês atual), pedido do Gleyson em
+        // 10/10/2026. A regra fica em App\Support\Periodo, igual para todos os filtros.
+        $periodo = Periodo::doPedido($request);
+        $inicio = $periodo->inicio->toDateString();
+        $fim = $periodo->fim->toDateString();
 
         // Consulta da lista, já com a categoria (evita uma consulta por linha).
         // withExists('estorno'): junto, o banco diz se cada um já foi estornado (estorno_exists).
@@ -68,7 +66,7 @@ class LancamentoController extends Controller
             // Vencidos de qualquer mês: quem está atrasado não pode sumir da lista.
             $consulta->vencidos();
         } else {
-            // As outras visões mostram o que VENCE no mês escolhido.
+            // As outras visões mostram o que VENCE no período escolhido.
             $consulta->whereBetween('vencimento', [$inicio, $fim]);
             // "receber" = só receitas; "pagar" = só despesas; "todos" = sem filtro.
             if ($visao !== 'todos') {
@@ -76,18 +74,18 @@ class LancamentoController extends Controller
             }
         }
 
-        // Totais do mês: o que falta receber e pagar (pendentes que vencem no mês).
-        $pendentesDoMes = FinLancamento::query()
+        // Totais do período: o que falta receber e pagar (pendentes que vencem nele).
+        $pendentesDoPeriodo = FinLancamento::query()
             ->where('situacao', 'pendente')
             ->whereBetween('vencimento', [$inicio, $fim]);
 
         return Inertia::render('financeiro/lancamentos/index', [
-            'filtros' => ['mes' => $mes->format('Y-m'), 'visao' => $visao],
+            'filtros' => [...$periodo->paraTela(), 'visao' => $visao],
             'lancamentos' => $this->comParcelasEmAberto($consulta->limit(500)->get())->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
             'totais' => [
-                'saldo_centavos' => $caixa->saldoDoMes($mes->year, $mes->month),
-                'a_receber_centavos' => (int) (clone $pendentesDoMes)->where('tipo', 'receita')->sum('valor_centavos'),
-                'a_pagar_centavos' => (int) (clone $pendentesDoMes)->where('tipo', 'despesa')->sum('valor_centavos'),
+                'saldo_centavos' => $caixa->saldoEntre($inicio, $fim),
+                'a_receber_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'receita')->sum('valor_centavos'),
+                'a_pagar_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'despesa')->sum('valor_centavos'),
                 'vencidos' => FinLancamento::query()->vencidos()->count(),
             ],
             'pode_lancar' => $request->user()?->can('financeiro.lancar') ?? false,
@@ -150,7 +148,7 @@ class LancamentoController extends Controller
             return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
+        return to_route('financeiro.lancamentos.index', $this->mesDe($lancamento))
             ->with('sucesso', $parcelas > 1 ? "Lançamento cadastrado em {$parcelas} parcelas." : 'Lançamento cadastrado.');
     }
 
@@ -199,7 +197,7 @@ class LancamentoController extends Controller
             return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
+        return to_route('financeiro.lancamentos.index', $this->mesDe($lancamento))
             ->with('sucesso', 'Lançamento atualizado.');
     }
 
@@ -280,6 +278,20 @@ class LancamentoController extends Controller
             fn () => $caixa->estornar($lancamento, $request->string('motivo')->toString(), $data),
             'Estorno registrado.',
         );
+    }
+
+    /**
+     * Filtro "de / até" do mês do vencimento de um lançamento, para voltar à
+     * lista mostrando onde ele está. Ex.: vence em 15/10/2026 → de 01/10 até 31/10.
+     *
+     * @return array{de: string, ate: string}
+     */
+    private function mesDe(FinLancamento $lancamento): array
+    {
+        return [
+            'de' => $lancamento->vencimento->copy()->startOfMonth()->toDateString(),
+            'ate' => $lancamento->vencimento->copy()->endOfMonth()->toDateString(),
+        ];
     }
 
     /**

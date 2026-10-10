@@ -76,7 +76,7 @@ test('lançamento à vista não aceita "todas as parcelas"', function () {
 });
 
 test('a lista informa quantas parcelas do título estão em aberto', function () {
-    $this->get(route('financeiro.lancamentos.index', ['mes' => '2026-11']))
+    $this->get(route('financeiro.lancamentos.index', ['de' => '2026-11-01', 'ate' => '2026-11-30']))
         ->assertInertia(fn ($tela) => $tela
             ->where('lancamentos.0.parcela_numero', 2)
             ->where('lancamentos.0.parcela_total', 4)
