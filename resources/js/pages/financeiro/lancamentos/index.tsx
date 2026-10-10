@@ -6,6 +6,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 // Botões e janelas de baixa, cancelar e estornar (#59).
 import AcoesLancamento from '@/components/financeiro/acoes-lancamento';
+// Filtro "De / Até" (o mesmo em todas as telas com data).
+import FiltroPeriodo from '@/components/filtro-periodo';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 // Endereço do histórico de toda movimentação (#59).
@@ -61,7 +63,7 @@ function dataBr(data: string): string {
 /**
  * @param lancamentos As linhas do filtro atual.
  * @param totais Os totais do mês (saldo, a receber, a pagar, vencidos).
- * @param filtros O mês e a visão escolhidos. Ex.: { mes: '2027-03', visao: 'todos' }
+ * @param filtros O período e a visão escolhidos. Ex.: { de: '2027-03-01', ate: '2027-03-31', visao: 'todos' }
  * @param pode_lancar true se a pessoa pode lançar, dar baixa, cancelar e estornar.
  * @param formas As formas de pagamento ativas, para a janela de baixa.
  * @returns A tela do livro-caixa.
@@ -99,15 +101,15 @@ export default function LancamentosIndex({
     // Os 4 quadros do topo: título → valor já escrito.
     const quadros = [
         {
-            titulo: 'Saldo do mês (pagos)',
+            titulo: 'Saldo do período (pagos)',
             valor: formatarReais(totais.saldo_centavos),
         },
         {
-            titulo: 'A receber no mês',
+            titulo: 'A receber no período',
             valor: formatarReais(totais.a_receber_centavos),
         },
         {
-            titulo: 'A pagar no mês',
+            titulo: 'A pagar no período',
             valor: formatarReais(totais.a_pagar_centavos),
         },
         { titulo: 'Vencidos (todos os meses)', valor: String(totais.vencidos) },
@@ -203,24 +205,14 @@ export default function LancamentosIndex({
                     ))}
                 </dl>
 
-                {/* Filtros: mês e visão. */}
+                {/* Filtros: período (de / até) e visão. */}
                 <div className="flex flex-wrap items-end gap-4">
-                    <div className="grid gap-1">
-                        <label htmlFor="mes" className="text-sm font-medium">
-                            Mês
-                        </label>
-                        <input
-                            id="mes"
-                            type="month"
-                            value={filtros.mes}
-                            // Só recarrega quando o mês está completo (ex.: '2027-03').
-                            onChange={(evento) =>
-                                evento.target.value &&
-                                filtrar({ mes: evento.target.value })
-                            }
-                            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-                        />
-                    </div>
+                    <FiltroPeriodo
+                        prefixo="livro-caixa"
+                        de={filtros.de}
+                        ate={filtros.ate}
+                        aoMudar={(periodo) => filtrar(periodo)}
+                    />
 
                     <div
                         role="group"

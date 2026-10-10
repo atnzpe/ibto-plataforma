@@ -20,9 +20,10 @@ use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
 use App\Services\LivroCaixa;
 use App\Support\Dinheiro;
+use App\Support\Periodo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +31,14 @@ class LancamentoController extends Controller
 {
     // As "visões" da lista: todos, só a receber, só a pagar, só os vencidos.
     private const VISOES = ['todos', 'receber', 'pagar', 'vencidos'];
+
+    /**
+     * Título parcelado (grupo) → quantas parcelas pendentes, preenchido por
+     * comParcelasEmAberto() antes de montar a lista.
+     *
+     * @var array<string, int>
+     */
+    private array $emAbertoPorTitulo = [];
 
     /**
      * Lista do mês escolhido, com os totais no topo.
@@ -43,13 +52,11 @@ class LancamentoController extends Controller
         // Visão pedida; se vier algo fora da lista, usa "todos".
         $visao = in_array($request->query('visao'), self::VISOES, true) ? (string) $request->query('visao') : 'todos';
 
-        // Mês pedido no formato "2027-03"; se vier vazio ou errado, usa o mês de hoje.
-        $mesTexto = (string) $request->query('mes', '');
-        $mes = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mesTexto) === 1
-            ? Carbon::createFromFormat('Y-m-d', $mesTexto.'-01')->startOfDay()
-            : now()->startOfMonth();
-        $inicio = $mes->copy()->startOfMonth()->toDateString();
-        $fim = $mes->copy()->endOfMonth()->toDateString();
+        // Período pedido ("de" e "até"; padrão = mês atual), pedido do Gleyson em
+        // 10/10/2026. A regra fica em App\Support\Periodo, igual para todos os filtros.
+        $periodo = Periodo::doPedido($request);
+        $inicio = $periodo->inicio->toDateString();
+        $fim = $periodo->fim->toDateString();
 
         // Consulta da lista, já com a categoria (evita uma consulta por linha).
         // withExists('estorno'): junto, o banco diz se cada um já foi estornado (estorno_exists).
@@ -59,7 +66,7 @@ class LancamentoController extends Controller
             // Vencidos de qualquer mês: quem está atrasado não pode sumir da lista.
             $consulta->vencidos();
         } else {
-            // As outras visões mostram o que VENCE no mês escolhido.
+            // As outras visões mostram o que VENCE no período escolhido.
             $consulta->whereBetween('vencimento', [$inicio, $fim]);
             // "receber" = só receitas; "pagar" = só despesas; "todos" = sem filtro.
             if ($visao !== 'todos') {
@@ -67,18 +74,18 @@ class LancamentoController extends Controller
             }
         }
 
-        // Totais do mês: o que falta receber e pagar (pendentes que vencem no mês).
-        $pendentesDoMes = FinLancamento::query()
+        // Totais do período: o que falta receber e pagar (pendentes que vencem nele).
+        $pendentesDoPeriodo = FinLancamento::query()
             ->where('situacao', 'pendente')
             ->whereBetween('vencimento', [$inicio, $fim]);
 
         return Inertia::render('financeiro/lancamentos/index', [
-            'filtros' => ['mes' => $mes->format('Y-m'), 'visao' => $visao],
-            'lancamentos' => $consulta->limit(500)->get()->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
+            'filtros' => [...$periodo->paraTela(), 'visao' => $visao],
+            'lancamentos' => $this->comParcelasEmAberto($consulta->limit(500)->get())->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
             'totais' => [
-                'saldo_centavos' => $caixa->saldoDoMes($mes->year, $mes->month),
-                'a_receber_centavos' => (int) (clone $pendentesDoMes)->where('tipo', 'receita')->sum('valor_centavos'),
-                'a_pagar_centavos' => (int) (clone $pendentesDoMes)->where('tipo', 'despesa')->sum('valor_centavos'),
+                'saldo_centavos' => $caixa->saldoEntre($inicio, $fim),
+                'a_receber_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'receita')->sum('valor_centavos'),
+                'a_pagar_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'despesa')->sum('valor_centavos'),
                 'vencidos' => FinLancamento::query()->vencidos()->count(),
             ],
             'pode_lancar' => $request->user()?->can('financeiro.lancar') ?? false,
@@ -141,7 +148,7 @@ class LancamentoController extends Controller
             return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
+        return to_route('financeiro.lancamentos.index', $this->mesDe($lancamento))
             ->with('sucesso', $parcelas > 1 ? "Lançamento cadastrado em {$parcelas} parcelas." : 'Lançamento cadastrado.');
     }
 
@@ -190,7 +197,7 @@ class LancamentoController extends Controller
             return back()->withInput()->withErrors(['categoria_id' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return to_route('financeiro.lancamentos.index', ['mes' => $lancamento->vencimento->format('Y-m')])
+        return to_route('financeiro.lancamentos.index', $this->mesDe($lancamento))
             ->with('sucesso', 'Lançamento atualizado.');
     }
 
@@ -229,8 +236,27 @@ class LancamentoController extends Controller
      */
     public function cancelar(MotivoRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
     {
+        $motivo = $request->string('motivo')->toString();
+
+        // "todas": cancela as parcelas em aberto do título inteiro (pedido do
+        // Gleyson, 10/10/2026). Senão, só este lançamento.
+        if ($request->input('escopo') === 'todas') {
+            $quantas = 0;
+
+            return $this->executar(
+                function () use ($caixa, $lancamento, $motivo, &$quantas): void {
+                    $quantas = $caixa->cancelarParcelas($lancamento, $motivo);
+                },
+                // "function () use (&$quantas)", e não "fn () =>": a função curta
+                // copiaria $quantas ainda valendo 0; o "&" lê o valor depois da ação.
+                function () use (&$quantas): string {
+                    return "{$quantas} parcela(s) em aberto do título cancelada(s).";
+                },
+            );
+        }
+
         return $this->executar(
-            fn () => $caixa->cancelar($lancamento, $request->string('motivo')->toString()),
+            fn () => $caixa->cancelar($lancamento, $motivo),
             'Lançamento cancelado.',
         );
     }
@@ -255,14 +281,54 @@ class LancamentoController extends Controller
     }
 
     /**
+     * Filtro "de / até" do mês do vencimento de um lançamento, para voltar à
+     * lista mostrando onde ele está. Ex.: vence em 15/10/2026 → de 01/10 até 31/10.
+     *
+     * @return array{de: string, ate: string}
+     */
+    private function mesDe(FinLancamento $lancamento): array
+    {
+        return [
+            'de' => $lancamento->vencimento->copy()->startOfMonth()->toDateString(),
+            'ate' => $lancamento->vencimento->copy()->endOfMonth()->toDateString(),
+        ];
+    }
+
+    /**
+     * Antes de montar a lista: conta, numa consulta só, quantas parcelas em
+     * aberto cada título parcelado da lista tem (guarda em $emAbertoPorTitulo).
+     *
+     * @param  Collection<int, FinLancamento>  $lancamentos  As linhas da lista.
+     * @return Collection<int, FinLancamento> As mesmas linhas (para encadear).
+     */
+    private function comParcelasEmAberto(Collection $lancamentos): Collection
+    {
+        // Os títulos parcelados que aparecem na lista. Ex.: ['9f1c...', 'a2b7...'].
+        $grupos = $lancamentos->pluck('grupo_parcelas')->filter()->unique()->values();
+
+        // Grupo → quantas pendentes. Ex.: ['9f1c...' => 8].
+        $this->emAbertoPorTitulo = $grupos->isEmpty() ? [] : FinLancamento::query()
+            ->whereIn('grupo_parcelas', $grupos)
+            ->where('situacao', 'pendente')
+            ->selectRaw('grupo_parcelas, count(*) as quantidade')
+            ->groupBy('grupo_parcelas')
+            ->pluck('quantidade', 'grupo_parcelas')
+            ->map(fn ($quantidade) => (int) $quantidade)
+            ->all();
+
+        return $lancamentos;
+    }
+
+    /**
      * Roda uma ação do livro-caixa e volta para a lista. Se a REGRA recusar
      * (ex.: estornar duas vezes), volta com a mensagem e o código, sem erro 500.
      *
      * @param  callable(): mixed  $acao  A ação. Ex.: fn () => $caixa->pagar(...)
-     * @param  string  $sucesso  A mensagem quando dá certo. Ex.: 'Baixa registrada.'
+     * @param  string|callable(): string  $sucesso  A mensagem quando dá certo. Ex.: 'Baixa registrada.'
+     *                                              Pode ser uma função, montada DEPOIS da ação (ex.: com a quantidade cancelada).
      * @return RedirectResponse De volta à tela anterior.
      */
-    private function executar(callable $acao, string $sucesso): RedirectResponse
+    private function executar(callable $acao, string|callable $sucesso): RedirectResponse
     {
         try {
             $acao();
@@ -271,7 +337,8 @@ class LancamentoController extends Controller
             return back()->withErrors(['acao' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return back()->with('sucesso', $sucesso);
+        // Mensagem pronta, ou montada agora (depois da ação).
+        return back()->with('sucesso', is_callable($sucesso) ? $sucesso() : $sucesso);
     }
 
     /**
@@ -296,6 +363,13 @@ class LancamentoController extends Controller
             'estorno' => $lancamento->estorno_de_id !== null,
             // true se este lançamento JÁ tem um estorno (vem do withExists da consulta).
             'estornado' => (bool) ($lancamento->getAttribute('estorno_exists') ?? false),
+            // Parcela "3 de 10" (vazio = à vista) e quantas parcelas do título ainda
+            // estão em aberto (para a janela de cancelar oferecer "todas").
+            'parcela_numero' => $lancamento->parcela_numero,
+            'parcela_total' => $lancamento->parcela_total,
+            'parcelas_em_aberto' => $lancamento->grupo_parcelas !== null
+                ? ($this->emAbertoPorTitulo[$lancamento->grupo_parcelas] ?? 0)
+                : 0,
         ];
     }
 }

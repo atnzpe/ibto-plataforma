@@ -55,7 +55,7 @@ test('administrador vê a lista do mês com os totais', function () {
     // De abril: não aparece em março.
     lancar('despesa', 100, '2027-04-05');
 
-    $this->get(route('financeiro.lancamentos.index', ['mes' => '2027-03']))
+    $this->get(route('financeiro.lancamentos.index', ['de' => '2027-03-01', 'ate' => '2027-03-31']))
         ->assertOk()
         ->assertInertia(fn (Assert $tela) => $tela
             ->component('financeiro/lancamentos/index')
@@ -70,7 +70,7 @@ test('visão "a pagar" mostra só despesas', function () {
     lancar('receita', 9000, '2027-03-10');
     lancar('despesa', 4990, '2027-03-20');
 
-    $this->get(route('financeiro.lancamentos.index', ['mes' => '2027-03', 'visao' => 'pagar']))
+    $this->get(route('financeiro.lancamentos.index', ['de' => '2027-03-01', 'ate' => '2027-03-31', 'visao' => 'pagar']))
         ->assertInertia(fn (Assert $tela) => $tela
             ->has('lancamentos', 1)
             ->where('lancamentos.0.tipo', 'despesa'));
@@ -98,7 +98,7 @@ test('novo lançamento: "90,00" vira 9000 centavos e nasce pendente', function (
         'descricao' => 'Tarifa do banco',
         'valor' => '90,00',
         'vencimento' => '2027-03-31',
-    ])->assertRedirect(route('financeiro.lancamentos.index', ['mes' => '2027-03']));
+    ])->assertRedirect(route('financeiro.lancamentos.index', ['de' => '2027-03-01', 'ate' => '2027-03-31']));
 
     $lancamento = FinLancamento::first();
     expect($lancamento->valor_centavos)->toBe(9000);

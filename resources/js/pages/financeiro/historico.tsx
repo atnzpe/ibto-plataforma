@@ -5,6 +5,8 @@
  * Responsiva: tabela em tela larga; cartões no celular (sem rolagem lateral).
  */
 import { Head, Link, router } from '@inertiajs/react';
+// Filtro "De / Até" (o mesmo em todas as telas com data).
+import FiltroPeriodo from '@/components/filtro-periodo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +42,7 @@ const ROTULOS: Record<string, string> = {
     LANCAMENTO_ESTORNADO: 'Estornou', // Ex.: "Fulano estornou o lançamento nº 7"
     LANCAMENTO_PAGO_PARCIAL: 'Deu baixa parcial',
     ANUIDADE_PAGA: 'Recebeu anuidade',
+    PARCELAS_CANCELADAS: 'Cancelou as parcelas',
 };
 
 /**
@@ -104,7 +107,7 @@ function detalhe(linha: LinhaHistorico): string {
 
 /**
  * @param linhas As linhas da página atual.
- * @param filtros Ex.: { mes: '2026-10', lancamento: 7 }
+ * @param filtros Ex.: { de: '2026-10-01', ate: '2026-10-31', lancamento: 7 } (datas vazias = todo o histórico)
  * @param paginacao A página atual, a última, o total e os links.
  * @returns A tela do histórico.
  */
@@ -114,7 +117,7 @@ export default function Historico({
     paginacao,
 }: {
     linhas: LinhaHistorico[];
-    filtros: { mes: string; lancamento: number | null };
+    filtros: { de: string; ate: string; lancamento: number | null };
     paginacao: {
         atual: number;
         ultima: number;
@@ -126,11 +129,14 @@ export default function Historico({
     /**
      * Recarrega com um filtro trocado, mantendo o outro (e voltando à página 1).
      *
-     * @param novo Ex.: { mes: '2026-10' }
+     * @param novo Ex.: { de: '2026-10-01', ate: '2026-10-31' }
      */
-    const filtrar = (novo: Partial<{ mes: string; lancamento: string }>) => {
+    const filtrar = (
+        novo: Partial<{ de: string; ate: string; lancamento: string }>,
+    ) => {
         const tudo = {
-            mes: filtros.mes,
+            de: filtros.de,
+            ate: filtros.ate,
             lancamento: filtros.lancamento ?? '',
             ...novo,
         };
@@ -184,19 +190,14 @@ export default function Historico({
                     </Button>
                 </div>
 
-                {/* Filtros: em grade de 2 colunas iguais no celular. */}
+                {/* Filtros: período (de / até) e número do lançamento; grade de 2 colunas no celular. */}
+                <FiltroPeriodo
+                    prefixo="historico"
+                    de={filtros.de}
+                    ate={filtros.ate}
+                    aoMudar={(periodo) => filtrar(periodo)}
+                />
                 <div className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap">
-                    <div className="grid gap-1">
-                        <Label htmlFor="mes">Mês</Label>
-                        <Input
-                            id="mes"
-                            type="month"
-                            value={filtros.mes}
-                            onChange={(evento) =>
-                                filtrar({ mes: evento.target.value })
-                            }
-                        />
-                    </div>
                     <div className="grid gap-1">
                         <Label htmlFor="lancamento">Lançamento nº</Label>
                         <Input

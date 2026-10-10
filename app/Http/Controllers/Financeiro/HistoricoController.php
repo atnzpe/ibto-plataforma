@@ -11,9 +11,9 @@ namespace App\Http\Controllers\Financeiro;
 
 use App\Http\Controllers\Controller;
 use App\Models\Auditoria;
+use App\Support\Periodo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +30,8 @@ class HistoricoController extends Controller
         'LANCAMENTO_PAGO_PARCIAL',
         // Recebimento de anuidade (#37): pagamento + receita ligados.
         'ANUIDADE_PAGA',
+        // Cancelamento de todas as parcelas em aberto de um título (10/10/2026).
+        'PARCELAS_CANCELADAS',
     ];
 
     /**
@@ -40,9 +42,11 @@ class HistoricoController extends Controller
      */
     public function __invoke(Request $request): Response
     {
-        // Mês pedido ("2026-10"), ou vazio = todos os meses.
-        $mes = (string) $request->query('mes', '');
-        $mesValido = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes) === 1;
+        // Período ("de" e "até", pedido do Gleyson em 10/10/2026). Só filtra se a
+        // pessoa escolher alguma data; sem datas = todo o histórico (assim a "vida
+        // inteira" de um lançamento nunca fica cortada).
+        $temPeriodo = $request->filled('de') || $request->filled('ate');
+        $periodo = $temPeriodo ? Periodo::doPedido($request) : null;
 
         // Número do lançamento pedido, ou 0 = todos.
         $lancamentoId = (int) $request->query('lancamento', 0);
@@ -54,10 +58,9 @@ class HistoricoController extends Controller
             ->with('usuario:id,name')
             ->orderByDesc('id');
 
-        // Filtro por mês: do 1º ao último dia, pela hora em que a ação aconteceu.
-        if ($mesValido) {
-            $inicio = Carbon::createFromFormat('Y-m-d', $mes.'-01')->startOfDay();
-            $consulta->whereBetween('created_at', [$inicio, $inicio->copy()->endOfMonth()]);
+        // Filtro por período: do início do 1º dia ao fim do último, pela hora da ação.
+        if ($periodo !== null) {
+            $consulta->whereBetween('created_at', [$periodo->inicio, $periodo->fim]);
         }
 
         // Filtro por lançamento: a "vida inteira" dele, incluindo o parcelamento
@@ -75,7 +78,11 @@ class HistoricoController extends Controller
         $pagina = $consulta->paginate(50)->withQueryString();
 
         return Inertia::render('financeiro/historico', [
-            'filtros' => ['mes' => $mesValido ? $mes : '', 'lancamento' => $lancamentoId > 0 ? $lancamentoId : null],
+            'filtros' => [
+                'de' => $periodo?->inicio->toDateString() ?? '',
+                'ate' => $periodo?->fim->toDateString() ?? '',
+                'lancamento' => $lancamentoId > 0 ? $lancamentoId : null,
+            ],
             'linhas' => collect($pagina->items())->map(fn (Auditoria $linha) => $this->paraTela($linha)),
             'paginacao' => [
                 'atual' => $pagina->currentPage(),

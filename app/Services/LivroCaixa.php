@@ -269,6 +269,48 @@ class LivroCaixa
     }
 
     /**
+     * Cancela TODAS as parcelas EM ABERTO do mesmo título de uma vez (pedido do
+     * Gleyson, 10/10/2026). As já pagas ficam como estão (para elas, estorno).
+     *
+     * @param  FinLancamento  $parcela  Qualquer parcela pendente do título. Ex.: "Material (3/10)"
+     * @param  string  $motivo  Por que o título foi cancelado. Ex.: 'Compra desfeita'
+     * @return int Quantas parcelas foram canceladas. Ex.: 8
+     */
+    public function cancelarParcelas(FinLancamento $parcela, string $motivo): int
+    {
+        // Só faz sentido para uma parcela pendente de um título parcelado.
+        if ($parcela->situacao !== 'pendente' || $parcela->grupo_parcelas === null) {
+            throw new RegraFinanceira('NAO_E_PARCELA_PENDENTE', 'Escolha uma parcela pendente de um título parcelado.');
+        }
+        $this->exigirMotivo($motivo);
+
+        return DB::transaction(function () use ($parcela, $motivo): int {
+            // Todas as parcelas do mesmo grupo que ainda estão pendentes
+            // (trava a linha para não deixar ninguém pagar ou cancelar ao mesmo tempo).
+            $emAberto = FinLancamento::query()
+                ->where('grupo_parcelas', $parcela->grupo_parcelas)
+                ->where('situacao', 'pendente')
+                ->orderBy('parcela_numero')
+                ->lockForUpdate()
+                ->get();
+
+            // Cancela uma por uma (o modelo confere a regra de cada uma).
+            foreach ($emAberto as $item) {
+                $item->forceFill(['situacao' => 'cancelado', 'motivo' => trim($motivo)])->save();
+            }
+
+            // Uma linha de auditoria para o título (os números das parcelas, sem descrição: LGPD).
+            Auditoria::registrar('PARCELAS_CANCELADAS', [
+                'grupo_parcelas' => $parcela->grupo_parcelas,
+                'lancamento_ids' => $emAberto->pluck('id')->all(),
+                'parcelas' => $emAberto->count(),
+            ]);
+
+            return $emAberto->count();
+        });
+    }
+
+    /**
      * Estorna um lançamento PAGO: cria um lançamento novo, ligado ao original,
      * que anula o valor dele no saldo. O original não muda.
      *
@@ -335,12 +377,24 @@ class LivroCaixa
     {
         // Primeiro e último dia do mês. Ex.: 2027-03-01 e 2027-03-31.
         $inicio = Carbon::create($ano, $mes, 1)->startOfDay();
-        $fim = $inicio->copy()->endOfMonth();
 
-        // Soma os pagos do mês, cada um com o sinal certo (ver FinLancamento::valorNoSaldo).
+        return $this->saldoEntre($inicio->toDateString(), $inicio->copy()->endOfMonth()->toDateString());
+    }
+
+    /**
+     * Saldo de um PERÍODO qualquer (filtro "de / até", pedido do Gleyson em
+     * 10/10/2026), com as mesmas regras do saldo do mês.
+     *
+     * @param  string  $de  1º dia. Ex.: '2027-09-15'
+     * @param  string  $ate  Último dia. Ex.: '2027-10-15'
+     * @return int Em centavos; negativo se saiu mais do que entrou.
+     */
+    public function saldoEntre(string $de, string $ate): int
+    {
+        // Soma os pagos do período, cada um com o sinal certo (ver FinLancamento::valorNoSaldo).
         return FinLancamento::query()
             ->where('situacao', 'pago')
-            ->whereBetween('pago_em', [$inicio->toDateString(), $fim->toDateString()])
+            ->whereBetween('pago_em', [$de, $ate])
             ->get()
             ->sum(fn (FinLancamento $lancamento) => $lancamento->valorNoSaldo());
     }
