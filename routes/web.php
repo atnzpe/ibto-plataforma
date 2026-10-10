@@ -17,6 +17,7 @@ use App\Http\Controllers\Cursos\AssistirController;
 use App\Http\Controllers\Cursos\AulaArquivoController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
+use App\Http\Controllers\Cursos\DetalhesCursoController;
 use App\Http\Controllers\Cursos\MatriculaPainelController;
 use App\Http\Controllers\Cursos\PagamentoConfigController;
 use App\Http\Controllers\Cursos\TrilhaController;
@@ -144,6 +145,8 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
         Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
         // Ações do fluxo de chancela: enviar, chancelar, rejeitar, cancelar, encerrar.
         Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
+        // Detalhes do curso (#41): resumo e inscritos (só registro). Quem vê: Gate curso.inscritos.
+        Route::get('cursos/{curso}/inscritos', DetalhesCursoController::class)->name('cursos.inscritos');
 
         // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
         Route::controller(ConteudoController::class)->group(function () {

@@ -115,6 +115,14 @@ class AppServiceProvider extends ServiceProvider
                 && in_array($curso->situacao, [SituacaoCurso::Rascunho, SituacaoCurso::Rejeitado], true);
         });
 
+        // "curso.inscritos" (#41, detalhes do curso): ver o resumo e a lista dos inscritos
+        // (só REGISTRO e equipe, sem nome: LGPD). Passam o Comando Geral, quem chancela,
+        // quem confirma pagamentos e o DONO do curso (o instrutor faz a chamada, #44).
+        Gate::define('curso.inscritos', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $usuario->temPermissao('cursos.chancelar')
+            || $usuario->temPermissao('pagamentos.confirmar')
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
+
         // "curso.conteudo" (#39 / #41): ver as aulas, o vídeo enviado e baixar a apostila.
         // Passam: o Comando Geral, quem chancela, quem propôs o curso e quem tem
         // MATRÍCULA CONFIRMADA (aguardando pagamento ainda não). Sem isso: 403, mesmo com o link.

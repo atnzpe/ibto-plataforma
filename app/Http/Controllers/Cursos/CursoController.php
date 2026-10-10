@@ -87,6 +87,8 @@ class CursoController extends Controller
                 'situacao_rotulo' => $curso->situacao->rotulo(),
                 // Pode abrir a edição? (quem propôs: só rascunho/rejeitado.)
                 'pode_editar' => Gate::allows('curso.editar', $curso),
+                // Pode ver o resumo e os inscritos (botão "Inscritos", #41)?
+                'pode_ver_inscritos' => Gate::allows('curso.inscritos', $curso),
             ]),
             'situacoes' => $this->opcoes(SituacaoCurso::cases()),
             // Quantos esperam a chancela (aparece como aviso para quem chancela).
