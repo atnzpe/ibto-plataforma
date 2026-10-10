@@ -26,9 +26,9 @@ use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
 use App\Http\Controllers\MatriculaController;
+use App\Http\Controllers\MeusCursosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -61,9 +61,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('comando-geral');
         }
 
-        // Demais pessoas: a página inicial delas (vira "Meus cursos e trilhas", #38/#39).
-        return Inertia::render('dashboard');
+        // Demais pessoas: a página inicial delas é "Meus cursos" (desenho aprovado em 10/10/2026).
+        return to_route('meus-cursos');
     })->name('dashboard');
+
+    // Meus cursos: trilha de formação, cursos matriculados e o próximo passo de cada um.
+    Route::get('meus-cursos', MeusCursosController::class)->name('meus-cursos');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.

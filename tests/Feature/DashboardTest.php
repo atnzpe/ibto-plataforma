@@ -17,13 +17,16 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_visit_the_dashboard()
+    /**
+     * Quem não é da equipe do IBTO começa em "Meus cursos" (desenho aprovado em 10/10/2026).
+     */
+    public function test_aluno_vai_para_meus_cursos()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $response = $this->get(route('dashboard'));
-        $response->assertOk();
+        $this->get(route('dashboard'))->assertRedirect(route('meus-cursos'));
+        $this->get(route('meus-cursos'))->assertOk();
     }
 
     /**

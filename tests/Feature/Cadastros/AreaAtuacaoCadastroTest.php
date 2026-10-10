@@ -109,9 +109,9 @@ test('o menu "Áreas de atuação" só é liberado para quem tem a permissão', 
         ->get(route('comando-geral'))
         ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.cadastros_areas', true));
 
-    // Usuário comum, sem papel: false (o menu fica escondido).
+    // Usuário comum, sem papel: false (o menu fica escondido). Ele começa em "Meus cursos".
     $this->actingAs(User::factory()->create())
-        ->get(route('dashboard'))
+        ->get(route('meus-cursos'))
         ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.cadastros_areas', false));
 });
 
