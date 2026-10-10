@@ -7,16 +7,21 @@
  * - entradas × saídas dos últimos 6 meses;
  * - anuidade do ano (% em dia) e a régua de cobrança;
  * - próximos vencimentos;
- * - filiados (ativos, equipes, convites pendentes, por categoria).
+ * - filiados (ativos, equipes, convites pendentes, por categoria);
+ * - cursos (turmas abertas, vagas livres, aguardando pagamento, confirmadas no mês).
  * Só números e códigos: o REGISTRO aparece na régua, nunca o nome (LGPD).
  */
 
 namespace App\Services;
 
 use App\Enums\CategoriaFiliado;
+use App\Enums\SituacaoCurso;
+use App\Enums\SituacaoMatricula;
 use App\Enums\StatusEquipe;
 use App\Models\Anuidade;
 use App\Models\AnuidadePagamento;
+use App\Models\Curso;
+use App\Models\CursoMatricula;
 use App\Models\Equipe;
 use App\Models\Filiado;
 use App\Models\FinLancamento;
@@ -48,6 +53,40 @@ class ComandoGeral
             'anuidade' => $this->anuidade($hoje),
             'vencimentos' => $this->proximosVencimentos($hoje),
             'filiados' => $this->filiados(),
+            'cursos' => $this->cursos($hoje),
+        ];
+    }
+
+    /**
+     * O quadro CURSOS (desenho aprovado em 09/10/2026, que esperava as #39 e #41):
+     * turmas abertas, vagas livres, matrículas aguardando pagamento e as
+     * confirmadas no mês. Os certificados entram com a #44.
+     *
+     * @return array{turmas_abertas: int, vagas_livres: int|null, aguardando_pagamento: int, confirmadas_no_mes: int}
+     *                                                                                                                vagas_livres null = algum curso aberto não tem limite de vagas.
+     */
+    private function cursos(CarbonInterface $hoje): array
+    {
+        // Turmas abertas: publicadas e que ainda não começaram (ou sem data: online no seu ritmo).
+        $abertas = Curso::query()
+            ->where('situacao', SituacaoCurso::Publicado)
+            ->where(fn (Builder $quando) => $quando->whereNull('data_inicio')->orWhere('data_inicio', '>=', $hoje->toDateString()))
+            ->withCount(['matriculas as ocupadas' => fn (Builder $matricula) => $matricula->where('situacao', '!=', SituacaoMatricula::Cancelada->value)])
+            ->get(['id', 'vagas']);
+
+        // Vagas livres: a soma do que sobra em cada turma. Algum curso sem limite = "sem limite" (null).
+        $vagasLivres = $abertas->contains(fn (Curso $curso) => $curso->vagas === null)
+            ? null
+            : (int) $abertas->sum(fn (Curso $curso) => max(0, (int) $curso->vagas - (int) $curso->getAttribute('ocupadas')));
+
+        return [
+            'turmas_abertas' => $abertas->count(),
+            'vagas_livres' => $vagasLivres,
+            'aguardando_pagamento' => CursoMatricula::where('situacao', SituacaoMatricula::AguardandoPagamento->value)->count(),
+            'confirmadas_no_mes' => CursoMatricula::query()
+                ->where('situacao', SituacaoMatricula::Confirmada->value)
+                ->whereBetween('confirmada_em', [$hoje->copy()->startOfMonth(), $hoje->copy()->endOfMonth()])
+                ->count(),
         ];
     }
 
