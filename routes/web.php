@@ -16,7 +16,9 @@ use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -39,8 +41,19 @@ Route::get('imagens/equipes/{equipe}/logo', EquipeLogoController::class)
     ->middleware('throttle:120,1')
     ->name('equipes.logo');
 
+// Página inicial depois do login (Gleyson, 10/10/2026: "apenas Comando Geral"):
+// quem é da equipe do IBTO (comando_geral.ver) vai direto para o Comando Geral;
+// aluno, instrutor e admin de equipe ficam na própria página inicial ("Início").
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function (Request $request) {
+        // Equipe do IBTO: não existe "Dashboard" separado; o painel é o Comando Geral.
+        if ($request->user()?->can('comando_geral.ver')) {
+            return to_route('comando-geral');
+        }
+
+        // Demais pessoas: a página inicial delas (vira "Meus cursos e trilhas", #38/#39).
+        return Inertia::render('dashboard');
+    })->name('dashboard');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.

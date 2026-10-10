@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,5 +24,19 @@ class DashboardTest extends TestCase
 
         $response = $this->get(route('dashboard'));
         $response->assertOk();
+    }
+
+    /**
+     * Equipe do IBTO (com "comando_geral.ver") não tem "Dashboard" separado:
+     * o início dela é o Comando Geral (Gleyson, 10/10/2026).
+     */
+    public function test_equipe_do_ibto_vai_direto_para_o_comando_geral(): void
+    {
+        $admin = User::factory()->create();
+        $admin->papeis()->attach(Papel::where('slug', 'administrador')->value('id'));
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('comando-geral'));
     }
 }

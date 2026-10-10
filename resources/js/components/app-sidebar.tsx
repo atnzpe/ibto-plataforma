@@ -43,9 +43,11 @@ import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
 import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
+// Página inicial de aluno, instrutor e admin de equipe. A equipe do IBTO não vê
+// este item: para ela, o início é o "Comando Geral" (Gleyson, 10/10/2026).
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Início',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -133,8 +135,10 @@ export function AppSidebar() {
     const { pode } = usePage().props;
 
     // Menu principal + só os cadastros que esta pessoa pode abrir.
+    // Menu: "Início" só para quem NÃO é da equipe do IBTO (a equipe começa no
+    // Comando Geral) + os itens que a pessoa pode abrir.
     const itens = [
-        ...mainNavItems,
+        ...(pode.comando_geral_ver ? [] : mainNavItems),
         ...cadastrosNavItems.filter((item) => pode[item.permissao]),
     ];
 

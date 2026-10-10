@@ -103,9 +103,10 @@ test('administrador abre o formulário de nova área e o de edição', function 
 });
 
 test('o menu "Áreas de atuação" só é liberado para quem tem a permissão', function () {
-    // Chave de emergência: pode.cadastros_areas = true (o menu aparece).
+    // Chave de emergência: pode.cadastros_areas = true (o menu aparece). Ela abre
+    // o Comando Geral (o "Dashboard" a leva para lá desde 10/10/2026).
     $this->actingAs($this->admin)
-        ->get(route('dashboard'))
+        ->get(route('comando-geral'))
         ->assertInertia(fn (Assert $pagina) => $pagina->where('pode.cadastros_areas', true));
 
     // Usuário comum, sem papel: false (o menu fica escondido).
