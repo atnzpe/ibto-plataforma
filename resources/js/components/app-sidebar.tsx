@@ -3,6 +3,7 @@ import {
     BookOpen,
     ContactRound,
     FolderGit2,
+    Gauge,
     KeyRound,
     LayoutGrid,
     Medal,
@@ -24,7 +25,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+// Painel inicial e o painel "Comando Geral" (#59 / #45).
+import { comandoGeral, dashboard } from '@/routes';
 // Lista das áreas de atuação (#37), para o item do menu.
 import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 // Lista dos níveis (#37), para o item do menu.
@@ -67,6 +69,13 @@ const footerNavItems: NavItem[] = [
 const cadastrosNavItems: (NavItem & {
     permissao: keyof SharedProps['pode'];
 })[] = [
+    // Painel "Comando Geral" (#59 / #45): primeiro da lista, para a equipe do IBTO.
+    {
+        title: 'Comando Geral',
+        href: comandoGeral(),
+        icon: Gauge,
+        permissao: 'comando_geral_ver',
+    },
     {
         title: 'Áreas de atuação',
         href: areasAtuacao(),

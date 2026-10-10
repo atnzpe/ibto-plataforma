@@ -9,6 +9,7 @@ use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
@@ -100,6 +101,11 @@ Route::middleware(['auth', 'verified'])
             ->middleware(['can:filiados.acessar', 'throttle:6,1'])
             ->name('filiados.convite');
     });
+
+// Painel "Comando Geral" (#59 bloco 4 / #45): indicadores do IBTO.
+Route::get('comando-geral', ComandoGeralController::class)
+    ->middleware(['auth', 'verified', 'can:comando_geral.ver'])
+    ->name('comando-geral');
 
 // Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
 // "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.
