@@ -19,6 +19,7 @@ use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
+use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
@@ -168,6 +169,18 @@ Route::middleware(['auth', 'verified'])
     ->group(function () {
         Route::get('apostila', 'apostila')->name('apostila');
         Route::get('video', 'video')->name('video');
+    });
+
+// Matrícula pelo lado do aluno (#41, bloco C5b): garantir a vaga, enviar e ver
+// o comprovante do PIX, desistir. Com login; a dona de cada matrícula é conferida
+// no controlador. Limite de 20 pedidos por minuto (envio de arquivo).
+Route::middleware(['auth', 'verified', 'throttle:20,1'])
+    ->controller(MatriculaController::class)
+    ->group(function () {
+        Route::post('cursos/{curso}/matricula', 'store')->whereNumber('curso')->name('matriculas.store');
+        Route::post('matriculas/{matricula}/comprovante', 'comprovante')->name('matriculas.comprovante');
+        Route::get('matriculas/{matricula}/comprovante', 'verComprovante')->name('matriculas.comprovante.ver');
+        Route::post('matriculas/{matricula}/desistir', 'desistir')->name('matriculas.desistir');
     });
 
 // Sala de aula (#39, bloco C4c): as aulas em sequência (Anterior / Próxima).

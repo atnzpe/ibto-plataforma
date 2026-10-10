@@ -30,6 +30,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | PIX do IBTO (#41, matrícula com pagamento manual)
+    |--------------------------------------------------------------------------
+    |
+    | A chave PIX e o nome do favorecido que aparecem para quem está com a
+    | matrícula "aguardando pagamento". Ficam no .env (e não no código) para
+    | trocar sem nova publicação. Chave vazia: a tela pede para falar com o
+    | IBTO pelo WhatsApp do curso.
+    |
+    */
+
+    'pix' => [
+        // Ex.: 'financeiro@ib-to.org' ou o CNPJ.
+        'chave' => env('IBTO_PIX_CHAVE', ''),
+        // Quem recebe (o nome que aparece no app do banco).
+        'favorecido' => env('IBTO_PIX_FAVORECIDO', 'Instituto Brasileiro de Treinamento Operacional'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Administradores provisórios (IBTO, #37)
     |--------------------------------------------------------------------------
     |

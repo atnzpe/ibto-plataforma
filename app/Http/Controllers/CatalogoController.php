@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
 use App\Enums\SituacaoCurso;
+use App\Enums\SituacaoMatricula;
 use App\Models\AreaAtuacao;
 use App\Models\Curso;
 use App\Models\CursoAula;
@@ -134,6 +135,12 @@ class CatalogoController extends Controller
             ],
             // Quem está logado (para o botão: "Entrar para se inscrever" ou a inscrição, no bloco C5).
             'logado' => $request->user() !== null,
+            // Vagas que ainda restam (#41): null = sem limite. Ex.: 3.
+            'vagas_restantes' => $curso->vagas !== null
+                ? max(0, $curso->vagas - $curso->matriculas()->ocupandoVaga()->count())
+                : null,
+            // A matrícula da pessoa logada que ainda vale (aguardando ou confirmada), ou null.
+            'matricula' => $this->matriculaDe($request, $curso),
             // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.
             // Visitante sem login: false (o Gate recusa quem não está logado).
             'pode_assistir' => Gate::allows('curso.conteudo', $curso),
@@ -279,6 +286,44 @@ class CatalogoController extends Controller
             'Content-Type' => 'text/calendar; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"encontro-ibto-{$aula->id}.ics\"",
         ]);
+    }
+
+    /**
+     * A matrícula da pessoa logada neste curso, para o quadro da inscrição (#41).
+     * Leva o PIX só quando ela está aguardando pagamento.
+     *
+     * @param  Request  $request  Quem está vendo (pode ser visitante).
+     * @param  Curso  $curso  O curso da página.
+     * @return array<string, mixed>|null null = visitante ou sem matrícula valendo.
+     */
+    private function matriculaDe(Request $request, Curso $curso): ?array
+    {
+        $usuario = $request->user();
+        // Visitante: sem matrícula.
+        if ($usuario === null) {
+            return null;
+        }
+
+        // A mais recente que ainda ocupa vaga (as canceladas não contam).
+        $matricula = $curso->matriculas()->ocupandoVaga()->where('user_id', $usuario->id)->latest('id')->first();
+        if ($matricula === null) {
+            return null;
+        }
+
+        $aguardando = $matricula->situacao === SituacaoMatricula::AguardandoPagamento;
+
+        return [
+            'id' => $matricula->id,
+            'situacao' => $matricula->situacao->value,
+            'situacao_rotulo' => $matricula->situacao->rotulo(),
+            'valor_centavos' => $matricula->valor_centavos,
+            'tem_comprovante' => $matricula->comprovante !== null,
+            // Dados do PIX (config/app.php), só para quem precisa pagar.
+            'pix' => $aguardando ? [
+                'chave' => (string) config('app.pix.chave'),
+                'favorecido' => (string) config('app.pix.favorecido'),
+            ] : null,
+        ];
     }
 
     /**
