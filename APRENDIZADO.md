@@ -55,3 +55,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Dinheiro em CENTAVOS (inteiro): `intdiv` dá a parte inteira e `%` o resto; nas parcelas, a sobra vai para a 1ª e a soma sempre bate.
 - `&&` ("e") exige as duas condições (categoria em uso E troca de tipo); `||` ("ou") basta uma (valor zero OU acima do total). O ternário `? :` é um "se… então… senão" numa linha, e protege contra divisão por zero.
 - O que foi pago nunca muda: corrige-se com estorno; o histórico é só leitura e um teste garante que não existe rota para apagá-lo. Número fixo espalhado no código é "número mágico": dê um nome (constante) e leia de um lugar só.
+
+## 10/10/2026 — cursos: trilha, sala de aula, cronograma; contas e identidade visual
+
+- Desativar não é apagar: uma data (`desativada_em`) e um "porteiro" (middleware) que confere cada pedido bastam para trancar a conta sem perder o histórico.
+- O lembrete de agenda é um arquivo de texto (.ics) com regras próprias: horário em UTC, vírgula e ponto e vírgula com "\" na frente, linhas de até 75 bytes.
+- Cor de marca também é acessibilidade: o contraste entre texto e fundo se CALCULA (mínimo 4,5:1), não se escolhe no olho.
