@@ -18,8 +18,11 @@ type FiliadoLista = {
     // Função (ex.: 'Instrutor'), ou null.
     categoria: string | null;
     nivel: string | null;
+    // Cidade/UF. Ex.: "Recife/PE" (vazio quando o cadastro está incompleto).
     local: string;
     status: string;
+    // true = falta dado (importado com o "importar mesmo assim"): selo "Incompleto".
+    incompleto: boolean;
 };
 
 /** Página da lista, no formato de paginação do Laravel. */
@@ -117,8 +120,9 @@ export default function FiliadosIndex({
                     </select>
                 </div>
 
-                <div className="overflow-x-auto rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                    <table className="tabela-cartoes w-full text-left text-sm">
                         <caption className="sr-only">Lista de filiados</caption>
                         <thead className="bg-muted/50">
                             <tr>
@@ -188,29 +192,58 @@ export default function FiliadosIndex({
                                     key={filiado.id}
                                     className="border-t border-border"
                                 >
-                                    <td className="px-4 py-2 font-mono">
-                                        {filiado.registro}
+                                    <td
+                                        data-rotulo="Registro"
+                                        className="px-4 py-2 font-mono"
+                                    >
+                                        <span>
+                                            {filiado.registro}
+                                            {/* Selo: cadastro com dado faltando (completar na edição). */}
+                                            {filiado.incompleto && (
+                                                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 font-sans text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+                                                    Incompleto
+                                                </span>
+                                            )}
+                                        </span>
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Nome"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.nome ?? '—'}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Equipe"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.equipe ?? (
                                             <span className="text-muted-foreground">
                                                 Sem equipe
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Categoria"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.categoria ?? '—'}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Nível"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.nivel ?? '—'}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Local"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.local}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Situação"
+                                        className="px-4 py-2"
+                                    >
                                         {filiado.status === 'ativo'
                                             ? 'Ativo'
                                             : 'Inativo'}

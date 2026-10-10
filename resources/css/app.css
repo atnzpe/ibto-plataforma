@@ -141,3 +141,94 @@
         @apply bg-background text-foreground;
     }
 }
+
+/*
+ * TABELA QUE VIRA CARTÕES (pedido do Gleyson, 10/10/2026: "em nenhuma tela
+ * deve ter barra de rolagem horizontal; cards empilhados, simétricos").
+ *
+ * Como usar: <table className="tabela-cartoes ..."> e, em cada <td>, o nome da
+ * coluna em data-rotulo (ex.: <td data-rotulo="Equipe">). Abaixo de 1024 px
+ * (celular, tablet e notebook pequeno com o menu aberto), cada LINHA vira um
+ * CARTÃO: as células ficam uma embaixo da outra, com o nome da coluna à
+ * esquerda e o valor à direita. De 1024 px para cima, volta a ser tabela.
+ * Célula sem data-rotulo (ex.: a de ações) ocupa a largura toda do cartão.
+ */
+@layer components {
+    @media (width < 64rem) {
+        /* O cabeçalho some da tela, mas continua para o leitor de tela. */
+        .tabela-cartoes thead {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        /* Tabela, corpo, linhas e células passam a se comportar como blocos. */
+        .tabela-cartoes,
+        .tabela-cartoes tbody,
+        .tabela-cartoes tr,
+        .tabela-cartoes td {
+            display: block;
+            width: 100%;
+        }
+
+        /* Cada linha = um cartão com borda e respiro; um embaixo do outro. */
+        .tabela-cartoes tbody tr {
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Cada célula: nome da coluna à esquerda, valor à direita (quebra linha, nunca rola). */
+        .tabela-cartoes td {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.375rem 0 !important;
+            text-align: right !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+        }
+
+        /* O nome da coluna, vindo do data-rotulo. */
+        .tabela-cartoes td[data-rotulo]::before {
+            content: attr(data-rotulo);
+            flex-shrink: 0;
+            font-weight: 500;
+            text-align: left;
+            color: var(--muted-foreground);
+        }
+
+        /* Célula sem rótulo (ex.: botões de ação): largura toda, em grade simétrica. */
+        .tabela-cartoes td:not([data-rotulo]) {
+            display: grid;
+            grid-auto-columns: 1fr;
+            grid-auto-flow: column;
+            gap: 0.5rem;
+            text-align: center !important;
+        }
+
+        /* A borda da caixa em volta da tabela sai: cada cartão já tem a sua. */
+        .caixa-tabela-cartoes {
+            border: 0 !important;
+            overflow: visible !important;
+        }
+    }
+}
+
+/* Cabeçalho de LINHA (<th> dentro do corpo, ex.: o nome da permissão): vira o título do cartão. */
+@layer components {
+    @media (width < 64rem) {
+        .tabela-cartoes tbody th {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0 !important;
+            font-weight: 600;
+            text-align: left;
+        }
+    }
+}

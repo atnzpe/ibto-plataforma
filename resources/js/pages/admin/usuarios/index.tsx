@@ -82,8 +82,9 @@ export default function UsuariosIndex({
                     </Button>
                 </Form>
 
-                <div className="overflow-x-auto rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                    <table className="tabela-cartoes w-full text-left text-sm">
                         <caption className="sr-only">Lista de usuários</caption>
                         <thead className="bg-muted/50">
                             <tr>
@@ -129,13 +130,22 @@ export default function UsuariosIndex({
                                     key={usuario.id}
                                     className="border-t border-border"
                                 >
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Nome"
+                                        className="px-4 py-2"
+                                    >
                                         {usuario.nome}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="E-mail"
+                                        className="px-4 py-2"
+                                    >
                                         {usuario.email}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Papéis"
+                                        className="px-4 py-2"
+                                    >
                                         {usuario.papeis.length > 0 ? (
                                             usuario.papeis.join(', ')
                                         ) : (

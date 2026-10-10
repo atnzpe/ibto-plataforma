@@ -21,7 +21,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * @property int $id
  * @property string $name
- * @property string $email
+ * @property string|null $email
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -150,6 +150,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             return false;
         }
 
-        return in_array(strtolower($this->email), $lista, true);
+        // (string): conta sem e-mail (filiado importado incompleto) vira "" e não bate com a lista.
+        return in_array(strtolower((string) $this->email), $lista, true);
     }
 }

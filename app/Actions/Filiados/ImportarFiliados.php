@@ -154,19 +154,24 @@ class ImportarFiliados
     }
 
     /**
-     * Confere todas as linhas com o mapa escolhido.
+     * Confere todas as linhas e separa em três grupos:
+     * - validas: tudo certo, entram na importação;
+     * - incompletas: só FALTA dado (ex.: sem e-mail); entram apenas com o
+     *   "importar mesmo assim" (Gleyson, 10/10/2026), e o cadastro fica para completar;
+     * - recusadas: dado ERRADO ou repetido (ex.: CPF inválido); não entram.
      *
-     * @param  list<array<string, string>>  $linhas  As linhas do CSV ([coluna => valor]).
+     * @param  list<array<string, string>>  $linhas  As linhas do CSV, [coluna => valor].
      * @param  array<string, string>  $mapa  [coluna => campo], vindo da tela.
      * @param  array<string, array<string, string>>  $relacoes  Escolhas da etapa "relacionar os valores":
      *                                                          [campo => [chave do valor => escolha]]. Ex.: ['nivel' => ['expert nivel 3' => 'nivel:12']]
-     * @return array{validas: list<array<string, mixed>>, recusadas: list<array{linha: int, motivos: list<string>}>}
+     * @return array{validas: list<array<string, mixed>>, incompletas: list<array{linha: int, faltas: list<string>, dados: array<string, mixed>}>, recusadas: list<array{linha: int, motivos: list<string>}>}
      */
     public function conferir(array $linhas, array $mapa, array $relacoes = []): array
     {
         $this->relacoes = $relacoes;
 
         $validas = [];
+        $incompletas = [];
         $recusadas = [];
         // CPFs e e-mails já vistos NESTE arquivo (para pegar repetição dentro da própria planilha).
         $cpfsVistos = [];
@@ -175,35 +180,49 @@ class ImportarFiliados
         foreach ($linhas as $posicao => $linha) {
             // Linha 1 é o cabeçalho, então a primeira linha de dados é a 2 (como no Excel).
             $numero = $posicao + 2;
-            [$dados, $motivos] = $this->montarLinha($linha, $mapa);
+            [$dados, $motivos, $faltas] = $this->montarLinha($linha, $mapa);
 
-            $cpfHash = isset($dados['cpf']) ? Filiado::hashDoCpf($dados['cpf']) : null;
+            // Repetição só se confere quando o dado existe (dois vazios não são "repetidos").
+            $cpfHash = $dados['cpf'] !== null ? Filiado::hashDoCpf($dados['cpf']) : null;
             if ($cpfHash !== null && isset($cpfsVistos[$cpfHash])) {
                 $motivos[] = 'CPF repetido dentro da planilha.';
             }
-            if (isset($dados['email']) && isset($emailsVistos[$dados['email']])) {
+            if ($dados['email'] !== null && isset($emailsVistos[$dados['email']])) {
                 $motivos[] = 'E-mail repetido dentro da planilha.';
             }
 
+            // Algum dado errado: recusada (mesmo que também falte outro dado).
             if ($motivos !== []) {
                 $recusadas[] = ['linha' => $numero, 'motivos' => $motivos];
 
                 continue;
             }
 
-            $cpfsVistos[(string) $cpfHash] = true;
-            $emailsVistos[$dados['email']] = true;
-            $validas[] = $dados;
+            // Anota o CPF e o e-mail desta linha para as próximas (só os que existem).
+            if ($cpfHash !== null) {
+                $cpfsVistos[$cpfHash] = true;
+            }
+            if ($dados['email'] !== null) {
+                $emailsVistos[$dados['email']] = true;
+            }
+
+            // Faltou algum dado: incompleta. Senão: válida.
+            if ($faltas !== []) {
+                $incompletas[] = ['linha' => $numero, 'faltas' => $faltas, 'dados' => $dados];
+            } else {
+                $validas[] = $dados;
+            }
         }
 
-        return ['validas' => $validas, 'recusadas' => $recusadas];
+        return ['validas' => $validas, 'incompletas' => $incompletas, 'recusadas' => $recusadas];
     }
 
     /**
-     * Grava as linhas válidas (cada uma cria conta + filiado + convite).
+     * Grava as linhas (cada uma cria conta + filiado + convite; sem e-mail, a conta
+     * fica sem convite até alguém completar o e-mail).
      * Uma linha que falhar não derruba as outras: ela vai para as recusadas.
      *
-     * @param  list<array<string, mixed>>  $validas  O resultado de conferir()['validas'].
+     * @param  list<array<string, mixed>>  $validas  As válidas de conferir() e, no "importar mesmo assim", também os dados das incompletas.
      * @return array{importados: int, falhas: int}
      */
     public function importar(array $validas): array
@@ -213,7 +232,7 @@ class ImportarFiliados
 
         foreach ($validas as $dados) {
             try {
-                /** @var array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>, registro?: string|null} $dados */
+                /** @var array{nome: string, email: string|null, cpf: string|null, nascimento: string|null, telefone?: string|null, municipio: string|null, uf: string, equipe_id?: int|null, nivel_id?: int|null, areas?: list<int>, registro?: string|null} $dados */
                 $this->criar->executar($dados);
                 $importados++;
             } catch (Throwable $erro) {
@@ -232,7 +251,7 @@ class ImportarFiliados
      *
      * @param  array<string, string>  $linha  [coluna => valor]
      * @param  array<string, string>  $mapa  [coluna => campo]
-     * @return array{0: array<string, mixed>, 1: list<string>} [dados, motivos de recusa]
+     * @return array{0: array<string, mixed>, 1: list<string>, 2: list<string>} [dados, motivos de recusa, dados que faltam]
      */
     private function montarLinha(array $linha, array $mapa): array
     {
@@ -246,41 +265,50 @@ class ImportarFiliados
 
         $dados = [];
         $motivos = [];
+        // Dados que FALTAM (célula vazia). Não recusam a linha: ela vai para as
+        // "incompletas", que entram só com o "importar mesmo assim" (Gleyson, 10/10/2026).
+        $faltas = [];
 
-        // Obrigatórios.
-        foreach (['nome', 'email', 'cpf', 'nascimento', 'municipio', 'uf'] as $obrigatorio) {
-            if (! isset($bruto[$obrigatorio])) {
-                $motivos[] = 'Falta '.Str::lower(self::CAMPOS[$obrigatorio]).'.';
+        // O nome é o único obrigatório de verdade: sem ele não se sabe quem é a pessoa.
+        if (! isset($bruto['nome'])) {
+            $motivos[] = 'Falta '.Str::lower(self::CAMPOS['nome']).'.';
+        }
+        // Os outros, quando vazios, só deixam o cadastro incompleto.
+        foreach (['email', 'cpf', 'nascimento', 'municipio', 'uf'] as $desejado) {
+            if (! isset($bruto[$desejado])) {
+                $faltas[] = 'Falta '.Str::lower(self::CAMPOS[$desejado]).'.';
             }
         }
 
         $dados['nome'] = $bruto['nome'] ?? '';
-        $dados['municipio'] = $bruto['municipio'] ?? '';
+        // Município vazio fica null (cadastro incompleto).
+        $dados['municipio'] = $bruto['municipio'] ?? null;
 
-        // E-mail: formato e conta já existente.
+        // E-mail: formato e conta já existente. Vazio = null (conta sem e-mail, sem convite).
         $email = Str::lower($bruto['email'] ?? '');
         if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             $motivos[] = 'E-mail inválido.';
         } elseif ($email !== '' && User::where('email', $email)->exists()) {
             $motivos[] = 'Já existe uma conta com esse e-mail.';
         }
-        $dados['email'] = $email;
+        $dados['email'] = $email !== '' ? $email : null;
 
         // CPF: só números (a planilha às vezes perde o zero da frente: completa até 11).
-        $cpf = str_pad(Documento::apenasDigitos($bruto['cpf'] ?? ''), 11, '0', STR_PAD_LEFT);
-        if (isset($bruto['cpf']) && ! Documento::valido($cpf)) {
+        // Sem CPF na planilha: null (não completa com zeros um CPF que não existe).
+        $cpf = isset($bruto['cpf']) ? str_pad(Documento::apenasDigitos($bruto['cpf']), 11, '0', STR_PAD_LEFT) : null;
+        if ($cpf !== null && ! Documento::valido($cpf)) {
             $motivos[] = 'CPF inválido.';
-        } elseif (isset($bruto['cpf']) && Filiado::where('cpf_hash', Filiado::hashDoCpf($cpf))->exists()) {
+        } elseif ($cpf !== null && Filiado::where('cpf_hash', Filiado::hashDoCpf($cpf))->exists()) {
             $motivos[] = 'Já existe um filiado com esse CPF.';
         }
         $dados['cpf'] = $cpf;
 
-        // Nascimento: aceita 20/05/1990 (planilha) e 1990-05-20.
+        // Nascimento: aceita 20/05/1990 (planilha) e 1990-05-20. Vazio = null.
         $nascimento = $this->converterData($bruto['nascimento'] ?? '');
         if (isset($bruto['nascimento']) && $nascimento === null) {
             $motivos[] = 'Data de nascimento inválida (use dd/mm/aaaa).';
         }
-        $dados['nascimento'] = $nascimento ?? '';
+        $dados['nascimento'] = $nascimento;
 
         // Telefone: opcional, 10 ou 11 números.
         $telefone = Documento::apenasDigitos($bruto['telefone'] ?? '');
@@ -289,12 +317,12 @@ class ImportarFiliados
         }
         $dados['telefone'] = $telefone !== '' ? $telefone : null;
 
-        // UF: uma das 27 siglas.
+        // UF: uma das 27 siglas. Vazia = null (ver o fim desta função: pode vir do registro).
         $uf = Str::upper($bruto['uf'] ?? '');
         if ($uf !== '' && ! in_array($uf, EquipeRequest::UFS, true)) {
             $motivos[] = "UF \"{$uf}\" não existe.";
         }
-        $dados['uf'] = $uf;
+        $dados['uf'] = $uf !== '' ? $uf : null;
 
         // Abrangência numa coluna própria (planilhas futuras): nacional ou internacional.
         $dados['abrangencia'] = null;
@@ -385,7 +413,20 @@ class ImportarFiliados
             }
         }
 
-        return [$dados, $motivos];
+        // Só importa quando a UF está vazia.
+        if ($dados['uf'] === null) {
+            if ($dados['registro'] !== null) {
+                // Com registro: a UF é a do fim dele. Ex.: BR20260046PE → PE.
+                $dados['uf'] = substr($dados['registro'], -2);
+                // A UF foi achada: deixa de contar como "falta".
+                $faltas = array_values(array_diff($faltas, ['Falta '.Str::lower(self::CAMPOS['uf']).'.']));
+            } else {
+                // Sem registro: não dá para gerar um (ele termina na UF). Recusa.
+                $motivos[] = 'Sem UF e sem registro: preencha um dos dois para gerar o número de registro.';
+            }
+        }
+
+        return [$dados, $motivos, $faltas];
     }
 
     /**
