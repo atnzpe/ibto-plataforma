@@ -126,6 +126,9 @@ class CatalogoController extends Controller
             ],
             // Quem está logado (para o botão: "Entrar para se inscrever" ou a inscrição, no bloco C5).
             'logado' => $request->user() !== null,
+            // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.
+            // Visitante sem login: false (o Gate recusa quem não está logado).
+            'pode_assistir' => Gate::allows('curso.conteudo', $curso),
         ]);
     }
 

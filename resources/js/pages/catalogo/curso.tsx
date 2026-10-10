@@ -14,6 +14,7 @@ import { dataBr } from '@/pages/catalogo/index';
 import type { CartaoCurso } from '@/pages/catalogo/index';
 import { login } from '@/routes';
 import { index as catalogo, trilha as paginaDaTrilha } from '@/routes/catalogo';
+import { assistir } from '@/routes/cursos';
 
 type Aula = {
     id: number;
@@ -47,15 +48,22 @@ const selo = 'rounded-full px-3 py-0.5 text-xs';
 /**
  * @param curso Tudo o que a página mostra.
  * @param logado true se há alguém logado (muda o botão da inscrição).
+ * @param pode_assistir true se a pessoa pode ver o conteúdo (botão e aulas viram links para a sala de aula).
  * @returns A página do curso.
  */
 export default function PaginaCurso({
     curso,
     logado,
+    pode_assistir,
 }: {
     curso: CursoDetalhe;
     logado: boolean;
+    pode_assistir: boolean;
 }) {
+    // A primeira aula (para o botão "Assistir as aulas"), só para quem pode assistir.
+    const primeiraAula = pode_assistir
+        ? curso.modulos.flatMap((modulo) => modulo.aulas)[0]
+        : undefined;
     // Total de aulas, para o resumo do conteúdo. Ex.: 6.
     const totalDeAulas = curso.modulos.reduce(
         (soma, modulo) => soma + modulo.aulas.length,
@@ -215,7 +223,21 @@ export default function PaginaCurso({
                                             <ul className="flex flex-col gap-1 text-sm text-[#e9e2cc]">
                                                 {modulo.aulas.map((aula) => (
                                                     <li key={aula.id}>
-                                                        · {aula.titulo}
+                                                        ·{' '}
+                                                        {/* Quem pode assistir: o título vira link para a aula. */}
+                                                        {pode_assistir ? (
+                                                            <Link
+                                                                href={assistir({
+                                                                    curso: curso.id,
+                                                                    aula: aula.id,
+                                                                })}
+                                                                className="text-[#f4f1e8] underline underline-offset-4"
+                                                            >
+                                                                {aula.titulo}
+                                                            </Link>
+                                                        ) : (
+                                                            aula.titulo
+                                                        )}
                                                         {aula.data &&
                                                             ` — ${dataBr(aula.data)}${aula.hora_inicio ? ` ${aula.hora_inicio}` : ''}`}
                                                         {!aula.data &&
@@ -315,6 +337,18 @@ export default function PaginaCurso({
                             </li>
                         </ol>
 
+                        {/* Quem tem acesso ao conteúdo (equipe do curso agora; inscritos no C5): entra na sala de aula pela 1ª aula. */}
+                        {primeiraAula !== undefined && (
+                            <Link
+                                href={assistir({
+                                    curso: curso.id,
+                                    aula: primeiraAula.id,
+                                })}
+                                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#1c1b17] text-base font-semibold text-[#f4f1e8] no-underline hover:bg-black"
+                            >
+                                Assistir as aulas
+                            </Link>
+                        )}
                         {/* A inscrição pela plataforma entra no bloco C5; por enquanto, entrar e falar no WhatsApp. */}
                         {!logado && (
                             <Link

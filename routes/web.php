@@ -13,6 +13,7 @@ use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
+use App\Http\Controllers\Cursos\AssistirController;
 use App\Http\Controllers\Cursos\AulaArquivoController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
@@ -168,6 +169,14 @@ Route::middleware(['auth', 'verified'])
         Route::get('apostila', 'apostila')->name('apostila');
         Route::get('video', 'video')->name('video');
     });
+
+// Sala de aula (#39, bloco C4c): as aulas em sequência (Anterior / Próxima).
+// Com login; quem pode ver é conferido pelo Gate "curso.conteudo" no controlador.
+// whereNumber: só números, para não confundir com /cursos/aulas/... acima.
+Route::middleware(['auth', 'verified'])
+    ->get('cursos/{curso}/assistir/{aula}', [AssistirController::class, 'show'])
+    ->whereNumber(['curso', 'aula'])
+    ->name('cursos.assistir');
 
 // CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
 // cursos publicados. Limite de 60 pedidos por minuto por IP.
