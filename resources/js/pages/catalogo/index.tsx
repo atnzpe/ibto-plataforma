@@ -7,7 +7,11 @@
  */
 import { Head, Link, router } from '@inertiajs/react';
 import { formatarReais } from '@/lib/dinheiro';
-import { curso as paginaDoCurso, index } from '@/routes/catalogo';
+import {
+    curso as paginaDoCurso,
+    index,
+    trilha as paginaDaTrilha,
+} from '@/routes/catalogo';
 
 /** Um curso como o cartão mostra. */
 export type CartaoCurso = {
@@ -148,6 +152,7 @@ export default function Catalogo({
     cursos,
     filtros,
     areas,
+    trilhas,
 }: {
     cursos: CartaoCurso[];
     filtros: Filtros;
@@ -190,6 +195,29 @@ export default function Catalogo({
                         preparação para a vida real.
                     </p>
                 </div>
+
+                {/* Trilhas de formação: atalhos para o fluxograma de cada uma (quebra linha, sem rolagem lateral). */}
+                {trilhas.length > 0 && (
+                    <nav
+                        aria-label="Trilhas de formação"
+                        className="flex flex-col gap-2"
+                    >
+                        <h2 className="text-sm font-semibold tracking-wide text-[#4a4536] uppercase">
+                            Trilhas de formação
+                        </h2>
+                        <div className="flex flex-wrap gap-2">
+                            {trilhas.map((trilha) => (
+                                <Link
+                                    key={trilha.id}
+                                    href={paginaDaTrilha(trilha.id)}
+                                    className="inline-flex min-h-11 items-center rounded-xl border border-[#6b5d3a] px-4 text-sm font-medium text-[#3f3a2c] no-underline hover:bg-[#efe8d6]"
+                                >
+                                    {trilha.nome}
+                                </Link>
+                            ))}
+                        </div>
+                    </nav>
+                )}
 
                 {/* Filtros: 2 colunas no celular, 4 na tela larga. */}
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

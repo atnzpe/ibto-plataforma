@@ -175,6 +175,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('cursos', [CatalogoController::class, 'index'])->name('catalogo.index');
     // whereNumber: só números no {curso} (não confunde com /cursos/aulas/...).
     Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
+    // Trilha em fluxograma (#38, bloco C4b).
+    Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
 });
 
 // Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.

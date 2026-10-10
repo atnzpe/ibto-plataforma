@@ -148,3 +148,20 @@ test('não existe rota para apagar curso ou trilha', function () {
     expect(Route::has('comando-geral.cursos.destroy'))->toBeFalse();
     expect(Route::has('comando-geral.trilhas.destroy'))->toBeFalse();
 });
+
+test('trilha aceita dois cursos na MESMA etapa (lado a lado) e recusa etapa fora do limite', function () {
+    $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'A']));
+    $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'B']));
+    $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'C']));
+    [$a, $b, $c] = Curso::orderBy('id')->pluck('id')->all();
+
+    // A na etapa 1; B e C juntos na etapa 2 (caminhos à escolha).
+    $this->post(route('comando-geral.trilhas.store'), ['nome' => 'Formação', 'ativa' => '1', 'cursos' => [$a, $b, $c], 'etapas' => [$a => 1, $b => 2, $c => 2]])
+        ->assertRedirect(route('comando-geral.trilhas.index'));
+    expect(Trilha::first()->cursos()->pluck('curso_trilha.ordem', 'cursos.id')->map(fn ($etapa) => (int) $etapa)->all())
+        ->toBe([$a => 1, $b => 2, $c => 2]);
+
+    // Etapa 0 não existe (começa em 1).
+    $this->post(route('comando-geral.trilhas.store'), ['nome' => 'Errada', 'ativa' => '1', 'cursos' => [$a], 'etapas' => [$a => 0]])
+        ->assertSessionHasErrors("etapas.{$a}");
+});

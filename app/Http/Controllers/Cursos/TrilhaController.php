@@ -81,6 +81,8 @@ class TrilhaController extends Controller
                 'ativa' => $trilha->ativa,
                 // Ids na ordem das etapas. Ex.: [7, 3, 12].
                 'cursos' => $trilha->cursos()->pluck('cursos.id')->all(),
+                // Etapa de cada curso (cursos na mesma etapa ficam lado a lado). Ex.: {7: 1, 3: 2, 9: 2}.
+                'etapas' => $trilha->cursos()->pluck('curso_trilha.ordem', 'cursos.id')->map(fn ($etapa) => (int) $etapa)->all(),
             ],
             'cursos' => $this->cursos(),
         ]);

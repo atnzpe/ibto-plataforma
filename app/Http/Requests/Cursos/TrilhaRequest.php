@@ -35,21 +35,28 @@ class TrilhaRequest extends FormRequest
             // Os cursos em ordem; pelo menos 1, sem repetir.
             'cursos' => ['required', 'array', 'min:1', 'max:50'],
             'cursos.*' => ['integer', 'distinct', Rule::exists('cursos', 'id')],
+            // Etapa de cada curso (C4b, fluxograma): dois cursos podem ter a MESMA
+            // etapa e aparecem lado a lado (os "galhos"). Ex.: etapas[7] = 3.
+            'etapas' => ['nullable', 'array'],
+            'etapas.*' => ['integer', 'min:1', 'max:50'],
         ];
     }
 
     /**
-     * Os cursos com a posição de cada um, como a tabela curso_trilha guarda.
-     * Ex.: [7 => ['ordem' => 1], 3 => ['ordem' => 2]]
+     * Os cursos com a ETAPA de cada um, como a tabela curso_trilha guarda.
+     * A etapa informada vale; sem ela, vale a posição na lista (1, 2, 3...).
+     * Ex.: [7 => ['ordem' => 1], 3 => ['ordem' => 2], 9 => ['ordem' => 2]]
      *
      * @return array<int, array{ordem: int}>
      */
     public function cursosEmOrdem(): array
     {
+        $etapas = (array) $this->input('etapas', []);
         $ordem = [];
         foreach (array_values((array) $this->input('cursos', [])) as $posicao => $cursoId) {
-            // A posição na lista vira a etapa (começando em 1).
-            $ordem[(int) $cursoId] = ['ordem' => $posicao + 1];
+            // Etapa escolhida para este curso, ou a posição na lista (começando em 1).
+            $etapa = $etapas[$cursoId] ?? null;
+            $ordem[(int) $cursoId] = ['ordem' => is_numeric($etapa) ? (int) $etapa : $posicao + 1];
         }
 
         return $ordem;

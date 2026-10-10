@@ -4,13 +4,14 @@
  * Testes do CATÁLOGO PÚBLICO de cursos (#38, bloco C4a): visitante sem login
  * vê os publicados; os outros não aparecem (prévia só para a equipe e o dono);
  * filtros; material incluso em lista; WhatsApp em link; o público vê só a
- * lista de aulas (sem vídeo nem apostila). Dados INVENTADOS.
+ * lista de aulas (sem vídeo nem apostila); trilha em fluxograma (C4b). Dados INVENTADOS.
  */
 
 use App\Enums\SituacaoCurso;
 use App\Models\Curso;
 use App\Models\CursoModulo;
 use App\Models\Papel;
+use App\Models\Trilha;
 use App\Models\User;
 
 /**
@@ -94,4 +95,34 @@ test('filtros do catálogo: modalidade, acesso e busca', function () {
         ->assertInertia(fn ($tela) => $tela->has('cursos', 1)->where('cursos.0.titulo', 'Tiro'));
     $this->get(route('catalogo.index', ['busca' => 'tir']))
         ->assertInertia(fn ($tela) => $tela->has('cursos', 1));
+});
+
+test('trilha em fluxograma: agrupa por etapa, "Em breve" sem capa e sem cancelados', function () {
+    $basico = cursoNoBanco(SituacaoCurso::Publicado, ['titulo' => 'Básico']);
+    $tiro = cursoNoBanco(SituacaoCurso::Publicado, ['titulo' => 'Tiro']);
+    $aph = cursoNoBanco(SituacaoCurso::Rascunho, ['titulo' => 'APH']);
+    $cancelado = cursoNoBanco(SituacaoCurso::Cancelado, ['titulo' => 'Cancelado']);
+    // Uma aula ativa no Básico (conta no cartão).
+    CursoModulo::create(['curso_id' => $basico->id, 'titulo' => 'Módulo 1', 'ordem' => 1, 'ativo' => true])
+        ->aulas()->create(['titulo' => 'Aula 1', 'ordem' => 1, 'ativa' => true]);
+
+    $trilha = Trilha::create(['nome' => 'Formação', 'ativa' => true]);
+    $trilha->cursos()->sync([$basico->id => ['ordem' => 1], $tiro->id => ['ordem' => 2], $aph->id => ['ordem' => 2], $cancelado->id => ['ordem' => 3]]);
+
+    $this->get(route('catalogo.trilha', $trilha))
+        ->assertOk()
+        ->assertInertia(fn ($tela) => $tela->component('catalogo/trilha')
+            ->has('etapas', 2)
+            ->where('etapas.0.etapa', 1)
+            ->where('etapas.0.cursos.0.aulas', 1)
+            ->has('etapas.1.cursos', 2)
+            ->where('etapas.1.cursos.1.titulo', 'APH')
+            ->where('etapas.1.cursos.1.disponivel', false)
+            ->where('etapas.1.cursos.1.imagem_url', null));
+});
+
+test('trilha desativada: 404 para o público', function () {
+    $trilha = Trilha::create(['nome' => 'Antiga', 'ativa' => false]);
+
+    $this->get(route('catalogo.trilha', $trilha))->assertNotFound();
 });

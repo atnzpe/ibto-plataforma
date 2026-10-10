@@ -13,7 +13,7 @@ import { formatarReais } from '@/lib/dinheiro';
 import { dataBr } from '@/pages/catalogo/index';
 import type { CartaoCurso } from '@/pages/catalogo/index';
 import { login } from '@/routes';
-import { index as catalogo } from '@/routes/catalogo';
+import { index as catalogo, trilha as paginaDaTrilha } from '@/routes/catalogo';
 
 type Aula = {
     id: number;
@@ -123,14 +123,16 @@ export default function PaginaCurso({
                                     >
                                         {curso.tipo}
                                     </span>
+                                    {/* Cada trilha vira link para o fluxograma dela. */}
                                     {curso.trilhas.map((trilha) => (
-                                        <span
+                                        <Link
                                             key={trilha.id}
-                                            className={`${selo} bg-[#efe8d6] text-[#3f3a2c]`}
+                                            href={paginaDaTrilha(trilha.id)}
+                                            className={`${selo} bg-[#efe8d6] text-[#3f3a2c] underline-offset-4 hover:underline`}
                                         >
                                             Trilha: {trilha.nome} · etapa{' '}
                                             {trilha.etapa}
-                                        </span>
+                                        </Link>
                                     ))}
                                 </div>
                                 <h1 className="font-[Audiowide,sans-serif] text-3xl leading-tight font-normal">

@@ -21,6 +21,8 @@ type TrilhaEdicao = {
     descricao: string | null;
     ativa: boolean;
     cursos: number[];
+    // Etapa de cada curso (id → etapa). Mesma etapa = lado a lado no fluxograma.
+    etapas: Record<number, number>;
 };
 
 /**
@@ -56,6 +58,10 @@ export default function TrilhaFormulario({
     // Os cursos escolhidos, na ordem das etapas (ids).
     const [escolhidos, setEscolhidos] = useState<number[]>(
         trilha?.cursos ?? [],
+    );
+    // Etapa escolhida para cada curso (id → número). Sem escolha, vale a posição na lista.
+    const [etapas, setEtapas] = useState<Record<number, number>>(
+        trilha?.etapas ?? {},
     );
     // Busca rápida do curso pelo id, para mostrar o nome.
     const porId = new Map(cursos.map((curso) => [curso.id, curso]));
@@ -108,6 +114,11 @@ export default function TrilhaFormulario({
                                 <legend className="mb-1 font-medium">
                                     Cursos, na ordem das etapas
                                 </legend>
+                                <p className="text-xs text-muted-foreground">
+                                    Dois cursos com a MESMA etapa aparecem lado
+                                    a lado no fluxograma do aluno (caminhos à
+                                    escolha).
+                                </p>
                                 {/* Os ids vão escondidos, NA ORDEM da lista. */}
                                 {escolhidos.map((id) => (
                                     <input
@@ -128,10 +139,33 @@ export default function TrilhaFormulario({
                                             key={id}
                                             className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
                                         >
-                                            <span>
-                                                <span className="text-muted-foreground">
-                                                    Etapa {posicao + 1} ·{' '}
-                                                </span>
+                                            <span className="flex items-center gap-3">
+                                                {/* Etapa: número (repetir = lado a lado). */}
+                                                <label className="flex items-center gap-1 text-muted-foreground">
+                                                    Etapa
+                                                    <Input
+                                                        type="number"
+                                                        name={`etapas[${id}]`}
+                                                        min={1}
+                                                        max={50}
+                                                        value={
+                                                            etapas[id] ??
+                                                            posicao + 1
+                                                        }
+                                                        onChange={(evento) =>
+                                                            setEtapas({
+                                                                ...etapas,
+                                                                [id]: Number(
+                                                                    evento
+                                                                        .target
+                                                                        .value,
+                                                                ),
+                                                            })
+                                                        }
+                                                        className="h-9 w-16"
+                                                        aria-label={`Etapa de ${porId.get(id)?.titulo ?? `curso nº ${id}`}`}
+                                                    />
+                                                </label>
                                                 <span className="font-medium">
                                                     {porId.get(id)?.titulo ??
                                                         `Curso nº ${id}`}

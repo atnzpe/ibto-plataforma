@@ -130,6 +130,50 @@ class CatalogoController extends Controller
     }
 
     /**
+     * A TRILHA em FLUXOGRAMA (#38, bloco C4b; referência: o fluxograma da Solyd
+     * que o Gleyson mandou): as etapas de cima para baixo e, em cada etapa, os
+     * cursos lado a lado, com as horas e o número de aulas. Curso ainda não
+     * publicado aparece como "Em breve", sem link.
+     *
+     * @param  Trilha  $trilha  A do endereço (ex.: /trilhas/2).
+     * @return Response A tela "catalogo/trilha".
+     */
+    public function trilha(Trilha $trilha): Response
+    {
+        // Trilha desativada: só o Comando Geral vê (prévia); os outros, 404.
+        abort_if(! $trilha->ativa && ! Gate::allows('cursos.gerenciar'), 404);
+
+        // Os cursos da trilha (menos os cancelados), já na ordem das etapas.
+        $cursos = $trilha->cursos()->where('situacao', '!=', SituacaoCurso::Cancelado->value)->get();
+
+        // Agrupa por etapa: [1 => [cursos], 2 => [cursos, cursos], ...].
+        $etapas = $cursos->groupBy(fn (Curso $curso) => (int) $curso->getRelationValue('pivot')?->getAttribute('ordem'))
+            ->map(fn ($daEtapa, $etapa) => [
+                'etapa' => $etapa,
+                'cursos' => $daEtapa->map(fn (Curso $curso) => [
+                    'id' => $curso->id,
+                    'titulo' => $curso->titulo,
+                    'imagem_url' => $curso->situacao === SituacaoCurso::Publicado ? $curso->imagemUrl() : null,
+                    'carga_horaria' => $curso->carga_horaria,
+                    // Número de aulas ativas, em módulos ativos (o "📖 6" do exemplo).
+                    'aulas' => CursoAula::query()->where('ativa', true)
+                        ->whereHas('modulo', fn ($modulo) => $modulo->where('curso_id', $curso->id)->where('ativo', true))
+                        ->count(),
+                    'modalidade' => $curso->modalidade->rotulo(),
+                    // false = "Em breve" (ainda não publicado): aparece, mas sem link.
+                    'disponivel' => $curso->situacao === SituacaoCurso::Publicado,
+                ])->values(),
+            ])->sortKeys()->values();
+
+        return Inertia::render('catalogo/trilha', [
+            'trilha' => ['id' => $trilha->id, 'nome' => $trilha->nome, 'descricao' => $trilha->descricao],
+            'etapas' => $etapas,
+            // As outras trilhas ativas, para trocar pelo topo ("Todas as trilhas").
+            'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
+        ]);
+    }
+
+    /**
      * Os dados do cartão do curso no catálogo (e o topo da página do curso).
      *
      * @return array<string, mixed>
