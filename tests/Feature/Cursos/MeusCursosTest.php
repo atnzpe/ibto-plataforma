@@ -11,6 +11,7 @@ use App\Actions\Cursos\Matriculas;
 use App\Actions\Filiados\CriarFiliado;
 use App\Models\Curso;
 use App\Models\CursoModulo;
+use App\Models\Nivel;
 use App\Models\User;
 
 /**
@@ -27,10 +28,12 @@ function cursoDosMeusCursos(array $troca = []): Curso
     return $curso;
 }
 
-test('trilha de formação: Monitor = Praticante feita, Monitor atual, o resto a seguir', function () {
+test('trilha pelos NÍVEIS: o 2º nível da ordem = 1º feito, 2º atual, 3º a seguir', function () {
+    // Os níveis ativos na ordem da hierarquia; o filiado fica no 2º.
+    $niveis = Nivel::emOrdem(Nivel::where('ativo', true)->get())->values();
     $filiado = app(CriarFiliado::class)->executar([
         'nome' => 'Filiado Teste', 'email' => 'monitor@ibto.test', 'cpf' => '529.982.247-25',
-        'nascimento' => '1990-05-20', 'municipio' => 'Recife', 'uf' => 'PE', 'categoria' => 'monitor',
+        'nascimento' => '1990-05-20', 'municipio' => 'Recife', 'uf' => 'PE', 'nivel_id' => $niveis[1]->id,
     ]);
 
     // O filiado criado ainda não confirmou o e-mail (o convite faz isso): confirma aqui.
@@ -42,10 +45,11 @@ test('trilha de formação: Monitor = Praticante feita, Monitor atual, o resto a
             ->where('pessoa.filiado', true)
             // Sem equipe: sem logo (a tela mostra o emblema do IBTO).
             ->where('pessoa.logo_url', null)
+            ->has('trilha', $niveis->count())
+            ->where('pessoa.nivel', $niveis[1]->nome())
             ->where('trilha.0.estado', 'feita')
             ->where('trilha.1.estado', 'atual')
-            ->where('trilha.2.estado', 'a_seguir')
-            ->where('trilha.3.estado', 'a_seguir'));
+            ->where('trilha.2.estado', 'a_seguir'));
 });
 
 test('não filiado: trilha toda "a seguir"', function () {

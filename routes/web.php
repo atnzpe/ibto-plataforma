@@ -187,6 +187,8 @@ Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])
     ->controller(MatriculaPainelController::class)
     ->group(function () {
         Route::get('/', 'index')->name('index');
+        // A ficha (nome e e-mail), com o registro de acesso na auditoria (LGPD).
+        Route::get('{matricula}', 'ficha')->whereNumber('matricula')->name('ficha');
         Route::post('{matricula}/confirmar', 'confirmar')->name('confirmar');
         Route::post('{matricula}/cancelar', 'cancelar')->name('cancelar');
     });

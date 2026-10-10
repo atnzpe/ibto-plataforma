@@ -10,6 +10,7 @@
 
 use App\Actions\Cursos\Matriculas;
 use App\Enums\SituacaoMatricula;
+use App\Models\Auditoria;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\FinFormaPagamento;
@@ -36,7 +37,11 @@ test('só quem confirma pagamentos abre o painel (403 para os outros)', function
         ->assertOk()
         ->assertInertia(fn ($tela) => $tela->component('cursos/matriculas')
             ->where('aguardando', 1)
-            ->where('matriculas.data.0.aluno', 'Aluna Teste'));
+            // LGPD: a lista não traz o nome nem o e-mail (só o registro; aqui, não filiado).
+            ->where('matriculas.data.0.registro', null)
+            ->where('matriculas.data.0.equipe', 'Não filiado')
+            ->missing('matriculas.data.0.aluno')
+            ->missing('matriculas.data.0.email'));
 });
 
 test('filtros: situação e período De/Até', function () {
@@ -80,4 +85,21 @@ test('cancelar exige motivo; matrícula paga lembra do estorno no financeiro', f
 
     expect(CursoMatricula::count())->toBe(1);
     expect($this->matricula->fresh()->situacao)->toBe(SituacaoMatricula::Cancelada);
+});
+
+test('a ficha mostra o nome e o e-mail, e a abertura fica na auditoria (LGPD)', function () {
+    $this->actingAs($this->admin)->get(route('comando-geral.matriculas.ficha', $this->matricula))
+        ->assertOk()
+        ->assertInertia(fn ($tela) => $tela->component('cursos/matricula-ficha')->where('matricula.nome', 'Aluna Teste'));
+
+    $linha = Auditoria::where('acao', 'MATRICULA_FICHA_ABERTA')->latest('id')->firstOrFail();
+    expect($linha->detalhes)->toEqual(['matricula_id' => $this->matricula->id, 'usuario_id' => $this->matricula->user_id]);
+    expect(json_encode($linha->detalhes))->not->toContain('Aluna');
+});
+
+test('a busca é pelo registro ou pelo número da matrícula', function () {
+    $this->actingAs($this->admin)->get(route('comando-geral.matriculas.index', ['busca' => (string) $this->matricula->id]))
+        ->assertInertia(fn ($tela) => $tela->has('matriculas.data', 1));
+    $this->actingAs($this->admin)->get(route('comando-geral.matriculas.index', ['busca' => 'BR99999999XX']))
+        ->assertInertia(fn ($tela) => $tela->has('matriculas.data', 0));
 });

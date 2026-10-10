@@ -17,6 +17,7 @@ use App\Actions\Cursos\Matriculas;
 use App\Enums\SituacaoMatricula;
 use App\Exceptions\RegraCurso;
 use App\Http\Controllers\Controller;
+use App\Models\Auditoria;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\FinFormaPagamento;
@@ -44,7 +45,8 @@ class MatriculaPainelController extends Controller
         $periodo = ($request->filled('de') || $request->filled('ate')) ? Periodo::doPedido($request) : null;
 
         $consulta = CursoMatricula::query()
-            ->with(['curso:id,titulo', 'usuario:id,name,email'])
+            // Só o REGISTRO do filiado e a equipe vão para a lista (LGPD; decisão de 10/10/2026).
+            ->with(['curso:id,titulo', 'usuario.filiado:id,user_id,registro,equipe_id', 'usuario.filiado.equipe:id,nome'])
             ->orderByDesc('id');
 
         if ($situacao !== null) {
@@ -54,10 +56,10 @@ class MatriculaPainelController extends Controller
             $consulta->where('curso_id', $cursoId);
         }
         if ($busca !== '') {
-            // Pelo nome ou e-mail da pessoa.
-            $consulta->whereHas('usuario', fn ($usuario) => $usuario->where(fn ($ou) => $ou
-                ->where('name', 'like', "%{$busca}%")
-                ->orWhere('email', 'like', "%{$busca}%")));
+            // Pelo registro do filiado (ex.: BR20260046PE) ou pelo número da matrícula.
+            $consulta->where(fn ($ou) => $ou
+                ->whereHas('usuario.filiado', fn ($filiado) => $filiado->where('registro', 'like', "%{$busca}%"))
+                ->orWhere('id', (int) ltrim($busca, '#')));
         }
         if ($periodo !== null) {
             $consulta->whereBetween('created_at', [$periodo->inicio, $periodo->fim]);
@@ -67,8 +69,9 @@ class MatriculaPainelController extends Controller
             'id' => $matricula->id,
             'curso' => $matricula->curso->titulo,
             'curso_id' => $matricula->curso_id,
-            'aluno' => $matricula->usuario->name,
-            'email' => $matricula->usuario->email,
+            // Quem é, SEM o nome (LGPD): o registro do filiado; não filiado = só o nº da matrícula.
+            'registro' => $matricula->usuario->filiado?->registro,
+            'equipe' => $matricula->usuario->filiado !== null ? ($matricula->usuario->filiado->equipe->nome ?? 'Sem equipe') : 'Não filiado',
             'situacao' => $matricula->situacao->value,
             'situacao_rotulo' => $matricula->situacao->rotulo(),
             'valor_centavos' => $matricula->valor_centavos,
@@ -94,6 +97,43 @@ class MatriculaPainelController extends Controller
             'cursos' => Curso::query()->whereHas('matriculas')->orderBy('titulo')->get(['id', 'titulo']),
             'formas' => FinFormaPagamento::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
             'hoje' => today()->toDateString(),
+        ]);
+    }
+
+    /**
+     * A FICHA da matrícula: aqui sim aparecem o nome e o e-mail (decisão de
+     * 10/10/2026: na lista só o registro; o nome ao abrir a ficha). Cada
+     * abertura fica na auditoria: quem viu os dados de quem e quando (LGPD).
+     *
+     * @param  CursoMatricula  $matricula  A do endereço. Ex.: /comando-geral/matriculas/12
+     * @return Response A tela "cursos/matricula-ficha".
+     */
+    public function ficha(CursoMatricula $matricula): Response
+    {
+        $matricula->load(['curso:id,titulo,data_inicio,local', 'usuario.filiado.equipe:id,nome']);
+        $filiado = $matricula->usuario->filiado;
+
+        // Registro de acesso a dados pessoais (só números: o nome não vai para o log).
+        Auditoria::registrar('MATRICULA_FICHA_ABERTA', ['matricula_id' => $matricula->id, 'usuario_id' => $matricula->user_id]);
+
+        return Inertia::render('cursos/matricula-ficha', [
+            'matricula' => [
+                'id' => $matricula->id,
+                'nome' => $matricula->usuario->name,
+                'email' => $matricula->usuario->email,
+                'registro' => $filiado?->registro,
+                'equipe' => $filiado !== null ? ($filiado->equipe->nome ?? 'Sem equipe') : 'Não filiado',
+                'curso' => $matricula->curso->titulo,
+                'situacao' => $matricula->situacao->value,
+                'situacao_rotulo' => $matricula->situacao->rotulo(),
+                'valor_centavos' => $matricula->valor_centavos,
+                'criada_em' => $matricula->created_at?->format('d/m/Y H:i'),
+                'confirmada_em' => $matricula->confirmada_em?->format('d/m/Y H:i'),
+                'cancelada_em' => $matricula->cancelada_em?->format('d/m/Y H:i'),
+                'motivo_cancelamento' => $matricula->motivo_cancelamento,
+                'comprovante_url' => $matricula->comprovante !== null ? route('matriculas.comprovante.ver', $matricula->id) : null,
+                'lancamento_id' => $matricula->lancamento_id,
+            ],
         ]);
     }
 

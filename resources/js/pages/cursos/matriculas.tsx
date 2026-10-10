@@ -1,7 +1,8 @@
 /**
  * MATRÍCULAS no Comando Geral (#41, bloco C5c): a secretaria/tesouraria
  * confere o comprovante do PIX e CONFIRMA o pagamento (dia + forma), ou
- * CANCELA com motivo (sem apagar). Filtros: situação, curso, nome/e-mail e
+ * CANCELA com motivo (sem apagar). LGPD (10/10/2026): a lista mostra só o
+ * REGISTRO; o nome e o e-mail ficam na ficha. Filtros: situação, curso, registro e
  * período "De / Até" pela data da matrícula.
  *
  * Sem rolagem lateral: um cartão por matrícula (1 coluna no celular, 2 na
@@ -14,15 +15,17 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 import { dataBr } from '@/pages/catalogo/index';
-import { cancelar, index } from '@/routes/comando-geral/matriculas';
+import { cancelar, ficha, index } from '@/routes/comando-geral/matriculas';
 
 /** Uma matrícula na lista. */
 type MatriculaLista = {
     id: number;
     curso: string;
     curso_id: number;
-    aluno: string;
-    email: string | null;
+    // LGPD: o registro do filiado (null = não filiado); o nome só na ficha.
+    registro: string | null;
+    // Ex.: "Equipe Vulcan", "Sem equipe" ou "Não filiado".
+    equipe: string;
     situacao: 'aguardando_pagamento' | 'confirmada' | 'cancelada';
     situacao_rotulo: string;
     valor_centavos: number;
@@ -109,7 +112,7 @@ export default function MatriculasPainel({
      */
     const cancelarMatricula = (matricula: MatriculaLista) => {
         const motivo = window.prompt(
-            `Cancelar a matrícula nº ${matricula.id} (${matricula.aluno})? Escreva o motivo:`,
+            `Cancelar a matrícula nº ${matricula.id} (${matricula.registro ?? 'não filiado'})? Escreva o motivo:`,
         );
         // Fechou a janela ou deixou em branco: não cancela.
         if (motivo === null || motivo.trim() === '') {
@@ -217,7 +220,7 @@ export default function MatriculasPainel({
                             htmlFor="f-busca"
                             className="text-sm font-medium"
                         >
-                            Nome ou e-mail
+                            Registro ou nº da matrícula
                         </label>
                         <input
                             id="f-busca"
@@ -257,8 +260,10 @@ export default function MatriculasPainel({
                         >
                             <div className="flex flex-col gap-1">
                                 <span className="flex flex-wrap items-center gap-2">
-                                    <strong className="text-base">
-                                        {matricula.aluno}
+                                    {/* LGPD: o registro (ou o nº da matrícula), nunca o nome na lista. */}
+                                    <strong className="font-mono text-base">
+                                        {matricula.registro ??
+                                            `Matrícula nº ${matricula.id}`}
                                     </strong>
                                     <span
                                         className={`rounded px-1.5 py-0.5 text-xs font-medium ${SELO[matricula.situacao]}`}
@@ -266,8 +271,15 @@ export default function MatriculasPainel({
                                         {matricula.situacao_rotulo}
                                     </span>
                                 </span>
-                                <span className="[overflow-wrap:anywhere] text-muted-foreground">
-                                    {matricula.email ?? 'Sem e-mail'}
+                                <span className="text-muted-foreground">
+                                    {matricula.equipe} ·{' '}
+                                    {/* O nome e o e-mail só na ficha (o acesso fica registrado). */}
+                                    <Link
+                                        href={ficha(matricula.id)}
+                                        className="underline underline-offset-4"
+                                    >
+                                        Abrir ficha
+                                    </Link>
                                 </span>
                                 <span>
                                     {matricula.curso} · nº {matricula.id} ·{' '}

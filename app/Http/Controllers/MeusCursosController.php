@@ -6,8 +6,8 @@
  * instrutor, admin de equipe).
  * - Cabeçalho com o LOGO DA EQUIPE do filiado (sem equipe ou não filiado:
  *   o emblema do IBTO), o nome, o registro e a categoria;
- * - TRILHA DE FORMAÇÃO: Praticante → Monitor → Instrutor → Instrutor Expert,
- *   com cada etapa "feita", "atual" ou "a seguir", pela categoria do filiado;
+ * - TRILHA DE FORMAÇÃO: os NÍVEIS do cadastro, em ordem (Monitor I, Monitor II,
+ *   Instrutor I...; decisão de 10/10/2026), cada um "feito", "atual" ou "a seguir";
  * - os CURSOS da pessoa (matrículas aguardando pagamento ou confirmadas),
  *   com o próximo passo de cada um (pagar ou assistir).
  * Ficam para depois: a foto do filiado (upload com LGPD, #47) e o dossiê
@@ -16,10 +16,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CategoriaFiliado;
 use App\Enums\SituacaoMatricula;
 use App\Models\CursoAula;
 use App\Models\CursoMatricula;
+use App\Models\Nivel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,14 +27,6 @@ use Inertia\Response;
 
 class MeusCursosController extends Controller
 {
-    // As etapas da trilha de formação, em ordem (a função no IBTO, decisão de 09/10/2026).
-    private const ETAPAS = [
-        CategoriaFiliado::Praticante,
-        CategoriaFiliado::Monitor,
-        CategoriaFiliado::Instrutor,
-        CategoriaFiliado::InstrutorExpert,
-    ];
-
     /**
      * A página "Meus cursos".
      *
@@ -45,7 +37,7 @@ class MeusCursosController extends Controller
     {
         /** @var User $usuario */
         $usuario = $request->user();
-        $filiado = $usuario->filiado()->with('equipe')->first();
+        $filiado = $usuario->filiado()->with(['equipe', 'nivel'])->first();
 
         // As matrículas que valem (aguardando ou confirmadas), as mais novas primeiro.
         $matriculas = CursoMatricula::query()
@@ -65,8 +57,11 @@ class MeusCursosController extends Controller
                 'equipe' => $filiado?->equipe?->nome,
                 // Logo da equipe; null = mostrar o emblema do IBTO.
                 'logo_url' => $filiado?->equipe?->logoUrl(),
+                // O nível atual escrito. Ex.: 'Monitor II' (null = sem nível).
+                'nivel' => $filiado?->nivel?->nome(),
             ],
-            'trilha' => $this->trilha($filiado?->categoria),
+            // Trilha pelo NÍVEL do filiado (graduação), não pela categoria.
+            'trilha' => $this->trilha($filiado?->nivel_id),
             'cursos' => $matriculas->map(fn (CursoMatricula $matricula) => [
                 'matricula_id' => $matricula->id,
                 'curso_id' => $matricula->curso_id,
@@ -86,29 +81,31 @@ class MeusCursosController extends Controller
     }
 
     /**
-     * As etapas da trilha de formação com o estado de cada uma.
+     * As etapas da trilha de formação: os NÍVEIS ativos do cadastro, na ordem
+     * da hierarquia (decisão do Gleyson, 10/10/2026: "trilha por nível", como
+     * no desenho aprovado: Monitor I, Monitor II, Instrutor I...).
      *
-     * @param  CategoriaFiliado|null  $atual  A categoria do filiado. Ex.: Monitor.
+     * @param  int|null  $nivelAtual  O nível do filiado (null = sem nível ou não filiado).
      * @return list<array{nome: string, estado: string}> estado: 'feita', 'atual' ou 'a_seguir'.
      */
-    private function trilha(?CategoriaFiliado $atual): array
+    private function trilha(?int $nivelAtual): array
     {
-        // Posição da categoria atual na trilha (false = fora dela: não filiado ou admin de equipe).
-        $posicao = $atual !== null ? array_search($atual, self::ETAPAS, true) : false;
+        // Os níveis ativos, já na ordem (Nivel::emOrdem: categoria e depois o grau).
+        $niveis = Nivel::emOrdem(Nivel::query()->where('ativo', true)->get())->values();
+        // Posição do nível do filiado na lista (false = sem nível: tudo "a seguir").
+        $posicao = $nivelAtual !== null ? $niveis->search(fn (Nivel $nivel) => $nivel->id === $nivelAtual) : false;
 
-        $etapas = [];
-        foreach (self::ETAPAS as $indice => $etapa) {
-            $estado = match (true) {
-                // Fora da trilha: tudo "a seguir".
+        // array_values: devolve uma lista numerada 0, 1, 2... (o que a tela espera).
+        return array_values($niveis->map(fn (Nivel $nivel, int $indice) => [
+            'nome' => $nivel->nome(),
+            'estado' => match (true) {
                 $posicao === false => 'a_seguir',
+                // Antes do nível atual: já passou por ele.
                 $indice < $posicao => 'feita',
                 $indice === $posicao => 'atual',
                 default => 'a_seguir',
-            };
-            $etapas[] = ['nome' => $etapa->rotulo(), 'estado' => $estado];
-        }
-
-        return $etapas;
+            },
+        ])->all());
     }
 
     /**

@@ -48,7 +48,7 @@ const ETAPA: Record<string, { texto: string; classe: string }> = {
 
 /**
  * @param pessoa Quem está logado (com a equipe, se filiado).
- * @param trilha As 4 etapas da trilha de formação com o estado de cada uma.
+ * @param trilha Os níveis da trilha de formação, em ordem, com o estado de cada um.
  * @param cursos Os cursos da pessoa.
  * @returns A página.
  */
@@ -64,10 +64,15 @@ export default function MeusCursos({
         categoria: string | null;
         equipe: string | null;
         logo_url: string | null;
+        // O nível atual escrito. Ex.: "Monitor II" (null = sem nível).
+        nivel: string | null;
     };
     trilha: { nome: string; estado: 'feita' | 'atual' | 'a_seguir' }[];
     cursos: MeuCurso[];
 }) {
+    // Quantos níveis já alcançou (os feitos + o atual). Ex.: 3.
+    const feitas = trilha.filter((etapa) => etapa.estado !== 'a_seguir').length;
+
     return (
         <>
             <Head title="Meus cursos" />
@@ -102,21 +107,49 @@ export default function MeusCursos({
                     </div>
                 </section>
 
-                {/* Trilha de formação: 2 colunas no celular, 4 na tela larga. */}
+                {/* Trilha de formação pelos NÍVEIS (decisão de 10/10/2026): a grade se ajusta à quantidade de níveis. */}
                 <section
                     aria-labelledby="t-trilha"
                     className="flex flex-col gap-3"
                 >
-                    <h2 id="t-trilha" className="font-semibold">
-                        Trilha de formação
-                    </h2>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 id="t-trilha" className="font-semibold">
+                            Trilha de formação
+                        </h2>
+                        {/* Progresso escrito: quantos níveis já passou, contando o atual. */}
+                        {feitas > 0 && (
+                            <span className="text-sm text-muted-foreground">
+                                {pessoa.nivel} · {feitas} de {trilha.length}{' '}
+                                níveis
+                            </span>
+                        )}
+                    </div>
+                    {trilha.length > 0 && (
+                        <div
+                            role="img"
+                            aria-label={`${feitas} de ${trilha.length} níveis alcançados`}
+                            className="h-3 overflow-hidden rounded-full border border-border bg-muted"
+                        >
+                            <div
+                                className="h-full bg-[#6b5d3a]"
+                                style={{
+                                    width: `${(feitas / trilha.length) * 100}%`,
+                                }}
+                            />
+                        </div>
+                    )}
                     {!pessoa.filiado && (
                         <p className="text-sm text-muted-foreground">
-                            A trilha começa quando você se filia ao IBTO como
-                            Praticante.
+                            A trilha começa quando você se filia ao IBTO.
                         </p>
                     )}
-                    <ol className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                    {pessoa.filiado && pessoa.nivel === null && (
+                        <p className="text-sm text-muted-foreground">
+                            Seu nível ainda não foi registrado. Fale com o
+                            administrador da sua equipe.
+                        </p>
+                    )}
+                    <ol className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-2">
                         {trilha.map((etapa, indice) => (
                             <li
                                 key={etapa.nome}
