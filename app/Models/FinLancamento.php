@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string $situacao
  * @property string|null $motivo
  * @property int|null $estorno_de_id
+ * @property int|null $saldo_de_id
  * @property int|null $equipe_id
  * @property string|null $origem
  * @property int|null $origem_id

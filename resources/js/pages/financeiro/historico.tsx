@@ -23,6 +23,8 @@ type LinhaHistorico = {
     lancamentos: number[];
     estorno_de: number | null;
     parcelas: number | null;
+    // Baixa parcial: quanto ficou em aberto (em centavos). Ex.: 60000.
+    saldo_centavos: number | null;
     valor_centavos: number | null;
     antes: { valor_centavos: number | null; vencimento: string | null } | null;
     depois: { valor_centavos: number | null; vencimento: string | null } | null;
@@ -36,6 +38,7 @@ const ROTULOS: Record<string, string> = {
     LANCAMENTO_PAGO: 'Deu baixa', // Ex.: "Fulano deu baixa no lançamento nº 7"
     LANCAMENTO_CANCELADO: 'Cancelou', // Ex.: "Fulano cancelou o lançamento nº 7"
     LANCAMENTO_ESTORNADO: 'Estornou', // Ex.: "Fulano estornou o lançamento nº 7"
+    LANCAMENTO_PAGO_PARCIAL: 'Deu baixa parcial',
 };
 
 /**
@@ -79,6 +82,10 @@ function detalhe(linha: LinhaHistorico): string {
                 : '';
 
         return valor + vencimento;
+    }
+    // Baixa parcial: quanto entrou e quanto ficou em aberto.
+    if (linha.saldo_centavos !== null) {
+        return `${formatarReais(linha.valor_centavos ?? 0)} pagos · saldo de ${formatarReais(linha.saldo_centavos)} em aberto`;
     }
     // Parcelamento: o total e em quantas vezes.
     if (linha.parcelas) {

@@ -169,28 +169,75 @@ class LivroCaixa
     }
 
     /**
-     * Dá baixa: marca um lançamento PENDENTE como pago.
+     * Dá baixa: marca um lançamento PENDENTE como pago. Se entrou só PARTE do
+     * valor (opção B do Gleyson, 10/10/2026), o lançamento fica com o valor
+     * pago e nasce outro, pendente, com o SALDO que falta ("Saldo de: ...").
      *
      * @param  FinLancamento  $lancamento  O lançamento pendente.
      * @param  string  $pagoEm  Dia do pagamento. Ex.: '2027-03-15'
      * @param  int  $formaPagamentoId  Como foi pago. Ex.: o id do 'PIX'
+     * @param  int|null  $valorPagoCentavos  Quanto entrou (vazio = o valor todo). Ex.: 30000 de 90000
      * @return FinLancamento O mesmo lançamento, agora pago.
      */
-    public function pagar(FinLancamento $lancamento, string $pagoEm, int $formaPagamentoId): FinLancamento
+    public function pagar(FinLancamento $lancamento, string $pagoEm, int $formaPagamentoId, ?int $valorPagoCentavos = null): FinLancamento
     {
         // Só pendente pode ser pago (pago de novo ou cancelado, não).
         if ($lancamento->situacao !== 'pendente') {
             throw new RegraFinanceira('LANCAMENTO_NAO_PENDENTE', 'Só um lançamento pendente pode receber baixa.');
         }
 
-        return DB::transaction(function () use ($lancamento, $pagoEm, $formaPagamentoId): FinLancamento {
+        // Quanto entrou: o informado, ou o valor todo.
+        $valorPago = $valorPagoCentavos ?? $lancamento->valor_centavos;
+
+        // Inválido se for zero/negativo OU passar do valor da conta (Gleyson):
+        // basta UMA das duas para recusar, por isso "||".
+        $valorInvalido = $valorPago <= 0 || $valorPago > $lancamento->valor_centavos;
+
+        if ($valorInvalido) {
+            throw new RegraFinanceira('VALOR_PAGO_INVALIDO', 'O valor pago precisa ser maior que zero e no máximo o valor do lançamento.');
+        }
+
+        return DB::transaction(function () use ($lancamento, $pagoEm, $formaPagamentoId, $valorPago): FinLancamento {
+            // O que falta pagar (0 = pagou tudo). Ex.: 90000 − 30000 = 60000.
+            $restante = $lancamento->valor_centavos - $valorPago;
+
             $lancamento->forceFill([
                 'situacao' => 'pago',
                 'pago_em' => $pagoEm,
                 'forma_pagamento_id' => $formaPagamentoId,
+                // Na baixa parcial, o lançamento passa a valer só o que entrou.
+                'valor_centavos' => $valorPago,
             ])->save();
 
-            Auditoria::registrar('LANCAMENTO_PAGO', $this->resumo($lancamento));
+            // Pagou tudo: uma linha de auditoria comum e pronto.
+            if ($restante === 0) {
+                Auditoria::registrar('LANCAMENTO_PAGO', $this->resumo($lancamento));
+
+                return $lancamento;
+            }
+
+            // Pagou parte: nasce o SALDO, pendente, ligado ao original, com o mesmo
+            // vencimento, categoria, equipe e parcela.
+            $saldo = new FinLancamento;
+            $saldo->forceFill([
+                'tipo' => $lancamento->tipo,
+                'categoria_id' => $lancamento->categoria_id,
+                'descricao' => 'Saldo de: '.$lancamento->descricao,
+                'valor_centavos' => $restante,
+                'vencimento' => $lancamento->vencimento->toDateString(),
+                'parcela_numero' => $lancamento->parcela_numero,
+                'parcela_total' => $lancamento->parcela_total,
+                'grupo_parcelas' => $lancamento->grupo_parcelas,
+                'situacao' => 'pendente',
+                'saldo_de_id' => $lancamento->id,
+                'equipe_id' => $lancamento->equipe_id,
+                'criado_por' => Auth::id(),
+            ])->save();
+
+            Auditoria::registrar('LANCAMENTO_PAGO_PARCIAL', $this->resumo($lancamento) + [
+                'saldo_id' => $saldo->id,
+                'saldo_centavos' => $restante,
+            ]);
 
             return $lancamento;
         });

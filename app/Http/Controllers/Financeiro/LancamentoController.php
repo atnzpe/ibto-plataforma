@@ -204,9 +204,18 @@ class LancamentoController extends Controller
      */
     public function pagar(BaixaRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
     {
+        // Valor pago: vazio = o valor todo; texto que não vira número = 0 (o
+        // LivroCaixa recusa com VALOR_PAGO_INVALIDO, sem erro 500).
+        $valorPago = $request->filled('valor_pago')
+            ? (Dinheiro::paraCentavos((string) $request->input('valor_pago')) ?? 0)
+            : null;
+
+        // Mensagem diferente quando sobra saldo (baixa parcial).
+        $parcial = $valorPago !== null && $valorPago < $lancamento->valor_centavos;
+
         return $this->executar(
-            fn () => $caixa->pagar($lancamento, $request->string('pago_em')->toString(), $request->integer('forma_pagamento_id')),
-            'Baixa registrada.',
+            fn () => $caixa->pagar($lancamento, $request->string('pago_em')->toString(), $request->integer('forma_pagamento_id'), $valorPago),
+            $parcial ? 'Baixa parcial registrada; o saldo ficou em aberto.' : 'Baixa registrada.',
         );
     }
 

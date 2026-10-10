@@ -27,6 +27,7 @@ class HistoricoController extends Controller
         'LANCAMENTO_PAGO',
         'LANCAMENTO_CANCELADO',
         'LANCAMENTO_ESTORNADO',
+        'LANCAMENTO_PAGO_PARCIAL',
     ];
 
     /**
@@ -58,11 +59,13 @@ class HistoricoController extends Controller
         }
 
         // Filtro por lançamento: a "vida inteira" dele, incluindo o parcelamento
-        // que o criou e o estorno que aponta para ele.
+        // que o criou, o estorno que aponta para ele e a baixa parcial que gerou
+        // o saldo (saldo_id).
         if ($lancamentoId > 0) {
             $consulta->where(function (Builder $onde) use ($lancamentoId): void {
                 $onde->where('detalhes->lancamento_id', $lancamentoId)
                     ->orWhere('detalhes->estorno_de_id', $lancamentoId)
+                    ->orWhere('detalhes->saldo_id', $lancamentoId)
                     ->orWhereJsonContains('detalhes->lancamento_ids', $lancamentoId);
             });
         }
@@ -94,6 +97,11 @@ class HistoricoController extends Controller
         // Lançamento(s) da ação: um número, ou a lista das parcelas.
         $ids = isset($detalhes['lancamento_ids']) ? (array) $detalhes['lancamento_ids'] : array_filter([$detalhes['lancamento_id'] ?? null]);
 
+        // Lançamento do saldo, na baixa parcial (vai junto na lista de números).
+        if (isset($detalhes['saldo_id'])) {
+            $ids[] = $detalhes['saldo_id'];
+        }
+
         // Valor: o total no parcelamento, o novo valor na edição, ou o valor do lançamento.
         $valor = $detalhes['valor_total_centavos'] ?? $detalhes['depois']['valor_centavos'] ?? $detalhes['valor_centavos'] ?? null;
 
@@ -108,6 +116,8 @@ class HistoricoController extends Controller
             'lancamentos' => array_values(array_map('intval', $ids)),
             'estorno_de' => isset($detalhes['estorno_de_id']) ? (int) $detalhes['estorno_de_id'] : null,
             'parcelas' => $detalhes['parcelas'] ?? null,
+            // Baixa parcial: quanto ficou em aberto. Ex.: 60000.
+            'saldo_centavos' => isset($detalhes['saldo_centavos']) ? (int) $detalhes['saldo_centavos'] : null,
             'valor_centavos' => $valor !== null ? (int) $valor : null,
             // Só na edição: o que mudou (valor e vencimento), para mostrar "antes → depois".
             'antes' => isset($detalhes['antes']) ? ['valor_centavos' => $detalhes['antes']['valor_centavos'] ?? null, 'vencimento' => $detalhes['antes']['vencimento'] ?? null] : null,

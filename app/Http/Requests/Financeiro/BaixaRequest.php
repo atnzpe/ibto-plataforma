@@ -28,6 +28,9 @@ class BaixaRequest extends FormRequest
         return [
             // Dia do pagamento; não pode ser no futuro (dinheiro que ainda não entrou não é baixa).
             'pago_em' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            // Quanto entrou, como texto ("300,00"); vazio = o valor todo. A conversão
+            // fica no controlador e a regra (maior que zero, até o total) no LivroCaixa.
+            'valor_pago' => ['nullable', 'string', 'max:20'],
             // Uma forma de pagamento ATIVA que exista.
             'forma_pagamento_id' => ['required', 'integer', Rule::exists('fin_formas_pagamento', 'id')->where('ativa', true)],
         ];

@@ -33,6 +33,15 @@ type Acao = 'pagar' | 'cancelar' | 'estornar';
 const classeSelect =
     'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring';
 
+/**
+ * Centavos → texto para o campo (sem "R$", vírgula nos centavos).
+ *
+ * @param centavos Ex.: 90000
+ * @returns Ex.: '900,00'
+ */
+const paraCampo = (centavos: number) =>
+    (centavos / 100).toFixed(2).replace('.', ',');
+
 // Hoje no formato do campo de data. Ex.: '2027-03-15'.
 const hoje = () => new Date().toLocaleDateString('sv-SE');
 
@@ -133,6 +142,35 @@ export default function AcoesLancamento({
                             >
                                 {({ processing, errors }) => (
                                     <>
+                                        {/* Valor pago: vem com o total; menos que isso = baixa
+                                            parcial (o saldo vira outro lançamento, em aberto). */}
+                                        <div className="grid gap-2">
+                                            <Label
+                                                htmlFor={`valor_pago-${lancamento.id}`}
+                                            >
+                                                Valor pago (R$)
+                                            </Label>
+                                            <Input
+                                                id={`valor_pago-${lancamento.id}`}
+                                                name="valor_pago"
+                                                inputMode="decimal"
+                                                defaultValue={paraCampo(
+                                                    lancamento.valor_centavos,
+                                                )}
+                                                aria-describedby={`valor_pago-dica-${lancamento.id}`}
+                                            />
+                                            <p
+                                                id={`valor_pago-dica-${lancamento.id}`}
+                                                className="text-xs text-muted-foreground"
+                                            >
+                                                Pagou só uma parte? Digite o que
+                                                entrou: o resto fica em aberto
+                                                como &quot;Saldo de&quot;.
+                                            </p>
+                                            <InputError
+                                                message={errors.valor_pago}
+                                            />
+                                        </div>
                                         <div className="grid gap-2">
                                             <Label
                                                 htmlFor={`pago_em-${lancamento.id}`}
