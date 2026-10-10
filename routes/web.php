@@ -125,14 +125,17 @@ Route::get('comando-geral', ComandoGeralController::class)
     ->middleware(['auth', 'verified', 'can:comando_geral.ver'])
     ->name('comando-geral');
 
-// Cursos e trilhas no Comando Geral (#39 / #38): só com "cursos.gerenciar".
-// Sem "destroy": apagar = encerrar (curso) ou desativar (trilha).
-Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
+// Cursos (#39 / #38 / #40): o Comando Geral (cursos.gerenciar) e quem PROPÕE
+// (cursos.propor: instrutor, admin de equipe) — "can:cursos.acessar" deixa os
+// dois entrarem; cada curso confere quem pode mexer nele (Gate curso.editar).
+// Sem "destroy": apagar = cancelar ou encerrar, pelo fluxo de chancela.
+Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
     ->prefix('comando-geral')
     ->name('comando-geral.')
     ->group(function () {
         Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
-        Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+        // Ações do fluxo de chancela: enviar, chancelar, rejeitar, cancelar, encerrar.
+        Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
 
         // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
         Route::controller(ConteudoController::class)->group(function () {
@@ -144,6 +147,14 @@ Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
             Route::put('aulas/{aula}', 'updateAula')->name('aulas.update');
             Route::post('aulas/{aula}/mover', 'moverAula')->name('aulas.mover');
         });
+    });
+
+// Trilhas (#39): só o Comando Geral monta (cursos.gerenciar).
+Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
     });
 
 // Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver

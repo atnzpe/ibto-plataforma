@@ -36,12 +36,20 @@ use Illuminate\Support\Carbon;
  * @property int|null $instrutor_id
  * @property string|null $imagem
  * @property string|null $link_pagamento
+ * @property string|null $material_incluso
+ * @property string|null $contato_whatsapp
  * @property SituacaoCurso $situacao
+ * @property string|null $motivo_situacao
+ * @property int|null $responsavel_id
+ * @property int|null $equipe_id
+ * @property int|null $chancelado_por
+ * @property Carbon|null $chancelado_em
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-// "imagem" fica de fora: quem grava é o App\Support\ImagemPublica.
-#[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'situacao'])]
+// Ficam de fora: "imagem" (gravada pelo App\Support\ImagemPublica) e a SITUAÇÃO e a
+// chancela (só o fluxo de chancela muda, pelo forceFill: App\Services\FluxoCurso, #40).
+#[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'material_incluso', 'contato_whatsapp'])]
 class Curso extends Model
 {
     /**
@@ -59,6 +67,8 @@ class Curso extends Model
             'carga_horaria' => 'integer',
             'data_inicio' => 'date',
             'data_fim' => 'date',
+            // Dia e hora da chancela (texto do banco vira data e hora no PHP).
+            'chancelado_em' => 'datetime',
         ];
     }
 

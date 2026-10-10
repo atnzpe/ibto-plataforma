@@ -24,6 +24,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,10 +44,17 @@ class ConteudoController extends Controller
      */
     public function show(Curso $curso): Response
     {
+        // Ver o conteúdo: Comando Geral, quem chancela ou o dono do curso (senão, 403).
+        Gate::authorize('curso.conteudo', $curso);
+        // Pode mexer? (o dono, só em rascunho/rejeitado.) A tela esconde os botões se não.
+        $podeEditar = Gate::allows('curso.editar', $curso);
+
         $curso->load('modulos.aulas', 'modulos.nivelMinimo');
 
         return Inertia::render('cursos/conteudo', [
-            'curso' => ['id' => $curso->id, 'titulo' => $curso->titulo],
+            'curso' => ['id' => $curso->id, 'titulo' => $curso->titulo, 'situacao' => $curso->situacao->rotulo()],
+            // false = só olhar (ex.: curso do dono já em análise ou publicado).
+            'pode_editar' => $podeEditar,
             'modulos' => $curso->modulos->map(fn (CursoModulo $modulo) => [
                 'id' => $modulo->id,
                 'titulo' => $modulo->titulo,
@@ -84,6 +92,8 @@ class ConteudoController extends Controller
      */
     public function storeModulo(ModuloRequest $request, Curso $curso): RedirectResponse
     {
+        Gate::authorize('curso.editar', $curso);
+
         $modulo = DB::transaction(function () use ($request, $curso): CursoModulo {
             $modulo = $curso->modulos()->create([
                 ...$request->validated(),
@@ -103,6 +113,8 @@ class ConteudoController extends Controller
      */
     public function updateModulo(ModuloRequest $request, CursoModulo $modulo): RedirectResponse
     {
+        Gate::authorize('curso.editar', $modulo->curso);
+
         $modulo->update($request->validated());
         Auditoria::registrar('MODULO_EDITADO', ['curso_id' => $modulo->curso_id, 'modulo_id' => $modulo->id]);
 
@@ -116,6 +128,8 @@ class ConteudoController extends Controller
      */
     public function moverModulo(Request $request, CursoModulo $modulo): RedirectResponse
     {
+        Gate::authorize('curso.editar', $modulo->curso);
+
         $this->mover($modulo, CursoModulo::query()->where('curso_id', $modulo->curso_id), (string) $request->input('direcao'));
 
         return back();
@@ -129,6 +143,8 @@ class ConteudoController extends Controller
      */
     public function storeAula(AulaRequest $request, CursoModulo $modulo): RedirectResponse
     {
+        Gate::authorize('curso.editar', $modulo->curso);
+
         $aula = DB::transaction(function () use ($request, $modulo): CursoAula {
             $aula = $modulo->aulas()->create([
                 ...$request->safe()->except(['apostila', 'video_arquivo', 'fonte_video']),
@@ -149,6 +165,8 @@ class ConteudoController extends Controller
      */
     public function updateAula(AulaRequest $request, CursoAula $aula): RedirectResponse
     {
+        Gate::authorize('curso.editar', $aula->modulo->curso);
+
         DB::transaction(function () use ($request, $aula): void {
             $aula->update($request->safe()->except(['apostila', 'video_arquivo', 'fonte_video']));
             $this->aplicarFonteDoVideo($aula, $request);
@@ -164,6 +182,8 @@ class ConteudoController extends Controller
      */
     public function moverAula(Request $request, CursoAula $aula): RedirectResponse
     {
+        Gate::authorize('curso.editar', $aula->modulo->curso);
+
         $this->mover($aula, CursoAula::query()->where('modulo_id', $aula->modulo_id), (string) $request->input('direcao'));
 
         return back();

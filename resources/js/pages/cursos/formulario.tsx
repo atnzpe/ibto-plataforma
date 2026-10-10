@@ -1,14 +1,17 @@
 /**
- * FORMULÁRIO do curso no Comando Geral (#39 / #38): cadastrar (curso = null)
- * ou editar. Os campos de data e local aparecem destacados no presencial.
- * As regras de verdade são conferidas no servidor (CursoRequest): três
- * modalidades de acesso (gratuito é só para filiados), presencial exige data
- * e local, valor em centavos.
+ * FORMULÁRIO do curso (#39 / #38 / #40): cadastrar (curso = null) ou editar.
+ * Todo curso nasce RASCUNHO; a situação muda só pelos botões do fluxo de
+ * chancela (painel no topo), nunca por este formulário. Quem propôs só edita
+ * enquanto é rascunho ou rejeitado; depois, a tela fica só para olhar.
+ * As regras de verdade são conferidas no servidor (CursoRequest e FluxoCurso).
  * Responsivo: campos em grade que vira uma coluna no celular.
  */
 import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import CursoController from '@/actions/App/Http/Controllers/Cursos/CursoController';
+// Painel da situação e dos botões do fluxo de chancela (#40).
+import PainelSituacao from '@/components/cursos/painel-situacao';
+import type { DadosSituacao } from '@/components/cursos/painel-situacao';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,9 +39,10 @@ type CursoEdicao = {
     carga_horaria: number | null;
     instrutor_id: number | null;
     link_pagamento: string | null;
-    situacao: string;
+    material_incluso: string | null;
+    contato_whatsapp: string | null;
     imagem_url: string | null;
-};
+} & DadosSituacao;
 
 // Visual comum das caixas de escolha (select), igual ao dos campos de texto.
 const classeSelect =
@@ -50,7 +54,6 @@ const classeSelect =
  * @param instrutores As contas com o papel Instrutor.
  * @param modalidades Presencial e online.
  * @param acessos Aberto ao público e só filiados.
- * @param situacoes Rascunho, publicado e encerrado.
  * @returns A tela do formulário.
  */
 export default function CursoFormulario({
@@ -59,17 +62,17 @@ export default function CursoFormulario({
     instrutores,
     modalidades,
     acessos,
-    situacoes,
 }: {
     curso: CursoEdicao | null;
     areas: { id: number; nome: string }[];
     instrutores: { id: number; name: string }[];
     modalidades: Opcao[];
     acessos: Opcao[];
-    situacoes: Opcao[];
 }) {
     const editando = curso !== null;
     const titulo = editando ? `Editar "${curso.titulo}"` : 'Novo curso';
+    // true quando a pessoa só pode OLHAR (o servidor decide; ex.: curso já em análise).
+    const somenteLeitura = editando && !curso.pode_editar;
 
     // Modalidade escolhida agora: no presencial, data e local são obrigatórios.
     const [modalidade, setModalidade] = useState(
@@ -91,354 +94,425 @@ export default function CursoFormulario({
                     {titulo}
                 </h1>
 
+                {/* Situação, motivo e os botões do fluxo de chancela (só na edição). */}
+                {editando && <PainelSituacao curso={curso} />}
+
                 <Form {...destino} className="space-y-8">
                     {({ processing, errors }) => (
                         <>
-                            {/* ---------- O curso ---------- */}
-                            <fieldset className="grid gap-4">
-                                <legend className="mb-2 font-medium">
-                                    O curso
-                                </legend>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="titulo">
-                                        Nome do curso
-                                    </Label>
-                                    <Input
-                                        id="titulo"
-                                        name="titulo"
-                                        maxLength={150}
-                                        defaultValue={curso?.titulo}
-                                        placeholder="Ex.: Combate Corpo a Corpo"
-                                    />
-                                    <InputError message={errors.titulo} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="descricao">Descrição</Label>
-                                    <textarea
-                                        id="descricao"
-                                        name="descricao"
-                                        rows={5}
-                                        maxLength={5000}
-                                        defaultValue={curso?.descricao ?? ''}
-                                        placeholder="O que se aprende, para quem é, pré-requisitos."
-                                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
-                                    />
-                                    <InputError message={errors.descricao} />
-                                </div>
-                                <div className="grid gap-4 sm:grid-cols-2">
+                            {/* Sem permissão de editar (ex.: curso do dono já em análise):
+                                o fieldset "disabled" trava todos os campos de uma vez. */}
+                            <fieldset
+                                disabled={somenteLeitura}
+                                className="contents"
+                            >
+                                {/* ---------- O curso ---------- */}
+                                <fieldset className="grid gap-4">
+                                    <legend className="mb-2 font-medium">
+                                        O curso
+                                    </legend>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="area_atuacao_id">
-                                            Área de atuação
+                                        <Label htmlFor="titulo">
+                                            Nome do curso
                                         </Label>
-                                        <select
-                                            id="area_atuacao_id"
-                                            name="area_atuacao_id"
-                                            defaultValue={
-                                                curso?.area_atuacao_id ?? ''
-                                            }
-                                            className={classeSelect}
-                                        >
-                                            <option value="">Nenhuma</option>
-                                            {areas.map((area) => (
-                                                <option
-                                                    key={area.id}
-                                                    value={area.id}
-                                                >
-                                                    {area.nome}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError
-                                            message={errors.area_atuacao_id}
+                                        <Input
+                                            id="titulo"
+                                            name="titulo"
+                                            maxLength={150}
+                                            defaultValue={curso?.titulo}
+                                            placeholder="Ex.: Combate Corpo a Corpo"
                                         />
+                                        <InputError message={errors.titulo} />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="instrutor_id">
-                                            Instrutor
+                                        <Label htmlFor="descricao">
+                                            Descrição
                                         </Label>
-                                        <select
-                                            id="instrutor_id"
-                                            name="instrutor_id"
+                                        <textarea
+                                            id="descricao"
+                                            name="descricao"
+                                            rows={5}
+                                            maxLength={5000}
                                             defaultValue={
-                                                curso?.instrutor_id ?? ''
+                                                curso?.descricao ?? ''
                                             }
-                                            className={classeSelect}
-                                        >
-                                            <option value="">A definir</option>
-                                            {instrutores.map((instrutor) => (
-                                                <option
-                                                    key={instrutor.id}
-                                                    value={instrutor.id}
-                                                >
-                                                    {instrutor.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            placeholder="O que se aprende, para quem é, pré-requisitos."
+                                            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
+                                        />
                                         <InputError
-                                            message={errors.instrutor_id}
+                                            message={errors.descricao}
                                         />
                                     </div>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="imagem">
-                                        Imagem de capa (JPG, PNG ou WEBP, até 2
-                                        MB)
-                                    </Label>
-                                    {curso?.imagem_url && (
-                                        <img
-                                            src={curso.imagem_url}
-                                            alt={`Capa atual de ${curso.titulo}`}
-                                            className="h-28 w-full max-w-sm rounded-md object-cover"
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="area_atuacao_id">
+                                                Área de atuação
+                                            </Label>
+                                            <select
+                                                id="area_atuacao_id"
+                                                name="area_atuacao_id"
+                                                defaultValue={
+                                                    curso?.area_atuacao_id ?? ''
+                                                }
+                                                className={classeSelect}
+                                            >
+                                                <option value="">
+                                                    Nenhuma
+                                                </option>
+                                                {areas.map((area) => (
+                                                    <option
+                                                        key={area.id}
+                                                        value={area.id}
+                                                    >
+                                                        {area.nome}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <InputError
+                                                message={errors.area_atuacao_id}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="instrutor_id">
+                                                Instrutor
+                                            </Label>
+                                            <select
+                                                id="instrutor_id"
+                                                name="instrutor_id"
+                                                defaultValue={
+                                                    curso?.instrutor_id ?? ''
+                                                }
+                                                className={classeSelect}
+                                            >
+                                                <option value="">
+                                                    A definir
+                                                </option>
+                                                {instrutores.map(
+                                                    (instrutor) => (
+                                                        <option
+                                                            key={instrutor.id}
+                                                            value={instrutor.id}
+                                                        >
+                                                            {instrutor.name}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                            <InputError
+                                                message={errors.instrutor_id}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="imagem">
+                                            Imagem de capa (JPG, PNG ou WEBP,
+                                            até 2 MB)
+                                        </Label>
+                                        {curso?.imagem_url && (
+                                            <img
+                                                src={curso.imagem_url}
+                                                alt={`Capa atual de ${curso.titulo}`}
+                                                className="h-28 w-full max-w-sm rounded-md object-cover"
+                                            />
+                                        )}
+                                        <Input
+                                            id="imagem"
+                                            name="imagem"
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
                                         />
+                                        <InputError message={errors.imagem} />
+                                    </div>
+                                </fieldset>
+
+                                {/* ---------- Modalidade, acesso e valor ---------- */}
+                                <fieldset className="grid gap-4">
+                                    <legend className="mb-2 font-medium">
+                                        Modalidade, acesso e valor
+                                    </legend>
+                                    <div className="grid gap-4 sm:grid-cols-3">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="modalidade">
+                                                Modalidade
+                                            </Label>
+                                            <select
+                                                id="modalidade"
+                                                name="modalidade"
+                                                value={modalidade}
+                                                onChange={(evento) =>
+                                                    setModalidade(
+                                                        evento.target.value,
+                                                    )
+                                                }
+                                                className={classeSelect}
+                                            >
+                                                {modalidades.map((opcao) => (
+                                                    <option
+                                                        key={opcao.valor}
+                                                        value={opcao.valor}
+                                                    >
+                                                        {opcao.rotulo}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <InputError
+                                                message={errors.modalidade}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="acesso">
+                                                Quem pode se inscrever
+                                            </Label>
+                                            <select
+                                                id="acesso"
+                                                name="acesso"
+                                                defaultValue={
+                                                    curso?.acesso ?? 'aberto'
+                                                }
+                                                className={classeSelect}
+                                            >
+                                                {acessos.map((opcao) => (
+                                                    <option
+                                                        key={opcao.valor}
+                                                        value={opcao.valor}
+                                                    >
+                                                        {opcao.rotulo}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <InputError
+                                                message={errors.acesso}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="valor">
+                                                Valor (R$)
+                                            </Label>
+                                            <Input
+                                                id="valor"
+                                                name="valor"
+                                                inputMode="decimal"
+                                                defaultValue={curso?.valor}
+                                                placeholder="Vazio = gratuito"
+                                                aria-describedby="valor-dica"
+                                            />
+                                            <p
+                                                id="valor-dica"
+                                                className="text-xs text-muted-foreground"
+                                            >
+                                                Gratuito é só para filiados.
+                                            </p>
+                                            <InputError
+                                                message={errors.valor}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-4 sm:grid-cols-3">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="vagas">Vagas</Label>
+                                            <Input
+                                                id="vagas"
+                                                name="vagas"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={1}
+                                                defaultValue={
+                                                    curso?.vagas ?? ''
+                                                }
+                                                placeholder="Vazio = sem limite"
+                                            />
+                                            <InputError
+                                                message={errors.vagas}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="carga_horaria">
+                                                Carga horária (horas)
+                                            </Label>
+                                            <Input
+                                                id="carga_horaria"
+                                                name="carga_horaria"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={1}
+                                                defaultValue={
+                                                    curso?.carga_horaria ?? ''
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.carga_horaria}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="link_pagamento">
+                                                Link de pagamento
+                                            </Label>
+                                            <Input
+                                                id="link_pagamento"
+                                                name="link_pagamento"
+                                                type="url"
+                                                defaultValue={
+                                                    curso?.link_pagamento ?? ''
+                                                }
+                                                placeholder="https://"
+                                            />
+                                            <InputError
+                                                message={errors.link_pagamento}
+                                            />
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                {/* ---------- Quando e onde ---------- */}
+                                <fieldset className="grid gap-4">
+                                    <legend className="mb-2 font-medium">
+                                        Quando e onde{' '}
+                                        {presencial
+                                            ? '(obrigatório no presencial)'
+                                            : '(opcional no online)'}
+                                    </legend>
+                                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="data_inicio">
+                                                Início
+                                            </Label>
+                                            <Input
+                                                id="data_inicio"
+                                                name="data_inicio"
+                                                type="date"
+                                                defaultValue={
+                                                    curso?.data_inicio ?? ''
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.data_inicio}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="data_fim">
+                                                Fim
+                                            </Label>
+                                            <Input
+                                                id="data_fim"
+                                                name="data_fim"
+                                                type="date"
+                                                defaultValue={
+                                                    curso?.data_fim ?? ''
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.data_fim}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="hora_inicio">
+                                                Das
+                                            </Label>
+                                            <Input
+                                                id="hora_inicio"
+                                                name="hora_inicio"
+                                                type="time"
+                                                defaultValue={
+                                                    curso?.hora_inicio ?? ''
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.hora_inicio}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="hora_fim">Às</Label>
+                                            <Input
+                                                id="hora_fim"
+                                                name="hora_fim"
+                                                type="time"
+                                                defaultValue={
+                                                    curso?.hora_fim ?? ''
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.hora_fim}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="local">Local</Label>
+                                        <Input
+                                            id="local"
+                                            name="local"
+                                            maxLength={150}
+                                            defaultValue={curso?.local ?? ''}
+                                            placeholder="Ex.: Recife · PE"
+                                        />
+                                        <InputError message={errors.local} />
+                                    </div>
+                                </fieldset>
+
+                                {/* ---------- O que vem junto (dos cartazes de referência) ---------- */}
+                                <fieldset className="grid gap-4">
+                                    <legend className="mb-2 font-medium">
+                                        O que vem junto e contato
+                                    </legend>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="material_incluso">
+                                            Material incluso
+                                        </Label>
+                                        <Input
+                                            id="material_incluso"
+                                            name="material_incluso"
+                                            maxLength={500}
+                                            defaultValue={
+                                                curso?.material_incluso ?? ''
+                                            }
+                                            placeholder="Ex.: Certificado, camisa do evento"
+                                        />
+                                        <InputError
+                                            message={errors.material_incluso}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2 sm:max-w-xs">
+                                        <Label htmlFor="contato_whatsapp">
+                                            Contato (WhatsApp)
+                                        </Label>
+                                        <Input
+                                            id="contato_whatsapp"
+                                            name="contato_whatsapp"
+                                            type="tel"
+                                            inputMode="tel"
+                                            maxLength={20}
+                                            defaultValue={
+                                                curso?.contato_whatsapp ?? ''
+                                            }
+                                            placeholder="(81) 99999-0000"
+                                        />
+                                        <InputError
+                                            message={errors.contato_whatsapp}
+                                        />
+                                    </div>
+                                </fieldset>
+
+                                {/* Botões: no celular, 2 colunas iguais. Sem permissão de editar: só "Voltar". */}
+                                <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
+                                    {!somenteLeitura && (
+                                        <Button disabled={processing}>
+                                            Salvar
+                                        </Button>
                                     )}
-                                    <Input
-                                        id="imagem"
-                                        name="imagem"
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                    />
-                                    <InputError message={errors.imagem} />
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className={
+                                            somenteLeitura ? 'col-span-2' : ''
+                                        }
+                                    >
+                                        <Link href={index()}>
+                                            {somenteLeitura
+                                                ? 'Voltar'
+                                                : 'Cancelar'}
+                                        </Link>
+                                    </Button>
                                 </div>
                             </fieldset>
-
-                            {/* ---------- Modalidade, acesso e valor ---------- */}
-                            <fieldset className="grid gap-4">
-                                <legend className="mb-2 font-medium">
-                                    Modalidade, acesso e valor
-                                </legend>
-                                <div className="grid gap-4 sm:grid-cols-3">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="modalidade">
-                                            Modalidade
-                                        </Label>
-                                        <select
-                                            id="modalidade"
-                                            name="modalidade"
-                                            value={modalidade}
-                                            onChange={(evento) =>
-                                                setModalidade(
-                                                    evento.target.value,
-                                                )
-                                            }
-                                            className={classeSelect}
-                                        >
-                                            {modalidades.map((opcao) => (
-                                                <option
-                                                    key={opcao.valor}
-                                                    value={opcao.valor}
-                                                >
-                                                    {opcao.rotulo}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError
-                                            message={errors.modalidade}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="acesso">
-                                            Quem pode se inscrever
-                                        </Label>
-                                        <select
-                                            id="acesso"
-                                            name="acesso"
-                                            defaultValue={
-                                                curso?.acesso ?? 'aberto'
-                                            }
-                                            className={classeSelect}
-                                        >
-                                            {acessos.map((opcao) => (
-                                                <option
-                                                    key={opcao.valor}
-                                                    value={opcao.valor}
-                                                >
-                                                    {opcao.rotulo}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError message={errors.acesso} />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="valor">
-                                            Valor (R$)
-                                        </Label>
-                                        <Input
-                                            id="valor"
-                                            name="valor"
-                                            inputMode="decimal"
-                                            defaultValue={curso?.valor}
-                                            placeholder="Vazio = gratuito"
-                                            aria-describedby="valor-dica"
-                                        />
-                                        <p
-                                            id="valor-dica"
-                                            className="text-xs text-muted-foreground"
-                                        >
-                                            Gratuito é só para filiados.
-                                        </p>
-                                        <InputError message={errors.valor} />
-                                    </div>
-                                </div>
-                                <div className="grid gap-4 sm:grid-cols-3">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="vagas">Vagas</Label>
-                                        <Input
-                                            id="vagas"
-                                            name="vagas"
-                                            type="number"
-                                            inputMode="numeric"
-                                            min={1}
-                                            defaultValue={curso?.vagas ?? ''}
-                                            placeholder="Vazio = sem limite"
-                                        />
-                                        <InputError message={errors.vagas} />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="carga_horaria">
-                                            Carga horária (horas)
-                                        </Label>
-                                        <Input
-                                            id="carga_horaria"
-                                            name="carga_horaria"
-                                            type="number"
-                                            inputMode="numeric"
-                                            min={1}
-                                            defaultValue={
-                                                curso?.carga_horaria ?? ''
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.carga_horaria}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="link_pagamento">
-                                            Link de pagamento
-                                        </Label>
-                                        <Input
-                                            id="link_pagamento"
-                                            name="link_pagamento"
-                                            type="url"
-                                            defaultValue={
-                                                curso?.link_pagamento ?? ''
-                                            }
-                                            placeholder="https://"
-                                        />
-                                        <InputError
-                                            message={errors.link_pagamento}
-                                        />
-                                    </div>
-                                </div>
-                            </fieldset>
-
-                            {/* ---------- Quando e onde ---------- */}
-                            <fieldset className="grid gap-4">
-                                <legend className="mb-2 font-medium">
-                                    Quando e onde{' '}
-                                    {presencial
-                                        ? '(obrigatório no presencial)'
-                                        : '(opcional no online)'}
-                                </legend>
-                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="data_inicio">
-                                            Início
-                                        </Label>
-                                        <Input
-                                            id="data_inicio"
-                                            name="data_inicio"
-                                            type="date"
-                                            defaultValue={
-                                                curso?.data_inicio ?? ''
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.data_inicio}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="data_fim">Fim</Label>
-                                        <Input
-                                            id="data_fim"
-                                            name="data_fim"
-                                            type="date"
-                                            defaultValue={curso?.data_fim ?? ''}
-                                        />
-                                        <InputError message={errors.data_fim} />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="hora_inicio">Das</Label>
-                                        <Input
-                                            id="hora_inicio"
-                                            name="hora_inicio"
-                                            type="time"
-                                            defaultValue={
-                                                curso?.hora_inicio ?? ''
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.hora_inicio}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="hora_fim">Às</Label>
-                                        <Input
-                                            id="hora_fim"
-                                            name="hora_fim"
-                                            type="time"
-                                            defaultValue={curso?.hora_fim ?? ''}
-                                        />
-                                        <InputError message={errors.hora_fim} />
-                                    </div>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="local">Local</Label>
-                                    <Input
-                                        id="local"
-                                        name="local"
-                                        maxLength={150}
-                                        defaultValue={curso?.local ?? ''}
-                                        placeholder="Ex.: Recife · PE"
-                                    />
-                                    <InputError message={errors.local} />
-                                </div>
-                            </fieldset>
-
-                            {/* ---------- Situação ---------- */}
-                            <div className="grid gap-2 sm:max-w-xs">
-                                <Label htmlFor="situacao">Situação</Label>
-                                <select
-                                    id="situacao"
-                                    name="situacao"
-                                    defaultValue={curso?.situacao ?? 'rascunho'}
-                                    className={classeSelect}
-                                    aria-describedby="situacao-dica"
-                                >
-                                    {situacoes.map((opcao) => (
-                                        <option
-                                            key={opcao.valor}
-                                            value={opcao.valor}
-                                        >
-                                            {opcao.rotulo}
-                                        </option>
-                                    ))}
-                                </select>
-                                <p
-                                    id="situacao-dica"
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    Só "Publicado" aparece para os alunos.
-                                </p>
-                                <InputError message={errors.situacao} />
-                            </div>
-
-                            {/* Botões: no celular, 2 colunas iguais. */}
-                            <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
-                                <Button disabled={processing}>Salvar</Button>
-                                <Button asChild variant="outline">
-                                    <Link href={index()}>Cancelar</Link>
-                                </Button>
-                            </div>
                         </>
                     )}
                 </Form>

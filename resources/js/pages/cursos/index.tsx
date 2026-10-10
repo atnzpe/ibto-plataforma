@@ -23,8 +23,16 @@ type CursoLista = {
     valor_centavos: number;
     data_inicio: string | null;
     vagas: number | null;
-    situacao: 'rascunho' | 'publicado' | 'encerrado';
+    situacao:
+        | 'rascunho'
+        | 'em_analise'
+        | 'publicado'
+        | 'rejeitado'
+        | 'cancelado'
+        | 'encerrado';
     situacao_rotulo: string;
+    // Pode abrir para editar? Senão, o botão diz "Ver" (só olhar).
+    pode_editar: boolean;
 };
 
 type Filtros = { busca: string; situacao: string; de: string; ate: string };
@@ -32,6 +40,9 @@ type Filtros = { busca: string; situacao: string; de: string; ate: string };
 // Situação → classe de cor (o texto escrito é que informa; a cor só reforça).
 const CORES: Record<CursoLista['situacao'], string> = {
     rascunho: 'text-muted-foreground',
+    em_analise: 'font-medium text-amber-700 dark:text-amber-400',
+    rejeitado: 'font-medium text-red-700 dark:text-red-400',
+    cancelado: 'text-muted-foreground line-through',
     publicado: 'text-green-700 dark:text-green-400',
     encerrado: 'text-muted-foreground line-through',
 };
@@ -52,16 +63,22 @@ function dataBr(data: string | null): string {
  * @param cursos Os cursos do filtro atual.
  * @param filtros Ex.: { busca: 'combate', situacao: 'publicado', de: '', ate: '' }
  * @param situacoes As opções de situação. Ex.: [{ valor: 'publicado', rotulo: 'Publicado' }]
+ * @param em_analise Quantos cursos esperam a chancela (0 para quem não chancela).
+ * @param pode_cadastrar_trilhas true só para o Comando Geral (cursos.gerenciar).
  * @returns A tela da lista de cursos.
  */
 export default function CursosIndex({
     cursos,
     filtros,
     situacoes,
+    em_analise,
+    pode_cadastrar_trilhas,
 }: {
     cursos: CursoLista[];
     filtros: Filtros;
     situacoes: { valor: string; rotulo: string }[];
+    em_analise: number;
+    pode_cadastrar_trilhas: boolean;
 }) {
     // Mensagem da última ação (ex.: 'Curso "X" cadastrado.'), ou null.
     const { sucesso } = usePage().props;
@@ -99,14 +116,42 @@ export default function CursosIndex({
                     </div>
                     {/* No celular, 2 colunas iguais; na tela larga, lado a lado. */}
                     <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
-                        <Button asChild variant="outline">
-                            <Link href={trilhas()}>Trilhas</Link>
-                        </Button>
-                        <Button asChild>
+                        {/* Trilhas: só o Comando Geral monta. */}
+                        {pode_cadastrar_trilhas && (
+                            <Button asChild variant="outline">
+                                <Link href={trilhas()}>Trilhas</Link>
+                            </Button>
+                        )}
+                        <Button
+                            asChild
+                            className={
+                                pode_cadastrar_trilhas ? '' : 'col-span-2'
+                            }
+                        >
                             <Link href={create()}>Novo curso</Link>
                         </Button>
                     </div>
                 </div>
+
+                {/* Aviso para quem chancela: cursos esperando a análise (#40). */}
+                {em_analise > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-600/40 bg-amber-600/10 px-4 py-3 text-sm">
+                        <span>
+                            <strong className="font-medium">
+                                {em_analise}
+                            </strong>{' '}
+                            curso(s) esperando a chancela do IBTO.
+                        </span>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => filtrar({ situacao: 'em_analise' })}
+                        >
+                            Ver os em análise
+                        </Button>
+                    </div>
+                )}
 
                 {sucesso && (
                     <p
@@ -269,9 +314,11 @@ export default function CursosIndex({
                                             >
                                                 <Link
                                                     href={edit(curso.id)}
-                                                    aria-label={`Editar ${curso.titulo}`}
+                                                    aria-label={`${curso.pode_editar ? 'Editar' : 'Ver'} ${curso.titulo}`}
                                                 >
-                                                    Editar
+                                                    {curso.pode_editar
+                                                        ? 'Editar'
+                                                        : 'Ver'}
                                                 </Link>
                                             </Button>
                                         </span>
@@ -336,9 +383,9 @@ export default function CursosIndex({
                                 >
                                     <Link
                                         href={edit(curso.id)}
-                                        aria-label={`Editar ${curso.titulo}`}
+                                        aria-label={`${curso.pode_editar ? 'Editar' : 'Ver'} ${curso.titulo}`}
                                     >
-                                        Editar
+                                        {curso.pode_editar ? 'Editar' : 'Ver'}
                                     </Link>
                                 </Button>
                             </span>

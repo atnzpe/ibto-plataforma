@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\SituacaoCurso;
 use App\Models\Curso;
 use App\Models\Filiado;
 use App\Models\User;
@@ -93,10 +94,32 @@ class AppServiceProvider extends ServiceProvider
             return $filiado->equipe_id === $minhaEquipe;
         });
 
-        // "curso.conteudo" (#39): ver as aulas, o vídeo enviado e baixar a apostila
-        // de um curso. Por enquanto, só quem cuida dos cursos (Comando Geral); os
-        // INSCRITOS entram no bloco C4 (matrícula). Sem isso: 403, mesmo com o link.
-        Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar'));
+        // "cursos.acessar" (#40): abrir a lista de cursos. Passa quem cuida de TODOS
+        // (cursos.gerenciar) ou quem PROPÕE os próprios (cursos.propor: instrutor,
+        // admin de equipe — configurável na tela de Permissões).
+        Gate::define('cursos.acessar', fn (User $usuario): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $usuario->temPermissao('cursos.propor'));
+
+        // "curso.editar" (#40): mexer nos dados e no conteúdo de um curso.
+        Gate::define('curso.editar', function (User $usuario, Curso $curso): bool {
+            // O Comando Geral mexe em qualquer curso.
+            if ($usuario->temPermissao('cursos.gerenciar')) {
+                return true;
+            }
+
+            // Quem propôs mexe só no DELE, e só enquanto não foi para a chancela
+            // (rascunho ou rejeitado): o que o IBTO chancelou não muda sem nova análise.
+            return $usuario->temPermissao('cursos.propor')
+                && $curso->responsavel_id === $usuario->id
+                && in_array($curso->situacao, [SituacaoCurso::Rascunho, SituacaoCurso::Rejeitado], true);
+        });
+
+        // "curso.conteudo" (#39): ver as aulas, o vídeo enviado e baixar a apostila.
+        // Por enquanto: o Comando Geral e quem propôs o curso; os INSCRITOS entram
+        // no bloco C5 (matrícula). Sem isso: 403, mesmo com o link.
+        Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $usuario->temPermissao('cursos.chancelar')
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
     }
 
     /**

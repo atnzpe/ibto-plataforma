@@ -13,6 +13,7 @@ use App\Models\Curso;
 use App\Models\Papel;
 use App\Models\Trilha;
 use App\Models\User;
+use App\Services\FluxoCurso;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -58,9 +59,12 @@ test('aluno não entra nos cursos do Comando Geral (403)', function () {
 
 test('curso presencial pago: "150,00" vira 15000 centavos, com auditoria', function () {
     $this->post(route('comando-geral.cursos.store'), cursoValido())
-        ->assertRedirect(route('comando-geral.cursos.index'));
+        ->assertRedirect(route('comando-geral.cursos.edit', Curso::first()));
 
     $curso = Curso::first();
+    // Todo curso nasce rascunho (publicar é pela chancela, #40), com quem propôs.
+    expect($curso->situacao)->toBe(SituacaoCurso::Rascunho);
+    expect($curso->responsavel_id)->toBe($this->admin->id);
     expect($curso->valor_centavos)->toBe(15000);
     expect($curso->tipo())->toBe('Pago · aberto ao público');
     expect(Auditoria::where('acao', 'CURSO_CRIADO')->exists())->toBeTrue();
@@ -105,7 +109,9 @@ test('imagem de capa: gravada e entregue; de rascunho, escondida do público', f
 
 test('filtros da lista: busca, situação e período', function () {
     $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'Combate', 'data_inicio' => '2026-11-10', 'data_fim' => '']));
-    $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'Bastão Tático', 'data_inicio' => '2027-02-01', 'data_fim' => '', 'situacao' => 'rascunho']));
+    $this->post(route('comando-geral.cursos.store'), cursoValido(['titulo' => 'Bastão Tático', 'data_inicio' => '2027-02-01', 'data_fim' => '']));
+    // Publica o "Combate" pelo fluxo (chancela), como o IBTO faria.
+    app(FluxoCurso::class)->aplicar(Curso::where('titulo', 'Combate')->first(), $this->admin, 'chancelar');
 
     $this->get(route('comando-geral.cursos.index', ['busca' => 'bastão']))
         ->assertInertia(fn ($tela) => $tela->has('cursos', 1)->where('cursos.0.titulo', 'Bastão Tático'));

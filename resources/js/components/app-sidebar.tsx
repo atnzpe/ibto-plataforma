@@ -81,12 +81,12 @@ const cadastrosNavItems: (NavItem & {
         icon: Gauge,
         permissao: 'comando_geral_ver',
     },
-    // Cursos e trilhas (#39): cadastro no Comando Geral.
+    // Cursos (#39 / #40): Comando Geral e quem propõe (instrutor, admin de equipe).
     {
         title: 'Cursos',
         href: cursosAdmin(),
         icon: GraduationCap,
-        permissao: 'cursos_gerenciar',
+        permissao: 'cursos_acessar',
     },
     {
         title: 'Áreas de atuação',

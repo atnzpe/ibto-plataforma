@@ -49,7 +49,9 @@ type Modulo = {
 };
 
 type Props = {
-    curso: { id: number; titulo: string };
+    curso: { id: number; titulo: string; situacao: string };
+    // false = só olhar (ex.: curso do dono já em análise ou publicado).
+    pode_editar: boolean;
     modulos: Modulo[];
     niveis: { id: number; nome: string }[];
     video_maximo_mb: number;
@@ -437,6 +439,7 @@ export default function ConteudoCurso({
     modulos,
     niveis,
     video_maximo_mb,
+    pode_editar,
 }: Props) {
     // Mensagem da última ação (ex.: 'Aula "X" criada.'), ou null.
     const { sucesso } = usePage().props;
@@ -456,18 +459,33 @@ export default function ConteudoCurso({
                         </h1>
                     </div>
                     <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
-                        <Button asChild variant="outline">
+                        <Button
+                            asChild
+                            variant="outline"
+                            className={pode_editar ? '' : 'col-span-2'}
+                        >
                             <Link href={editarCurso(curso.id)}>
                                 Dados do curso
                             </Link>
                         </Button>
-                        <JanelaModulo
-                            cursoId={curso.id}
-                            modulo={null}
-                            niveis={niveis}
-                        />
+                        {/* Só quem pode editar cria módulos. */}
+                        {pode_editar && (
+                            <JanelaModulo
+                                cursoId={curso.id}
+                                modulo={null}
+                                niveis={niveis}
+                            />
+                        )}
                     </div>
                 </div>
+
+                {/* Só olhar: explica por quê (ex.: o curso foi para a chancela). */}
+                {!pode_editar && (
+                    <p className="rounded-md border border-amber-600/40 bg-amber-600/10 px-4 py-2 text-sm">
+                        Situação: {curso.situacao}. Nesta situação o conteúdo
+                        fica só para consulta.
+                    </p>
+                )}
 
                 {sucesso && (
                     <p
@@ -502,8 +520,14 @@ export default function ConteudoCurso({
                                         {!modulo.ativo && ' · Desativado'}
                                     </p>
                                 </div>
-                                {/* 4 botões iguais: grade no celular, linha na tela larga. */}
-                                <div className="grid grid-cols-2 gap-2 sm:flex">
+                                {/* 4 botões iguais: grade no celular, linha na tela larga (só para quem pode editar). */}
+                                <div
+                                    className={
+                                        pode_editar
+                                            ? 'grid grid-cols-2 gap-2 sm:flex'
+                                            : 'hidden'
+                                    }
+                                >
                                     <BotoesMover
                                         acao={ConteudoController.moverModulo.form(
                                             modulo.id,
@@ -571,7 +595,14 @@ export default function ConteudoCurso({
                                                 )}
                                             </span>
                                         </span>
-                                        <span className="grid grid-cols-3 gap-2">
+                                        {/* Subir, Descer, Editar: só para quem pode editar. */}
+                                        <span
+                                            className={
+                                                pode_editar
+                                                    ? 'grid grid-cols-3 gap-2'
+                                                    : 'hidden'
+                                            }
+                                        >
                                             <BotoesMover
                                                 acao={ConteudoController.moverAula.form(
                                                     aula.id,

@@ -13,7 +13,6 @@ namespace App\Http\Requests\Cursos;
 
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
-use App\Enums\SituacaoCurso;
 use App\Support\Dinheiro;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -55,7 +54,12 @@ class CursoRequest extends FormRequest
             'instrutor_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
             // Só endereço https (link de pagamento).
             'link_pagamento' => ['nullable', 'url:https', 'max:500'],
-            'situacao' => ['required', Rule::enum(SituacaoCurso::class)],
+            // Dos cartazes de referência: o que vem junto e o contato.
+            'material_incluso' => ['nullable', 'string', 'max:500'],
+            // Só números, espaço, parênteses, "+" e "-". Ex.: '(81) 99999-0000'.
+            'contato_whatsapp' => ['nullable', 'string', 'max:20', 'regex:/^[0-9 ()+-]+$/'],
+            // A SITUAÇÃO não vem do formulário: muda só pelas ações do fluxo de
+            // chancela (App\Services\FluxoCurso, #40).
             // Capa: mesma regra das outras imagens (sem SVG, até 2 MB).
             'imagem' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
@@ -129,6 +133,7 @@ class CursoRequest extends FormRequest
             'titulo.required' => 'Informe o nome do curso.',
             'data_fim.after_or_equal' => 'A data de fim não pode ser antes do início.',
             'link_pagamento.url' => 'O link de pagamento precisa começar com https://',
+            'contato_whatsapp.regex' => 'Use só números, espaço, parênteses, "+" e "-". Ex.: (81) 99999-0000.',
             'imagem.image' => 'O arquivo precisa ser uma imagem.',
             'imagem.mimes' => 'Use uma imagem JPG, PNG ou WEBP.',
             'imagem.max' => 'A imagem pode ter no máximo 2 MB.',
