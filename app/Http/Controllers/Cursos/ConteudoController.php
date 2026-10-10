@@ -73,6 +73,11 @@ class ConteudoController extends Controller
                     'fonte_video' => $aula->video_arquivo !== null ? 'arquivo' : 'link',
                     'conteudo' => $aula->conteudo,
                     'duracao_minutos' => $aula->duracao_minutos,
+                    // Encontro presencial: dia (AAAA-MM-DD), horário (HH:MM) e quem aplica.
+                    'data' => $aula->data?->toDateString(),
+                    'hora_inicio' => $aula->hora_inicio !== null ? substr($aula->hora_inicio, 0, 5) : null,
+                    'hora_fim' => $aula->hora_fim !== null ? substr($aula->hora_fim, 0, 5) : null,
+                    'quem_aplica' => $aula->quem_aplica,
                     'tem_apostila' => $aula->apostila !== null,
                     'ativa' => $aula->ativa,
                 ])->values(),

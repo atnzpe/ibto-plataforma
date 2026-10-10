@@ -8,6 +8,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import VitrineLayout from '@/layouts/vitrine-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,6 +20,9 @@ void createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
+            // Vitrine pública de cursos (#38): cabeçalho do IBTO, sem o menu lateral.
+            case name.startsWith('catalogo/'):
+                return VitrineLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:

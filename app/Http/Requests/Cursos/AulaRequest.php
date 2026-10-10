@@ -37,6 +37,11 @@ class AulaRequest extends FormRequest
             'video_arquivo' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:'.CursoAula::VIDEO_MAXIMO_KB],
             'conteudo' => ['nullable', 'string', 'max:10000'],
             'duracao_minutos' => ['nullable', 'integer', 'min:1', 'max:600'],
+            // Encontro presencial (cronograma): dia, horário e quem aplica. Vazios no online.
+            'data' => ['nullable', 'date_format:Y-m-d'],
+            'hora_inicio' => ['nullable', 'date_format:H:i'],
+            'hora_fim' => ['nullable', 'date_format:H:i', 'after:hora_inicio'],
+            'quem_aplica' => ['nullable', 'string', 'max:100'],
             'ativa' => ['required', 'boolean'],
             // Só PDF, até 10 MB (10240 KB).
             'apostila' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
@@ -68,6 +73,7 @@ class AulaRequest extends FormRequest
     {
         return [
             'titulo.required' => 'Informe o nome da aula.',
+            'hora_fim.after' => 'O horário de fim precisa ser depois do início.',
             'video_arquivo.mimetypes' => 'O vídeo precisa ser .mp4 ou .webm.',
             'video_arquivo.max' => 'O vídeo pode ter no máximo 200 MB. Vídeos maiores: use um link do YouTube.',
             'apostila.mimes' => 'A apostila precisa ser um PDF.',

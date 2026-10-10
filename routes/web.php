@@ -9,6 +9,7 @@ use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
@@ -167,6 +168,14 @@ Route::middleware(['auth', 'verified'])
         Route::get('apostila', 'apostila')->name('apostila');
         Route::get('video', 'video')->name('video');
     });
+
+// CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
+// cursos publicados. Limite de 60 pedidos por minuto por IP.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('cursos', [CatalogoController::class, 'index'])->name('catalogo.index');
+    // whereNumber: só números no {curso} (não confunde com /cursos/aulas/...).
+    Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
+});
 
 // Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.
 Route::get('imagens/cursos/{curso}', CursoImagemController::class)

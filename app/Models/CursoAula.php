@@ -25,12 +25,16 @@ use Illuminate\Support\Carbon;
  * @property string|null $conteudo
  * @property string|null $apostila
  * @property int|null $duracao_minutos
+ * @property Carbon|null $data
+ * @property string|null $hora_inicio
+ * @property string|null $hora_fim
+ * @property string|null $quem_aplica
  * @property bool $ativa
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 // "apostila" e "video_arquivo" ficam de fora: quem grava é o controlador (arquivos no disco privado).
-#[Fillable(['modulo_id', 'titulo', 'ordem', 'video_url', 'conteudo', 'duracao_minutos', 'ativa'])]
+#[Fillable(['modulo_id', 'titulo', 'ordem', 'video_url', 'conteudo', 'duracao_minutos', 'data', 'hora_inicio', 'hora_fim', 'quem_aplica', 'ativa'])]
 class CursoAula extends Model
 {
     protected $table = 'curso_aulas';
@@ -45,7 +49,8 @@ class CursoAula extends Model
      */
     protected function casts(): array
     {
-        return ['ordem' => 'integer', 'duracao_minutos' => 'integer', 'ativa' => 'boolean'];
+        // "data": o texto "2026-10-10" do banco vira uma data no PHP (encontro presencial).
+        return ['ordem' => 'integer', 'duracao_minutos' => 'integer', 'ativa' => 'boolean', 'data' => 'date'];
     }
 
     /**

@@ -54,6 +54,11 @@ class CursoRequest extends FormRequest
             'instrutor_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
             // Só endereço https (link de pagamento).
             'link_pagamento' => ['nullable', 'url:https', 'max:500'],
+            // Dos cartazes: nome e especialidade do instrutor (nem todo instrutor
+            // tem conta) e a frase de efeito.
+            'instrutor_nome' => ['nullable', 'string', 'max:100'],
+            'instrutor_especialidade' => ['nullable', 'string', 'max:100'],
+            'chamada' => ['nullable', 'string', 'max:200'],
             // Dos cartazes de referência: o que vem junto e o contato.
             'material_incluso' => ['nullable', 'string', 'max:500'],
             // Só números, espaço, parênteses, "+" e "-". Ex.: '(81) 99999-0000'.

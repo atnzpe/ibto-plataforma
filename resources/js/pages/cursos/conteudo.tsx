@@ -34,6 +34,11 @@ type Aula = {
     fonte_video: 'link' | 'arquivo';
     conteudo: string | null;
     duracao_minutos: number | null;
+    // Encontro presencial (cronograma): dia, horário e quem aplica.
+    data: string | null;
+    hora_inicio: string | null;
+    hora_fim: string | null;
+    quem_aplica: string | null;
     tem_apostila: boolean;
     ativa: boolean;
 };
@@ -362,6 +367,62 @@ function JanelaAula({
                                 />
                                 <InputError message={errors.conteudo} />
                             </div>
+                            {/* Encontro presencial: aparece no cronograma (vazio no online). */}
+                            <fieldset className="grid gap-2">
+                                <legend className="mb-1 text-sm font-medium">
+                                    Encontro presencial (opcional)
+                                </legend>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="grid gap-1">
+                                        <Label htmlFor={`${id}-data`}>
+                                            Dia
+                                        </Label>
+                                        <Input
+                                            id={`${id}-data`}
+                                            name="data"
+                                            type="date"
+                                            defaultValue={aula?.data ?? ''}
+                                        />
+                                    </div>
+                                    <div className="grid gap-1">
+                                        <Label htmlFor={`${id}-inicio`}>
+                                            Das
+                                        </Label>
+                                        <Input
+                                            id={`${id}-inicio`}
+                                            name="hora_inicio"
+                                            type="time"
+                                            defaultValue={
+                                                aula?.hora_inicio ?? ''
+                                            }
+                                        />
+                                    </div>
+                                    <div className="grid gap-1">
+                                        <Label htmlFor={`${id}-fim`}>Às</Label>
+                                        <Input
+                                            id={`${id}-fim`}
+                                            name="hora_fim"
+                                            type="time"
+                                            defaultValue={aula?.hora_fim ?? ''}
+                                        />
+                                    </div>
+                                </div>
+                                <InputError
+                                    message={
+                                        errors.data ??
+                                        errors.hora_inicio ??
+                                        errors.hora_fim
+                                    }
+                                />
+                                <Input
+                                    name="quem_aplica"
+                                    maxLength={100}
+                                    defaultValue={aula?.quem_aplica ?? ''}
+                                    placeholder="Quem aplica. Ex.: Instrutor Trinca"
+                                    aria-label="Quem aplica o encontro"
+                                />
+                                <InputError message={errors.quem_aplica} />
+                            </fieldset>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="grid gap-2">
                                     <Label htmlFor={`${id}-duracao`}>

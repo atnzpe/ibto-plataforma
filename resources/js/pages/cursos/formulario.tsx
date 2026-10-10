@@ -41,6 +41,9 @@ type CursoEdicao = {
     link_pagamento: string | null;
     material_incluso: string | null;
     contato_whatsapp: string | null;
+    instrutor_nome: string | null;
+    instrutor_especialidade: string | null;
+    chamada: string | null;
     imagem_url: string | null;
 } & DadosSituacao;
 
@@ -124,6 +127,20 @@ export default function CursoFormulario({
                                         />
                                         <InputError message={errors.titulo} />
                                     </div>
+                                    {/* A frase de efeito do cartaz, em destaque na página do curso. */}
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="chamada">
+                                            Chamada (frase de efeito)
+                                        </Label>
+                                        <Input
+                                            id="chamada"
+                                            name="chamada"
+                                            maxLength={200}
+                                            defaultValue={curso?.chamada ?? ''}
+                                            placeholder="Ex.: Mais que treinamento, preparação para a vida real."
+                                        />
+                                        <InputError message={errors.chamada} />
+                                    </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="descricao">
                                             Descrição
@@ -200,6 +217,46 @@ export default function CursoFormulario({
                                             </select>
                                             <InputError
                                                 message={errors.instrutor_id}
+                                            />
+                                        </div>
+                                    </div>
+                                    {/* Como o instrutor aparece no cartaz (nem todo instrutor tem conta). */}
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="instrutor_nome">
+                                                Nome do instrutor no cartaz
+                                            </Label>
+                                            <Input
+                                                id="instrutor_nome"
+                                                name="instrutor_nome"
+                                                maxLength={100}
+                                                defaultValue={
+                                                    curso?.instrutor_nome ?? ''
+                                                }
+                                                placeholder="Vazio = o nome da conta escolhida"
+                                            />
+                                            <InputError
+                                                message={errors.instrutor_nome}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="instrutor_especialidade">
+                                                Especialidade
+                                            </Label>
+                                            <Input
+                                                id="instrutor_especialidade"
+                                                name="instrutor_especialidade"
+                                                maxLength={100}
+                                                defaultValue={
+                                                    curso?.instrutor_especialidade ??
+                                                    ''
+                                                }
+                                                placeholder="Ex.: Especialista em tiro"
+                                            />
+                                            <InputError
+                                                message={
+                                                    errors.instrutor_especialidade
+                                                }
                                             />
                                         </div>
                                     </div>

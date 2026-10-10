@@ -37,6 +37,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $imagem
  * @property string|null $link_pagamento
  * @property string|null $material_incluso
+ * @property string|null $instrutor_nome
+ * @property string|null $instrutor_especialidade
+ * @property string|null $chamada
  * @property string|null $contato_whatsapp
  * @property SituacaoCurso $situacao
  * @property string|null $motivo_situacao
@@ -49,7 +52,7 @@ use Illuminate\Support\Carbon;
  */
 // Ficam de fora: "imagem" (gravada pelo App\Support\ImagemPublica) e a SITUAÇÃO e a
 // chancela (só o fluxo de chancela muda, pelo forceFill: App\Services\FluxoCurso, #40).
-#[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'material_incluso', 'contato_whatsapp'])]
+#[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'material_incluso', 'contato_whatsapp', 'instrutor_nome', 'instrutor_especialidade', 'chamada'])]
 class Curso extends Model
 {
     /**
@@ -88,6 +91,29 @@ class Curso extends Model
     public function tipo(): string
     {
         return ($this->gratuito() ? 'Gratuito' : 'Pago').' · '.mb_strtolower($this->acesso->rotulo());
+    }
+
+    /**
+     * Quem aparece como instrutor na vitrine: o nome do cartaz (se preenchido)
+     * ou o da conta escolhida; vazio = "A definir".
+     *
+     * @return string|null Ex.: 'Caetano'
+     */
+    public function instrutorExibido(): ?string
+    {
+        return $this->instrutor_nome ?: $this->instrutor?->name;
+    }
+
+    /**
+     * O material incluso como lista (um selo por item na tela). O texto vem
+     * separado por vírgula. Ex.: 'Certificado, Camisa do evento' → ['Certificado', 'Camisa do evento']
+     *
+     * @return list<string>
+     */
+    public function materiais(): array
+    {
+        // Corta nas vírgulas, tira os espaços das pontas e joga fora os vazios.
+        return array_values(array_filter(array_map('trim', explode(',', (string) $this->material_incluso)), fn (string $item) => $item !== ''));
     }
 
     /**
