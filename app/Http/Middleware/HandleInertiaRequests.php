@@ -25,6 +25,8 @@ class HandleInertiaRequests extends Middleware
         'financeiro.ver',
         // Painel "Comando Geral" (#59 bloco 4 / #45).
         'comando_geral.ver',
+        // Cursos e trilhas no Comando Geral (#39).
+        'cursos.gerenciar',
     ];
 
     /**

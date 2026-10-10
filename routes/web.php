@@ -11,6 +11,9 @@ use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
+use App\Http\Controllers\CursoImagemController;
+use App\Http\Controllers\Cursos\CursoController;
+use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
@@ -119,6 +122,21 @@ Route::middleware(['auth', 'verified'])
 Route::get('comando-geral', ComandoGeralController::class)
     ->middleware(['auth', 'verified', 'can:comando_geral.ver'])
     ->name('comando-geral');
+
+// Cursos e trilhas no Comando Geral (#39 / #38): só com "cursos.gerenciar".
+// Sem "destroy": apagar = encerrar (curso) ou desativar (trilha).
+Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
+        Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+    });
+
+// Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.
+Route::get('imagens/cursos/{curso}', CursoImagemController::class)
+    ->middleware('throttle:120,1')
+    ->name('cursos.imagem');
 
 // Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
 // "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.
