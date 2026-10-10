@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
+use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
@@ -87,6 +88,12 @@ Route::middleware(['auth', 'verified'])
         Route::resource('filiados', FiliadoController::class)
             ->except(['show', 'destroy'])
             ->middleware('can:filiados.acessar');
+
+        // Registrar o pagamento da anuidade (#37 + #59), na ficha do filiado:
+        // gera também a receita no financeiro, por isso pede "financeiro.lancar".
+        Route::post('filiados/{filiado}/anuidade', [FiliadoAnuidadeController::class, 'store'])
+            ->middleware(['can:filiados.acessar', 'can:financeiro.lancar'])
+            ->name('filiados.anuidade');
 
         // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])

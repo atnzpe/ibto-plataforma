@@ -11,6 +11,9 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+// Quadro da anuidade na ficha (#37 + #59).
+import QuadroAnuidadeFiliado from '@/components/financeiro/quadro-anuidade';
+import type { QuadroAnuidade } from '@/components/financeiro/quadro-anuidade';
 import { convite, index } from '@/routes/cadastros/filiados';
 
 /** Os dados do filiado na edição. */
@@ -52,6 +55,7 @@ const classeSelect =
  * @param areas As áreas de atuação ativas.
  * @param ufs As 27 siglas de estado.
  * @param categorias As 5 categorias (funções). Ex.: [{ valor: 'instrutor', rotulo: 'Instrutor' }]
+ * @param anuidade O quadro da anuidade (só na edição, para quem vê o financeiro), ou null.
  * @returns A tela do formulário.
  */
 export default function FiliadoFormularioTela({
@@ -61,6 +65,7 @@ export default function FiliadoFormularioTela({
     areas,
     ufs,
     categorias,
+    anuidade = null,
 }: {
     filiado: FiliadoFormulario | null;
     equipes: Opcao[];
@@ -68,9 +73,11 @@ export default function FiliadoFormularioTela({
     areas: Opcao[];
     ufs: string[];
     categorias: { valor: string; rotulo: string }[];
+    anuidade?: QuadroAnuidade | null;
 }) {
-    // Mensagem da última ação (ex.: "Convite reenviado."), ou null.
-    const { sucesso } = usePage().props;
+    // Mensagem da última ação (ex.: "Convite reenviado."), ou null; e os erros
+    // gerais da página (ex.: errors.anuidade, a regra da anuidade com código).
+    const { sucesso, errors } = usePage().props;
     const editando = filiado !== null;
     const titulo = editando
         ? `Editar filiado ${filiado.registro}`
@@ -133,6 +140,18 @@ export default function FiliadoFormularioTela({
                             </Form>
                         )}
                     </div>
+                )}
+
+                {/* Anuidade (#37 + #59): só na edição e só para quem vê o financeiro. */}
+                {editando && anuidade && (
+                    <QuadroAnuidadeFiliado
+                        filiadoId={filiado.id}
+                        quadro={anuidade}
+                        erro={
+                            (errors as Record<string, string> | undefined)
+                                ?.anuidade
+                        }
+                    />
                 )}
 
                 <Form {...destino} className="space-y-8">

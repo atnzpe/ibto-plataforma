@@ -155,6 +155,8 @@ class FiliadoController extends Controller
                 'conta_ativada' => (bool) $filiado->usuario?->hasVerifiedEmail(),
             ],
             ...$this->opcoes($this->equipeLimitada($request)),
+            // Quadro da anuidade (#37 + #59), ou null para quem não vê o financeiro.
+            'anuidade' => FiliadoAnuidadeController::quadro($filiado, $request->user()),
         ]);
     }
 
