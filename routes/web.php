@@ -10,6 +10,7 @@ use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
+use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
 use Illuminate\Support\Facades\Route;
 
@@ -100,6 +101,10 @@ Route::middleware(['auth', 'verified'])
         Route::get('/', [LancamentoController::class, 'index'])
             ->middleware('can:financeiro.ver')
             ->name('lancamentos.index');
+        // Histórico de toda movimentação (só leitura: não há rota de apagar).
+        Route::get('historico', HistoricoController::class)
+            ->middleware('can:financeiro.ver')
+            ->name('historico');
         Route::get('lancamentos/novo', [LancamentoController::class, 'create'])
             ->middleware('can:financeiro.lancar')
             ->name('lancamentos.create');

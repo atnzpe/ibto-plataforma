@@ -8,6 +8,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AcoesLancamento from '@/components/financeiro/acoes-lancamento';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
+// Endereço do histórico de toda movimentação (#59).
+import { historico } from '@/routes/financeiro';
 import { create, index } from '@/routes/financeiro/lancamentos';
 import type {
     FiltrosFinanceiro,
@@ -123,12 +125,24 @@ export default function LancamentosIndex({
                         </p>
                     </div>
 
-                    {/* Só quem pode lançar vê o botão (o servidor também confere). */}
-                    {pode_lancar && (
-                        <Button asChild className="w-full sm:w-auto">
-                            <Link href={create()}>Novo lançamento</Link>
+                    {/* Botões do topo: no celular, 2 colunas iguais; na tela larga, lado a lado. */}
+                    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+                        {/* Histórico: todos que veem o financeiro podem consultar. */}
+                        <Button
+                            asChild
+                            variant="outline"
+                            // Sozinho (sem o botão de lançar), ocupa as 2 colunas.
+                            className={pode_lancar ? '' : 'col-span-2'}
+                        >
+                            <Link href={historico()}>Histórico</Link>
                         </Button>
-                    )}
+                        {/* Só quem pode lançar vê o botão (o servidor também confere). */}
+                        {pode_lancar && (
+                            <Button asChild>
+                                <Link href={create()}>Novo lançamento</Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Aviso de sucesso, anunciado pelo leitor de tela sem tirar o foco. */}
