@@ -10,6 +10,10 @@ import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 // Endereço do histórico de toda movimentação (#59).
 import { historico } from '@/routes/financeiro';
+// Cadastros de apoio do financeiro (#59).
+import { index as categorias } from '@/routes/financeiro/categorias';
+// "rotaFormas" (e não "formas"): "formas" já é a lista de formas da baixa, que viria por cima.
+import { index as rotaFormas } from '@/routes/financeiro/formas';
 import { create, index } from '@/routes/financeiro/lancamentos';
 import type {
     FiltrosFinanceiro,
@@ -123,6 +127,23 @@ export default function LancamentosIndex({
                             Livro-caixa: contas a receber e a pagar. Lançamento
                             pago não se altera; corrige-se com estorno.
                         </p>
+                        {/* Atalhos para os cadastros de apoio (só quem pode lançar). */}
+                        {pode_lancar && (
+                            <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                                <Link
+                                    href={categorias()}
+                                    className="underline underline-offset-4"
+                                >
+                                    Categorias
+                                </Link>
+                                <Link
+                                    href={rotaFormas()}
+                                    className="underline underline-offset-4"
+                                >
+                                    Formas de pagamento
+                                </Link>
+                            </p>
+                        )}
                     </div>
 
                     {/* Botões do topo: no celular, 2 colunas iguais; na tela larga, lado a lado. */}

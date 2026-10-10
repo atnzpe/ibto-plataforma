@@ -10,6 +10,8 @@ use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
+use App\Http\Controllers\Financeiro\CategoriaController;
+use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
 use Illuminate\Support\Facades\Route;
@@ -114,6 +116,15 @@ Route::middleware(['auth', 'verified'])
         // Ações sobre um lançamento: baixa (pendente → pago), cancelar (pendente)
         // e estornar (pago). As regras ficam no LivroCaixa.
         Route::middleware('can:financeiro.lancar')->group(function () {
+            // Cadastros de apoio: categorias e formas de pagamento (sem "destroy":
+            // apagar = desativar).
+            Route::resource('categorias', CategoriaController::class)
+                ->except(['show', 'destroy'])
+                ->parameters(['categorias' => 'categoria']);
+            Route::resource('formas-pagamento', FormaPagamentoController::class)
+                ->except(['show', 'destroy'])
+                ->parameters(['formas-pagamento' => 'forma'])
+                ->names('formas');
             // Editar (só pendente; a regra fica no LivroCaixa).
             Route::get('lancamentos/{lancamento}/editar', [LancamentoController::class, 'edit'])->name('lancamentos.edit');
             Route::put('lancamentos/{lancamento}', [LancamentoController::class, 'update'])->name('lancamentos.update');

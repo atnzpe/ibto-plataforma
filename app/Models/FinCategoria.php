@@ -9,6 +9,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -30,5 +31,15 @@ class FinCategoria extends Model
     protected function casts(): array
     {
         return ['ativa' => 'boolean'];
+    }
+
+    /**
+     * Lançamentos que usam esta categoria.
+     *
+     * @return HasMany<FinLancamento, $this>
+     */
+    public function lancamentos(): HasMany
+    {
+        return $this->hasMany(FinLancamento::class, 'categoria_id');
     }
 }
