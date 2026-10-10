@@ -8,6 +8,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
  * @property string $acao
  * @property array<string, mixed>|null $detalhes
  * @property Carbon|null $created_at
+ * @property-read User|null $usuario Quem fez (null se a conta foi apagada).
  */
 class Auditoria extends Model
 {
@@ -32,6 +34,16 @@ class Auditoria extends Model
     {
         // JSON do banco vira lista do PHP (e o contrário, ao gravar).
         return ['detalhes' => 'array'];
+    }
+
+    /**
+     * Quem fez a ação (vazio se a conta foi apagada; a linha continua).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

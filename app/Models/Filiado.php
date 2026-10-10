@@ -14,10 +14,12 @@ namespace App\Models;
 
 use App\Enums\CategoriaFiliado;
 use App\Support\Documento;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -128,6 +130,45 @@ class Filiado extends Model
     public function nivel(): BelongsTo
     {
         return $this->belongsTo(Nivel::class);
+    }
+
+    /**
+     * Pagamentos de anuidade deste filiado, um por ano (#37).
+     *
+     * @return HasMany<AnuidadePagamento, $this>
+     */
+    public function pagamentosAnuidade(): HasMany
+    {
+        return $this->hasMany(AnuidadePagamento::class);
+    }
+
+    /**
+     * A anuidade deste filiado está EM DIA? (#37, regras do Gleyson de 09/10/2026)
+     * Vale o ano civil: em 2027, está em dia quem pagou a de 2027.
+     *
+     * @param  CarbonInterface|null  $hoje  A data de referência (vazio = hoje). Ex.: Carbon::parse('2027-03-15')
+     * @return bool true = em dia; false = vencida.
+     */
+    public function anuidadeEmDia(?CarbonInterface $hoje = null): bool
+    {
+        // O ano que vale é o da data de referência. Ex.: 15/03/2027 → 2027.
+        $ano = ($hoje ?? now())->year;
+
+        // O valor cadastrado para esse ano (ou null, se ninguém cadastrou ainda).
+        $anuidade = Anuidade::where('ano', $ano)->first();
+
+        // Ano sem valor cadastrado, ou isento (ex.: 2026): ninguém deve nada.
+        // Se não for o caso, segue para conferir o pagamento.
+        if ($anuidade === null || $anuidade->isenta) {
+            return true;
+        }
+
+        // Ano com valor cadastrado: está em dia se houver pagamento registrado
+        // (linha do Gleyson) e VÁLIDO, isto é, cuja receita não foi estornada (#59).
+        return $this->pagamentosAnuidade()
+            ->validos()
+            ->where('ano', $ano)
+            ->exists();
     }
 
     /**

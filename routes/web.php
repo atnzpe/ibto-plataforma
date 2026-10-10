@@ -5,12 +5,20 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
+use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\EquipeLogoController;
+use App\Http\Controllers\Financeiro\CategoriaController;
+use App\Http\Controllers\Financeiro\FormaPagamentoController;
+use App\Http\Controllers\Financeiro\HistoricoController;
+use App\Http\Controllers\Financeiro\LancamentoController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -33,8 +41,19 @@ Route::get('imagens/equipes/{equipe}/logo', EquipeLogoController::class)
     ->middleware('throttle:120,1')
     ->name('equipes.logo');
 
+// Página inicial depois do login (Gleyson, 10/10/2026: "apenas Comando Geral"):
+// quem é da equipe do IBTO (comando_geral.ver) vai direto para o Comando Geral;
+// aluno, instrutor e admin de equipe ficam na própria página inicial ("Início").
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', function (Request $request) {
+        // Equipe do IBTO: não existe "Dashboard" separado; o painel é o Comando Geral.
+        if ($request->user()?->can('comando_geral.ver')) {
+            return to_route('comando-geral');
+        }
+
+        // Demais pessoas: a página inicial delas (vira "Meus cursos e trilhas", #38/#39).
+        return Inertia::render('dashboard');
+    })->name('dashboard');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.
@@ -84,10 +103,61 @@ Route::middleware(['auth', 'verified'])
             ->except(['show', 'destroy'])
             ->middleware('can:filiados.acessar');
 
+        // Registrar o pagamento da anuidade (#37 + #59), na ficha do filiado:
+        // gera também a receita no financeiro, por isso pede "financeiro.lancar".
+        Route::post('filiados/{filiado}/anuidade', [FiliadoAnuidadeController::class, 'store'])
+            ->middleware(['can:filiados.acessar', 'can:financeiro.lancar'])
+            ->name('filiados.anuidade');
+
         // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
             ->middleware(['can:filiados.acessar', 'throttle:6,1'])
             ->name('filiados.convite');
+    });
+
+// Painel "Comando Geral" (#59 bloco 4 / #45): indicadores do IBTO.
+Route::get('comando-geral', ComandoGeralController::class)
+    ->middleware(['auth', 'verified', 'can:comando_geral.ver'])
+    ->name('comando-geral');
+
+// Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
+// "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.
+Route::middleware(['auth', 'verified'])
+    ->prefix('financeiro')
+    ->name('financeiro.')
+    ->group(function () {
+        Route::get('/', [LancamentoController::class, 'index'])
+            ->middleware('can:financeiro.ver')
+            ->name('lancamentos.index');
+        // Histórico de toda movimentação (só leitura: não há rota de apagar).
+        Route::get('historico', HistoricoController::class)
+            ->middleware('can:financeiro.ver')
+            ->name('historico');
+        Route::get('lancamentos/novo', [LancamentoController::class, 'create'])
+            ->middleware('can:financeiro.lancar')
+            ->name('lancamentos.create');
+        Route::post('lancamentos', [LancamentoController::class, 'store'])
+            ->middleware('can:financeiro.lancar')
+            ->name('lancamentos.store');
+        // Ações sobre um lançamento: baixa (pendente → pago), cancelar (pendente)
+        // e estornar (pago). As regras ficam no LivroCaixa.
+        Route::middleware('can:financeiro.lancar')->group(function () {
+            // Cadastros de apoio: categorias e formas de pagamento (sem "destroy":
+            // apagar = desativar).
+            Route::resource('categorias', CategoriaController::class)
+                ->except(['show', 'destroy'])
+                ->parameters(['categorias' => 'categoria']);
+            Route::resource('formas-pagamento', FormaPagamentoController::class)
+                ->except(['show', 'destroy'])
+                ->parameters(['formas-pagamento' => 'forma'])
+                ->names('formas');
+            // Editar (só pendente; a regra fica no LivroCaixa).
+            Route::get('lancamentos/{lancamento}/editar', [LancamentoController::class, 'edit'])->name('lancamentos.edit');
+            Route::put('lancamentos/{lancamento}', [LancamentoController::class, 'update'])->name('lancamentos.update');
+            Route::post('lancamentos/{lancamento}/pagar', [LancamentoController::class, 'pagar'])->name('lancamentos.pagar');
+            Route::post('lancamentos/{lancamento}/cancelar', [LancamentoController::class, 'cancelar'])->name('lancamentos.cancelar');
+            Route::post('lancamentos/{lancamento}/estornar', [LancamentoController::class, 'estornar'])->name('lancamentos.estornar');
+        });
     });
 
 // Administração (#36): grade de papéis × permissões, só com "permissoes.gerenciar".

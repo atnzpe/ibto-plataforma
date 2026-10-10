@@ -3,12 +3,14 @@ import {
     BookOpen,
     ContactRound,
     FolderGit2,
+    Gauge,
     KeyRound,
     LayoutGrid,
     Medal,
     Tags,
     UserCog,
     Users,
+    Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -23,7 +25,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+// Painel inicial e o painel "Comando Geral" (#59 / #45).
+import { comandoGeral, dashboard } from '@/routes';
 // Lista das áreas de atuação (#37), para o item do menu.
 import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 // Lista dos níveis (#37), para o item do menu.
@@ -32,15 +35,19 @@ import { index as niveis } from '@/routes/cadastros/niveis';
 import { index as equipes } from '@/routes/cadastros/equipes';
 // Lista de filiados (#37), para o item do menu.
 import { index as filiados } from '@/routes/cadastros/filiados';
+// Livro-caixa (#59), para o item do menu.
+import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
 import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
 // Lista de usuários (#36), para o item do menu.
 import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
+// Página inicial de aluno, instrutor e admin de equipe. A equipe do IBTO não vê
+// este item: para ela, o início é o "Comando Geral" (Gleyson, 10/10/2026).
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Início',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -64,6 +71,13 @@ const footerNavItems: NavItem[] = [
 const cadastrosNavItems: (NavItem & {
     permissao: keyof SharedProps['pode'];
 })[] = [
+    // Painel "Comando Geral" (#59 / #45): primeiro da lista, para a equipe do IBTO.
+    {
+        title: 'Comando Geral',
+        href: comandoGeral(),
+        icon: Gauge,
+        permissao: 'comando_geral_ver',
+    },
     {
         title: 'Áreas de atuação',
         href: areasAtuacao(),
@@ -88,6 +102,13 @@ const cadastrosNavItems: (NavItem & {
         href: filiados(),
         icon: ContactRound,
         permissao: 'filiados_acessar',
+    },
+    // Financeiro (#59): livro-caixa (contas a receber e a pagar).
+    {
+        title: 'Financeiro',
+        href: financeiro(),
+        icon: Wallet,
+        permissao: 'financeiro_ver',
     },
     // Administração (#36): papéis de cada pessoa.
     {
@@ -114,8 +135,10 @@ export function AppSidebar() {
     const { pode } = usePage().props;
 
     // Menu principal + só os cadastros que esta pessoa pode abrir.
+    // Menu: "Início" só para quem NÃO é da equipe do IBTO (a equipe começa no
+    // Comando Geral) + os itens que a pessoa pode abrir.
     const itens = [
-        ...mainNavItems,
+        ...(pode.comando_geral_ver ? [] : mainNavItems),
         ...cadastrosNavItems.filter((item) => pode[item.permissao]),
     ];
 

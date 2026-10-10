@@ -6,6 +6,32 @@ Plataforma de cursos online do IBTO (Instituto Brasileiro de Treinamento Operaci
 - Planejamento e issues: épico [#33](https://github.com/atnzpe/Instituto-Brasileiro-de-Treinamento-Operacional/issues/33) no repositório do site, com a ordem no [ROADMAP](https://github.com/atnzpe/Instituto-Brasileiro-de-Treinamento-Operacional/blob/main/ROADMAP.md)
 - Fluxo de trabalho: o mesmo do site (issue → branch → commits → testes → PR → revisão → merge). Nada de commit direto na `main`.
 
+## Visão do produto
+
+O IBTO tem três partes, cada uma com o seu público (Gleyson, 10/10/2026):
+
+| Parte                                         | Endereço           | Para quem                     | O que tem                                                                                                                                                                                                               |
+| --------------------------------------------- | ------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Landpage** (outro repositório)              | `ib-to.org`        | Público, sem login            | Site institucional; a página `/cursos` mostra os cursos abertos ao público vindos desta plataforma                                                                                                                      |
+| **Plataforma de cursos** (este repositório)   | `cursos.ib-to.org` | Com login, em três visões     | **Aluno:** catálogo, cursos e trilhas, aulas, provas, certificado e dossiê. **Instrutor:** cria cursos na sua área, com revisão do IBTO, e cuida das turmas. **Admin de equipe:** filiados e anuidade da própria equipe |
+| **Painel "Comando Geral"** (este repositório) | `cursos.ib-to.org` | Equipe do IBTO, por permissão | Cadastros, usuários e permissões, financeiro, anuidade, histórico de tudo e o painel de indicadores                                                                                                                     |
+
+## O que já existe
+
+| Módulo                                                                                                                                                                                                | Situação               | Issue     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- |
+| Base, publicação sem SSH e saúde do sistema                                                                                                                                                           | ✅ no ar (homologação) | #35       |
+| Três idiomas pelo Google Tradutor                                                                                                                                                                     | ✅ no ar               | #53       |
+| Login com duas travas de tentativas, Aluno automático no cadastro, papéis e uma permissão por tela, com auditoria                                                                                     | ✅ no ar               | #36       |
+| Nenhum erro em silêncio (403, 500 e erros das telas no log, com código)                                                                                                                               | ✅ no ar               | #58       |
+| Cadastros: áreas de atuação, níveis, equipes, filiados (dados pessoais criptografados), convite, importação da planilha                                                                               | ✅ no ar               | #37       |
+| **Financeiro:** livro-caixa (a receber e a pagar), edição só do pendente, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, histórico só leitura, categorias e formas de pagamento | 🚧 PR #11 (rascunho)   | #59       |
+| **Anuidade:** valor por ano (2026 isento, R$ 90,00 em 2027); o pagamento gera a receita no livro-caixa; estorno desfaz o "em dia"                                                                     | 🚧 PR #11 (rascunho)   | #37 e #59 |
+| Painel "Comando Geral" com indicadores (desenho aprovado em 09/10/2026)                                                                                                                               | ⏳ próximo             | #59 e #45 |
+| Visões do aluno e do instrutor (catálogo, cursos, trilhas, matrícula, provas, certificado)                                                                                                            | ⏳ depois              | #38 a #44 |
+
+Regras de dinheiro: valores em **centavos** (nada de vírgula no cálculo); lançamento pago **nunca** muda nem some (corrige-se com estorno); toda movimentação vai para a auditoria na mesma transação.
+
 ## Stack
 
 | Parte      | Tecnologia                                                                                    |

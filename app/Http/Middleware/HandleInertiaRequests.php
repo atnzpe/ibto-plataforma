@@ -21,6 +21,10 @@ class HandleInertiaRequests extends Middleware
         'filiados.acessar',
         'usuarios.gerenciar',
         'permissoes.gerenciar',
+        // Financeiro (#59).
+        'financeiro.ver',
+        // Painel "Comando Geral" (#59 bloco 4 / #45).
+        'comando_geral.ver',
     ];
 
     /**
