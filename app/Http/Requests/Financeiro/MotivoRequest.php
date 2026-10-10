@@ -29,6 +29,8 @@ class MotivoRequest extends FormRequest
             'motivo' => ['required', 'string', 'min:5', 'max:300'],
             // Só no estorno: o dia da devolução (vazio no cancelamento; hoje se não vier).
             'data' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            // Só no cancelamento de parcela: "esta" (padrão) ou "todas" as em aberto do título.
+            'escopo' => ['nullable', 'in:esta,todas'],
         ];
     }
 

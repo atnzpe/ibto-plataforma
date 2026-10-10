@@ -331,6 +331,41 @@ function JanelaMotivo({
                 >
                     {({ processing, errors }) => (
                         <>
+                            {/* Cancelar uma PARCELA: pergunta se é só ela ou o título inteiro
+                                (pedido do Gleyson, 10/10/2026). As pagas nunca entram. */}
+                            {!estorno && lancamento.parcelas_em_aberto > 1 && (
+                                <fieldset className="grid gap-2">
+                                    <legend className="mb-1 text-sm font-medium">
+                                        O que cancelar?
+                                    </legend>
+                                    <label className="flex min-h-11 items-center gap-2 text-sm">
+                                        <input
+                                            type="radio"
+                                            name="escopo"
+                                            value="esta"
+                                            defaultChecked
+                                            className="size-4"
+                                        />
+                                        Só esta parcela (
+                                        {lancamento.parcela_numero}/
+                                        {lancamento.parcela_total})
+                                    </label>
+                                    <label className="flex min-h-11 items-center gap-2 text-sm">
+                                        <input
+                                            type="radio"
+                                            name="escopo"
+                                            value="todas"
+                                            className="size-4"
+                                        />
+                                        Todas as parcelas em aberto deste título
+                                        ({lancamento.parcelas_em_aberto})
+                                    </label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Parcelas já pagas não são canceladas:
+                                        para elas, use o estorno.
+                                    </p>
+                                </fieldset>
+                            )}
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor={`motivo-${acao}-${lancamento.id}`}

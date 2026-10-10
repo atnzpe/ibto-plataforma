@@ -19,6 +19,11 @@ export type Lancamento = {
     estorno: boolean;
     // true quando este lançamento JÁ foi estornado (não pode estornar de novo).
     estornado: boolean;
+    // Parcela "3 de 10" (null = à vista).
+    parcela_numero: number | null;
+    parcela_total: number | null;
+    // Quantas parcelas do mesmo título ainda estão em aberto (0 = à vista).
+    parcelas_em_aberto: number;
 };
 
 /** Totais do mês, no topo da lista (todos em centavos, menos "vencidos"). */

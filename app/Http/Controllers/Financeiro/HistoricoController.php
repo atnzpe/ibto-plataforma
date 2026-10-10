@@ -30,6 +30,8 @@ class HistoricoController extends Controller
         'LANCAMENTO_PAGO_PARCIAL',
         // Recebimento de anuidade (#37): pagamento + receita ligados.
         'ANUIDADE_PAGA',
+        // Cancelamento de todas as parcelas em aberto de um título (10/10/2026).
+        'PARCELAS_CANCELADAS',
     ];
 
     /**

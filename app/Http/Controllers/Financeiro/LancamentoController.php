@@ -23,6 +23,7 @@ use App\Support\Dinheiro;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +31,14 @@ class LancamentoController extends Controller
 {
     // As "visões" da lista: todos, só a receber, só a pagar, só os vencidos.
     private const VISOES = ['todos', 'receber', 'pagar', 'vencidos'];
+
+    /**
+     * Título parcelado (grupo) → quantas parcelas pendentes, preenchido por
+     * comParcelasEmAberto() antes de montar a lista.
+     *
+     * @var array<string, int>
+     */
+    private array $emAbertoPorTitulo = [];
 
     /**
      * Lista do mês escolhido, com os totais no topo.
@@ -74,7 +83,7 @@ class LancamentoController extends Controller
 
         return Inertia::render('financeiro/lancamentos/index', [
             'filtros' => ['mes' => $mes->format('Y-m'), 'visao' => $visao],
-            'lancamentos' => $consulta->limit(500)->get()->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
+            'lancamentos' => $this->comParcelasEmAberto($consulta->limit(500)->get())->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
             'totais' => [
                 'saldo_centavos' => $caixa->saldoDoMes($mes->year, $mes->month),
                 'a_receber_centavos' => (int) (clone $pendentesDoMes)->where('tipo', 'receita')->sum('valor_centavos'),
@@ -229,8 +238,23 @@ class LancamentoController extends Controller
      */
     public function cancelar(MotivoRequest $request, FinLancamento $lancamento, LivroCaixa $caixa): RedirectResponse
     {
+        $motivo = $request->string('motivo')->toString();
+
+        // "todas": cancela as parcelas em aberto do título inteiro (pedido do
+        // Gleyson, 10/10/2026). Senão, só este lançamento.
+        if ($request->input('escopo') === 'todas') {
+            $quantas = 0;
+
+            return $this->executar(
+                function () use ($caixa, $lancamento, $motivo, &$quantas): void {
+                    $quantas = $caixa->cancelarParcelas($lancamento, $motivo);
+                },
+                fn () => "{$quantas} parcela(s) em aberto do título cancelada(s).",
+            );
+        }
+
         return $this->executar(
-            fn () => $caixa->cancelar($lancamento, $request->string('motivo')->toString()),
+            fn () => $caixa->cancelar($lancamento, $motivo),
             'Lançamento cancelado.',
         );
     }
@@ -255,14 +279,40 @@ class LancamentoController extends Controller
     }
 
     /**
+     * Antes de montar a lista: conta, numa consulta só, quantas parcelas em
+     * aberto cada título parcelado da lista tem (guarda em $emAbertoPorTitulo).
+     *
+     * @param  Collection<int, FinLancamento>  $lancamentos  As linhas da lista.
+     * @return Collection<int, FinLancamento> As mesmas linhas (para encadear).
+     */
+    private function comParcelasEmAberto(Collection $lancamentos): Collection
+    {
+        // Os títulos parcelados que aparecem na lista. Ex.: ['9f1c...', 'a2b7...'].
+        $grupos = $lancamentos->pluck('grupo_parcelas')->filter()->unique()->values();
+
+        // Grupo → quantas pendentes. Ex.: ['9f1c...' => 8].
+        $this->emAbertoPorTitulo = $grupos->isEmpty() ? [] : FinLancamento::query()
+            ->whereIn('grupo_parcelas', $grupos)
+            ->where('situacao', 'pendente')
+            ->selectRaw('grupo_parcelas, count(*) as quantidade')
+            ->groupBy('grupo_parcelas')
+            ->pluck('quantidade', 'grupo_parcelas')
+            ->map(fn ($quantidade) => (int) $quantidade)
+            ->all();
+
+        return $lancamentos;
+    }
+
+    /**
      * Roda uma ação do livro-caixa e volta para a lista. Se a REGRA recusar
      * (ex.: estornar duas vezes), volta com a mensagem e o código, sem erro 500.
      *
      * @param  callable(): mixed  $acao  A ação. Ex.: fn () => $caixa->pagar(...)
-     * @param  string  $sucesso  A mensagem quando dá certo. Ex.: 'Baixa registrada.'
+     * @param  string|callable(): string  $sucesso  A mensagem quando dá certo. Ex.: 'Baixa registrada.'
+     *                                              Pode ser uma função, montada DEPOIS da ação (ex.: com a quantidade cancelada).
      * @return RedirectResponse De volta à tela anterior.
      */
-    private function executar(callable $acao, string $sucesso): RedirectResponse
+    private function executar(callable $acao, string|callable $sucesso): RedirectResponse
     {
         try {
             $acao();
@@ -271,7 +321,8 @@ class LancamentoController extends Controller
             return back()->withErrors(['acao' => "{$erro->getMessage()} ({$erro->codigo})"]);
         }
 
-        return back()->with('sucesso', $sucesso);
+        // Mensagem pronta, ou montada agora (depois da ação).
+        return back()->with('sucesso', is_callable($sucesso) ? $sucesso() : $sucesso);
     }
 
     /**
@@ -296,6 +347,13 @@ class LancamentoController extends Controller
             'estorno' => $lancamento->estorno_de_id !== null,
             // true se este lançamento JÁ tem um estorno (vem do withExists da consulta).
             'estornado' => (bool) ($lancamento->getAttribute('estorno_exists') ?? false),
+            // Parcela "3 de 10" (vazio = à vista) e quantas parcelas do título ainda
+            // estão em aberto (para a janela de cancelar oferecer "todas").
+            'parcela_numero' => $lancamento->parcela_numero,
+            'parcela_total' => $lancamento->parcela_total,
+            'parcelas_em_aberto' => $lancamento->grupo_parcelas !== null
+                ? ($this->emAbertoPorTitulo[$lancamento->grupo_parcelas] ?? 0)
+                : 0,
         ];
     }
 }
