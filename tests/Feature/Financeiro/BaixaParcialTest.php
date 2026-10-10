@@ -55,7 +55,8 @@ test('o saldo também aceita baixa parcial (de novo nasce outro saldo)', functio
 
     $ultimo = FinLancamento::where('saldo_de_id', $saldo->id)->first();
     expect($ultimo->valor_centavos)->toBe(10000);
-    expect(FinLancamento::where('situacao', 'pago')->sum('valor_centavos'))->toBe(80000);
+    // (int): no MySQL a soma volta como texto ("80000"); no SQLite, como número.
+    expect((int) FinLancamento::where('situacao', 'pago')->sum('valor_centavos'))->toBe(80000);
 });
 
 test('pagar o valor todo não gera saldo', function () {
