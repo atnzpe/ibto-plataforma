@@ -49,3 +49,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - A trava de login conta TODA tentativa, até a com senha certa: o limite por computador tem que caber uma turma inteira no mesmo Wi-Fi (por isso 50, e não 10).
 - Uma consulta sem `return` é uma pergunta cuja resposta vai para o lixo: o `return` é quem entrega o resultado para quem chamou a função.
 - Papel se busca pelo SLUG (`'aluno'`), o apelido fixo do sistema; o nome da tela ("Aluno") pode mudar.
+
+## 10/10/2026 — #59 financeiro e Comando Geral
+
+- Dinheiro em CENTAVOS (inteiro): `intdiv` dá a parte inteira e `%` o resto; nas parcelas, a sobra vai para a 1ª e a soma sempre bate.
+- `&&` ("e") exige as duas condições (categoria em uso E troca de tipo); `||` ("ou") basta uma (valor zero OU acima do total). O ternário `? :` é um "se… então… senão" numa linha, e protege contra divisão por zero.
+- O que foi pago nunca muda: corrige-se com estorno; o histórico é só leitura e um teste garante que não existe rota para apagá-lo. Número fixo espalhado no código é "número mágico": dê um nome (constante) e leia de um lugar só.
