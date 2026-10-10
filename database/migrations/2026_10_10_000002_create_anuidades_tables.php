@@ -4,8 +4,11 @@
  * ANUIDADE do filiado (#37, decisões do Gleyson em 09/10/2026):
  * - anuidades: o valor de cada ano (configurável). 2026 é isento; 2027 custa R$ 90,00.
  * - anuidade_pagamentos: a "baixa" de cada filiado em cada ano, feita à mão pelo
- *   administrador (data e forma), até existir o pagamento online (#42).
+ *   administrador, até existir o pagamento online (#42). Cada pagamento é LIGADO
+ *   à receita que ele gerou no livro-caixa (#59, bloco 3): a forma de pagamento
+ *   e o estorno vêm de lá.
  * Vale pelo ANO CIVIL: pagou a de 2027 = em dia até 31/12/2027.
+ * Roda DEPOIS das tabelas do financeiro (precisa de fin_lancamentos).
  *
  * Os valores iniciais entram pela própria migration (o servidor não tem SSH para
  * rodar seeder; o Cron aplica no pós-deploy). Compatível com o MySQL 5.7.
@@ -47,14 +50,17 @@ return new class extends Migration
             $table->unsignedInteger('valor_centavos');
             // Dia em que o dinheiro entrou. Ex.: 2027-03-15.
             $table->date('pago_em');
-            // Como pagou. Ex.: 'pix', 'dinheiro', 'transferencia', 'cartao', 'outro'.
-            $table->string('forma', 20);
+            // A receita que este pagamento gerou no livro-caixa (forma de pagamento,
+            // estorno e histórico ficam lá). unique: uma receita, um pagamento.
+            $table->foreignId('lancamento_id')->unique()->constrained('fin_lancamentos')->restrictOnDelete();
             // Quem deu a baixa (vazio se a conta dessa pessoa for apagada; o
             // pagamento continua).
             $table->foreignId('registrado_por')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            // Um pagamento por filiado por ano: o banco recusa a baixa em dobro.
-            $table->unique(['filiado_id', 'ano']);
+            // Índice para achar rápido os pagamentos de um filiado num ano. Não é
+            // "unique": se um pagamento for ESTORNADO, a pessoa pode pagar de novo.
+            // A regra "um pagamento válido por ano" fica no serviço (App\Services\Anuidades).
+            $table->index(['filiado_id', 'ano']);
         });
 
         // Valores iniciais (decisão do Gleyson, 09/10/2026).

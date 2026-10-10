@@ -39,6 +39,7 @@ const ROTULOS: Record<string, string> = {
     LANCAMENTO_CANCELADO: 'Cancelou', // Ex.: "Fulano cancelou o lançamento nº 7"
     LANCAMENTO_ESTORNADO: 'Estornou', // Ex.: "Fulano estornou o lançamento nº 7"
     LANCAMENTO_PAGO_PARCIAL: 'Deu baixa parcial',
+    ANUIDADE_PAGA: 'Recebeu anuidade',
 };
 
 /**

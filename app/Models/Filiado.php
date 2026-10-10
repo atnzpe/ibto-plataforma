@@ -163,8 +163,10 @@ class Filiado extends Model
             return true;
         }
 
-        // Ano com valor cadastrado: está em dia se houver pagamento registrado.
+        // Ano com valor cadastrado: está em dia se houver pagamento registrado
+        // (linha do Gleyson) e VÁLIDO, isto é, cuja receita não foi estornada (#59).
         return $this->pagamentosAnuidade()
+            ->validos()
             ->where('ano', $ano)
             ->exists();
     }

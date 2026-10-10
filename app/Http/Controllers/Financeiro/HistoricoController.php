@@ -28,6 +28,8 @@ class HistoricoController extends Controller
         'LANCAMENTO_CANCELADO',
         'LANCAMENTO_ESTORNADO',
         'LANCAMENTO_PAGO_PARCIAL',
+        // Recebimento de anuidade (#37): pagamento + receita ligados.
+        'ANUIDADE_PAGA',
     ];
 
     /**

@@ -7,10 +7,14 @@
  */
 
 use App\Actions\Filiados\CriarFiliado;
+use App\Exceptions\RegraFinanceira;
 use App\Models\Anuidade;
 use App\Models\AnuidadePagamento;
+use App\Models\Auditoria;
 use App\Models\Filiado;
-use Illuminate\Database\QueryException;
+use App\Models\FinFormaPagamento;
+use App\Services\Anuidades;
+use App\Services\LivroCaixa;
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,20 +35,16 @@ function filiadoDaAnuidade(): Filiado
 }
 
 /**
- * Registra o pagamento da anuidade de um ano, como a baixa manual faria.
+ * Registra o pagamento da anuidade de um ano pelo serviço (pagamento + receita
+ * no livro-caixa), como a baixa manual faz.
  *
  * @param  Filiado  $filiado  Quem pagou.
  * @param  int  $ano  De qual ano. Ex.: 2027
+ * @return AnuidadePagamento O pagamento criado.
  */
-function pagarAnuidade(Filiado $filiado, int $ano): void
+function pagarAnuidade(Filiado $filiado, int $ano): AnuidadePagamento
 {
-    AnuidadePagamento::create([
-        'filiado_id' => $filiado->id,
-        'ano' => $ano,
-        'valor_centavos' => 9000,
-        'pago_em' => "{$ano}-03-15",
-        'forma' => 'pix',
-    ]);
+    return app(Anuidades::class)->registrarPagamento($filiado, $ano, "{$ano}-03-15", FinFormaPagamento::where('nome', 'PIX')->value('id'));
 }
 
 test('a migration já traz 2026 isento e 2027 com R$ 90,00', function () {
@@ -80,9 +80,44 @@ test('ano sem valor cadastrado: ninguém deve nada', function () {
     expect(filiadoDaAnuidade()->anuidadeEmDia(Carbon::parse('2030-06-01')))->toBeTrue();
 });
 
-test('o banco recusa dois pagamentos do mesmo filiado no mesmo ano', function () {
+test('pagar duas vezes o mesmo ano é recusado (ANUIDADE_JA_PAGA)', function () {
     $filiado = filiadoDaAnuidade();
     pagarAnuidade($filiado, 2027);
 
-    expect(fn () => pagarAnuidade($filiado, 2027))->toThrow(QueryException::class);
+    expect(fn () => pagarAnuidade($filiado, 2027))->toThrow(RegraFinanceira::class, 'já está paga');
+});
+
+test('o pagamento gera a receita no livro-caixa, já paga, ligada a ele (#59)', function () {
+    $filiado = filiadoDaAnuidade();
+    $pagamento = pagarAnuidade($filiado, 2027);
+
+    $receita = $pagamento->lancamento;
+    expect($receita->tipo)->toBe('receita');
+    expect($receita->situacao)->toBe('pago');
+    expect($receita->valor_centavos)->toBe(9000);
+    expect($receita->categoria->nome)->toBe('Anuidade');
+    expect($receita->origem)->toBe('anuidade');
+    expect($receita->origem_id)->toBe($pagamento->id);
+    // LGPD: a descrição leva o registro, não o nome da pessoa.
+    expect($receita->descricao)->toContain($filiado->registro);
+    expect($receita->descricao)->not->toContain('Pessoa Anuidade');
+    expect(Auditoria::where('acao', 'ANUIDADE_PAGA')->exists())->toBeTrue();
+});
+
+test('estornar a receita desfaz o "em dia", e a pessoa pode pagar de novo', function () {
+    $filiado = filiadoDaAnuidade();
+    $pagamento = pagarAnuidade($filiado, 2027);
+
+    app(LivroCaixa::class)->estornar($pagamento->lancamento, 'Pagamento devolvido', '2027-03-20');
+    expect($filiado->anuidadeEmDia(Carbon::parse('2027-06-01')))->toBeFalse();
+
+    pagarAnuidade($filiado, 2027);
+    expect($filiado->anuidadeEmDia(Carbon::parse('2027-06-01')))->toBeTrue();
+});
+
+test('ano isento ou sem valor não aceita pagamento', function () {
+    $filiado = filiadoDaAnuidade();
+
+    expect(fn () => pagarAnuidade($filiado, 2026))->toThrow(RegraFinanceira::class, 'isenta');
+    expect(fn () => pagarAnuidade($filiado, 2031))->toThrow(RegraFinanceira::class, 'Não há valor');
 });
