@@ -140,4 +140,39 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /*
+     * SAFE AREA (pedido do Gleyson, 10/10/2026: "em todas as telas, sem exceção").
+     * Em celulares com entalhe (notch), cantos arredondados ou barra de gestos,
+     * env(safe-area-inset-*) diz quanto da borda fica "escondido". O body ganha
+     * essa margem dos 4 lados, então TODA tela (as de hoje e as futuras) fica
+     * protegida sem mexer em cada uma. Em tela sem entalhe o valor é 0 (nada muda).
+     * As peças "presas" na tela (position: fixed) ganham a delas logo abaixo.
+     */
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+    }
+
+    /* Menu lateral fixo (tela larga, ex.: celular deitado): margem de cima, de baixo e do lado da tela. */
+    [data-slot='sidebar-container'] {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    [data-slot='sidebar-container'][data-lado='left'] {
+        padding-left: env(safe-area-inset-left);
+    }
+    [data-slot='sidebar-container'][data-lado='right'] {
+        padding-right: env(safe-area-inset-right);
+    }
+
+    /* Gaveta do menu no celular (e qualquer outra gaveta): margem dos 4 lados. */
+    [data-slot='sheet-content'] {
+        padding-top: env(safe-area-inset-top);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+    }
 }
