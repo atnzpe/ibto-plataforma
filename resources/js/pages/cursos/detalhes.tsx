@@ -7,11 +7,18 @@
  * inscrito. O certificado chega com a #44 ("em breve").
  * Sem rolagem lateral: resumo em grade e inscritos em cartões.
  */
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
 import { chamada, edit, index } from '@/routes/comando-geral/cursos';
 import { ficha, index as matriculas } from '@/routes/comando-geral/matriculas';
+// Certificados (#44): ver, emitir e cancelar.
+import { ver as verCertificado } from '@/routes/certificados';
+import { cancelar as cancelarCertificado } from '@/routes/comando-geral/certificados';
+import {
+    aptos as emitirAptos,
+    emitir as emitirCertificado,
+} from '@/routes/comando-geral/cursos/certificados';
 
 /** Um inscrito na lista. */
 type Inscrito = {
@@ -25,6 +32,11 @@ type Inscrito = {
     // Presenças: veio em X de Y encontros com chamada.
     presencas: number;
     encontros_com_chamada: number;
+    // Certificado (#44): código e número (null = não emitido), se vale, e o motivo de não estar apto.
+    certificado: string | null;
+    certificado_id: number | null;
+    certificado_valido: boolean;
+    motivo_nao_apto: string | null;
 };
 
 // Cor de cada situação (o texto também aparece escrito).
@@ -43,6 +55,7 @@ const SELO: Record<Inscrito['situacao'], string> = {
  * @param pode_confirmar true = pode abrir a ficha e confirmar o PIX.
  * @param encontros Os encontros (aulas com data), com a chamada feita ou não.
  * @param pode_chamada true = pode fazer a chamada (dono, admin da equipe, Comando Geral).
+ * @param pode_emitir true = pode emitir e cancelar certificados (só o IBTO).
  * @returns A tela.
  */
 export default function DetalhesCurso({
@@ -52,6 +65,7 @@ export default function DetalhesCurso({
     pode_confirmar,
     encontros,
     pode_chamada,
+    pode_emitir,
 }: {
     curso: {
         id: number;
@@ -70,6 +84,8 @@ export default function DetalhesCurso({
         canceladas: number;
         // Presentes na última chamada (null = nenhuma) e o título do encontro.
         presentes_ultima: number | null;
+        // Certificados válidos emitidos (passo 4).
+        certificados: number;
         ultima_chamada: string | null;
     };
     inscritos: Inscrito[];
@@ -82,9 +98,10 @@ export default function DetalhesCurso({
         chamada_feita: boolean;
     }[];
     pode_chamada: boolean;
+    pode_emitir: boolean;
 }) {
     // Mensagem da última ação (ex.: "Chamada registrada: 9 de 12 presentes").
-    const { sucesso } = usePage().props;
+    const { sucesso, errors } = usePage().props;
     // Os cartões do resumo, na ordem dos passos do desenho.
     const passos: { passo: string; numero: string; texto: string }[] = [
         {
@@ -117,7 +134,11 @@ export default function DetalhesCurso({
                     ? `presentes em "${resumo.ultima_chamada}"`
                     : 'nenhuma chamada ainda',
         },
-        { passo: '4 · Certificado', numero: '—', texto: 'em breve (#44)' },
+        {
+            passo: '4 · Certificado',
+            numero: String(resumo.certificados),
+            texto: 'emitidos',
+        },
     ];
 
     return (
@@ -141,11 +162,34 @@ export default function DetalhesCurso({
                             {curso.titulo}
                         </h1>
                     </div>
-                    <Button asChild variant="outline" className="min-h-11">
-                        <Link href={edit(curso.id)}>
-                            {curso.pode_editar ? 'Editar curso' : 'Ver o curso'}
-                        </Link>
-                    </Button>
+                    {/* Botões do topo: 2 iguais no celular, lado a lado na tela larga. */}
+                    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+                        <Button asChild variant="outline" className="min-h-11">
+                            <Link href={edit(curso.id)}>
+                                {curso.pode_editar
+                                    ? 'Editar curso'
+                                    : 'Ver o curso'}
+                            </Link>
+                        </Button>
+                        {/* "Emitir certificados dos presentes" (desenho): todos os aptos de uma vez. Só o IBTO. */}
+                        {pode_emitir && (
+                            <Button
+                                className="min-h-11"
+                                onClick={() =>
+                                    window.confirm(
+                                        'Emitir o certificado de todos os inscritos aptos (presença mínima) que ainda não têm?',
+                                    ) &&
+                                    router.post(
+                                        emitirAptos(curso.id).url,
+                                        {},
+                                        { preserveScroll: true },
+                                    )
+                                }
+                            >
+                                Emitir certificados dos aptos
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {sucesso && (
@@ -154,6 +198,15 @@ export default function DetalhesCurso({
                         className="rounded-md border border-green-600/40 bg-green-600/10 px-4 py-2 text-sm"
                     >
                         {sucesso}
+                    </p>
+                )}
+                {/* Certificado recusado (ex.: já emitido): o motivo com o código. */}
+                {errors.certificado && (
+                    <p
+                        role="alert"
+                        className="rounded-md border border-red-600/40 bg-red-600/10 px-4 py-2 text-sm"
+                    >
+                        {errors.certificado}
                     </p>
                 )}
 
@@ -297,6 +350,86 @@ export default function DetalhesCurso({
                                             : 'Próximo passo: presença nos encontros'}
                                     </span>
                                 )}
+
+                                {/* Certificado (#44): o código (com o link) ou o motivo de ainda não estar apto. */}
+                                {inscrito.certificado !== null && (
+                                    <span className="flex flex-wrap items-center gap-2 text-xs">
+                                        <Link
+                                            href={verCertificado(
+                                                inscrito.certificado,
+                                            )}
+                                            className="font-mono underline underline-offset-4"
+                                        >
+                                            {inscrito.certificado}
+                                        </Link>
+                                        <span className="font-medium">
+                                            {inscrito.certificado_valido
+                                                ? '✓ Certificado válido'
+                                                : '✗ Certificado cancelado'}
+                                        </span>
+                                    </span>
+                                )}
+                                {inscrito.certificado === null &&
+                                    inscrito.motivo_nao_apto !== null && (
+                                        <span className="text-xs text-muted-foreground">
+                                            Certificado:{' '}
+                                            {inscrito.motivo_nao_apto}
+                                        </span>
+                                    )}
+                                {/* Emitir (apto e sem certificado) ou cancelar (válido): só o IBTO. */}
+                                {pode_emitir &&
+                                    inscrito.situacao === 'confirmada' &&
+                                    inscrito.certificado === null &&
+                                    inscrito.motivo_nao_apto === null && (
+                                        <Button
+                                            size="sm"
+                                            className="min-h-11"
+                                            onClick={() =>
+                                                router.post(
+                                                    emitirCertificado({
+                                                        curso: curso.id,
+                                                        matricula: inscrito.id,
+                                                    }).url,
+                                                    {},
+                                                    { preserveScroll: true },
+                                                )
+                                            }
+                                        >
+                                            Emitir certificado
+                                        </Button>
+                                    )}
+                                {pode_emitir &&
+                                    inscrito.certificado !== null &&
+                                    inscrito.certificado_valido &&
+                                    inscrito.certificado_id !== null && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="min-h-11"
+                                            onClick={() => {
+                                                const motivo = window.prompt(
+                                                    `Cancelar o certificado ${inscrito.certificado}? Ele deixa de validar. Escreva o motivo:`,
+                                                );
+                                                // Fechou ou deixou em branco: não cancela.
+                                                if (
+                                                    motivo !== null &&
+                                                    motivo.trim() !== ''
+                                                ) {
+                                                    router.post(
+                                                        cancelarCertificado(
+                                                            inscrito.certificado_id!,
+                                                        ).url,
+                                                        { motivo },
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            Cancelar certificado
+                                        </Button>
+                                    )}
 
                                 {/* Ficha (nome) e confirmação: só para quem confirma pagamentos. */}
                                 {pode_confirmar && (

@@ -16,6 +16,7 @@
 
 namespace App\Http\Controllers\Cursos;
 
+use App\Actions\Cursos\Certificados;
 use App\Enums\SituacaoMatricula;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
@@ -34,15 +35,16 @@ class DetalhesCursoController extends Controller
      *
      * @param  Request  $request  Quem está vendo.
      * @param  Curso  $curso  O do endereço. Ex.: /comando-geral/cursos/7/inscritos
+     * @param  Certificados  $certificados  As regras do certificado (quem está apto).
      * @return Response A tela "cursos/detalhes".
      */
-    public function __invoke(Request $request, Curso $curso): Response
+    public function __invoke(Request $request, Curso $curso, Certificados $certificados): Response
     {
         Gate::authorize('curso.inscritos', $curso);
 
         // Todas as matrículas do curso (canceladas também: o histórico aparece), as mais novas primeiro.
         $matriculas = $curso->matriculas()
-            ->with(['usuario.filiado:id,user_id,registro,equipe_id', 'usuario.filiado.equipe:id,nome'])
+            ->with(['usuario.filiado:id,user_id,registro,equipe_id', 'usuario.filiado.equipe:id,nome', 'certificado'])
             ->latest('id')
             ->get();
 
@@ -94,6 +96,8 @@ class DetalhesCursoController extends Controller
                 // Presentes na última chamada (null = nenhuma chamada ainda) e qual encontro foi.
                 'presentes_ultima' => $presentesNaUltima,
                 'ultima_chamada' => $ultimaChamada?->titulo,
+                // Certificados válidos já emitidos (passo 4).
+                'certificados' => $matriculas->filter(fn (CursoMatricula $matricula) => $matricula->certificado?->valido() ?? false)->count(),
             ],
             'inscritos' => $matriculas->map(fn (CursoMatricula $matricula) => [
                 'id' => $matricula->id,
@@ -106,6 +110,14 @@ class DetalhesCursoController extends Controller
                 // Presenças: quantas vezes veio, de quantos encontros com chamada. Ex.: 2 de 3.
                 'presencas' => (int) ($presencasPorMatricula[$matricula->id] ?? 0),
                 'encontros_com_chamada' => $chamados->count(),
+                // Certificado (#44): o código (null = não emitido) e se ainda vale.
+                'certificado' => $matricula->certificado?->codigo,
+                'certificado_id' => $matricula->certificado?->id,
+                'certificado_valido' => $matricula->certificado?->valido() ?? false,
+                // Apto para receber (só para quem não tem): null = não se aplica.
+                'motivo_nao_apto' => $matricula->certificado === null && $matricula->situacao === SituacaoMatricula::Confirmada
+                    ? $certificados->apto($matricula)['motivo']
+                    : null,
             ])->values(),
             'pode_confirmar' => $podeConfirmar,
             // Os encontros e se a pessoa pode fazer a chamada (Gate curso.chamada).
@@ -117,6 +129,8 @@ class DetalhesCursoController extends Controller
                 'chamada_feita' => $aula->chamada_feita_em !== null,
             ])->values(),
             'pode_chamada' => Gate::allows('curso.chamada', $curso),
+            // Emitir e cancelar certificados: só o IBTO (Gate certificados.emitir).
+            'pode_emitir' => Gate::allows('certificados.emitir'),
         ]);
     }
 }

@@ -13,6 +13,7 @@ use App\Enums\SituacaoMatricula;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -68,6 +69,16 @@ class CursoMatricula extends Model
     public function curso(): BelongsTo
     {
         return $this->belongsTo(Curso::class);
+    }
+
+    /**
+     * O certificado desta matrícula (#44), se já foi emitido.
+     *
+     * @return HasOne<CursoCertificado, $this>
+     */
+    public function certificado(): HasOne
+    {
+        return $this->hasOne(CursoCertificado::class, 'matricula_id');
     }
 
     /**

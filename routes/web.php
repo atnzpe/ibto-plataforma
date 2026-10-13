@@ -10,6 +10,7 @@ use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
@@ -151,6 +152,10 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
         // Chamada do encontro (#44). Quem faz: Gate curso.chamada (conferido no controlador).
         Route::get('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'edit'])->name('cursos.chamada');
         Route::put('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'update'])->name('cursos.chamada.update');
+        // Certificados (#44): emitir um, emitir todos os aptos e cancelar. Só o IBTO (Gate no controlador).
+        Route::post('cursos/{curso}/certificados/{matricula}', [CertificadoController::class, 'emitir'])->name('cursos.certificados.emitir');
+        Route::post('cursos/{curso}/certificados', [CertificadoController::class, 'emitirAptos'])->name('cursos.certificados.aptos');
+        Route::post('certificados/{certificado}/cancelar', [CertificadoController::class, 'cancelar'])->name('certificados.cancelar');
 
         // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
         Route::controller(ConteudoController::class)->group(function () {
@@ -223,6 +228,11 @@ Route::middleware(['auth', 'verified', 'throttle:20,1'])
         Route::post('matriculas/{matricula}/desistir', 'desistir')->name('matriculas.desistir');
     });
 
+// O certificado para imprimir / salvar em PDF (#44): com login; o dono ou quem vê os inscritos.
+Route::middleware(['auth', 'verified'])
+    ->get('certificados/{codigo}', [CertificadoController::class, 'ver'])
+    ->name('certificados.ver');
+
 // Sala de aula (#39, bloco C4c): as aulas em sequência (Anterior / Próxima).
 // Com login; quem pode ver é conferido pelo Gate "curso.conteudo" no controlador.
 // whereNumber: só números, para não confundir com /cursos/aulas/... acima.
@@ -239,6 +249,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
     // Trilha em fluxograma (#38, bloco C4b).
     Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    // Validação PÚBLICA do certificado pelo código (#44). Ex.: /validar/IBTO-7K2M-9QXA
+    Route::get('validar/{codigo}', [CertificadoController::class, 'validar'])->name('certificados.validar');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
     Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
         ->whereNumber(['curso', 'aula'])

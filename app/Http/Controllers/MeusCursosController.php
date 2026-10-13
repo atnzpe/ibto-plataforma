@@ -43,7 +43,7 @@ class MeusCursosController extends Controller
         $matriculas = CursoMatricula::query()
             ->where('user_id', $usuario->id)
             ->ocupandoVaga()
-            ->with('curso.area:id,nome')
+            ->with(['curso.area:id,nome', 'certificado'])
             ->latest('id')
             ->get();
 
@@ -72,6 +72,8 @@ class MeusCursosController extends Controller
                 'data_inicio' => $matricula->curso->data_inicio?->toDateString(),
                 'situacao' => $matricula->situacao->value,
                 'situacao_rotulo' => $matricula->situacao->rotulo(),
+                // Código do certificado VÁLIDO (#44), para "Ver certificado"; null = não tem.
+                'certificado' => $matricula->certificado?->valido() ? $matricula->certificado->codigo : null,
                 // Primeira aula liberada (para "Assistir"), só na matrícula confirmada.
                 'primeira_aula_id' => $matricula->situacao === SituacaoMatricula::Confirmada
                     ? $this->primeiraAula($matricula->curso_id)

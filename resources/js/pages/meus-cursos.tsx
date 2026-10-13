@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
 import { meusCursos } from '@/routes';
 import { curso as paginaDoCurso, index as catalogo } from '@/routes/catalogo';
+import { ver as verCertificado } from '@/routes/certificados';
 import { assistir } from '@/routes/cursos';
 
 /** Um curso da pessoa (uma matrícula que vale). */
@@ -28,6 +29,8 @@ type MeuCurso = {
     situacao_rotulo: string;
     // Primeira aula liberada (só na confirmada com aulas), ou null.
     primeira_aula_id: number | null;
+    // Código do certificado válido (#44), ou null.
+    certificado: string | null;
 };
 
 // Texto e visual de cada estado da etapa (escrito + cor).
@@ -252,9 +255,25 @@ export default function MeusCursos({
                                         {meu.situacao_rotulo}
                                     </span>
 
-                                    {/* O próximo passo: assistir (confirmada com aulas) ou ver o curso (pagar / detalhes). */}
+                                    {/* O próximo passo: certificado (concluído), assistir (confirmada com aulas) ou ver o curso. */}
                                     <div className="mt-auto pt-2">
-                                        {meu.primeira_aula_id !== null ? (
+                                        {meu.certificado !== null ? (
+                                            <Button
+                                                asChild
+                                                className="min-h-11 w-full"
+                                            >
+                                                {/* Link comum: abre a página limpa do certificado (imprimir / PDF). */}
+                                                <a
+                                                    href={
+                                                        verCertificado(
+                                                            meu.certificado,
+                                                        ).url
+                                                    }
+                                                >
+                                                    Ver certificado
+                                                </a>
+                                            </Button>
+                                        ) : meu.primeira_aula_id !== null ? (
                                             <Button
                                                 asChild
                                                 className="min-h-11 w-full"
