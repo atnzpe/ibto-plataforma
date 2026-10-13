@@ -30,6 +30,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $hora_fim
  * @property string|null $quem_aplica
  * @property string|null $introducao
+ * @property string|null $registro_encontro O que foi trabalhado (gravado pela chamada, #44).
+ * @property Carbon|null $chamada_feita_em Quando a chamada foi feita (null = ainda não).
+ * @property int|null $chamada_por Quem fez a chamada.
  * @property bool $ativa
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -51,7 +54,7 @@ class CursoAula extends Model
     protected function casts(): array
     {
         // "data": o texto "2026-10-10" do banco vira uma data no PHP (encontro presencial).
-        return ['ordem' => 'integer', 'duracao_minutos' => 'integer', 'ativa' => 'boolean', 'data' => 'date'];
+        return ['ordem' => 'integer', 'duracao_minutos' => 'integer', 'ativa' => 'boolean', 'data' => 'date', 'chamada_feita_em' => 'datetime'];
     }
 
     /**

@@ -3,13 +3,14 @@
  * Gleyson em 10/10/2026): o resumo em passos (vagas → pagamento →
  * presença → certificado) e os INSCRITOS com o próximo passo de cada um.
  * LGPD: só o registro (ou o nº da matrícula) e a equipe; o nome fica na ficha.
- * Presença e certificado chegam com a #44 ("em breve").
+ * Presença (#44): os encontros com o botão da chamada e o "x de y" de cada
+ * inscrito. O certificado chega com a #44 ("em breve").
  * Sem rolagem lateral: resumo em grade e inscritos em cartões.
  */
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
-import { edit, index } from '@/routes/comando-geral/cursos';
+import { chamada, edit, index } from '@/routes/comando-geral/cursos';
 import { ficha, index as matriculas } from '@/routes/comando-geral/matriculas';
 
 /** Um inscrito na lista. */
@@ -21,6 +22,9 @@ type Inscrito = {
     situacao: 'aguardando_pagamento' | 'confirmada' | 'cancelada';
     situacao_rotulo: string;
     tem_comprovante: boolean;
+    // Presenças: veio em X de Y encontros com chamada.
+    presencas: number;
+    encontros_com_chamada: number;
 };
 
 // Cor de cada situação (o texto também aparece escrito).
@@ -37,6 +41,8 @@ const SELO: Record<Inscrito['situacao'], string> = {
  * @param resumo Quantos em cada passo.
  * @param inscritos Todas as matrículas do curso (também as canceladas).
  * @param pode_confirmar true = pode abrir a ficha e confirmar o PIX.
+ * @param encontros Os encontros (aulas com data), com a chamada feita ou não.
+ * @param pode_chamada true = pode fazer a chamada (dono, admin da equipe, Comando Geral).
  * @returns A tela.
  */
 export default function DetalhesCurso({
@@ -44,6 +50,8 @@ export default function DetalhesCurso({
     resumo,
     inscritos,
     pode_confirmar,
+    encontros,
+    pode_chamada,
 }: {
     curso: {
         id: number;
@@ -60,10 +68,23 @@ export default function DetalhesCurso({
         aguardando: number;
         confirmadas: number;
         canceladas: number;
+        // Presentes na última chamada (null = nenhuma) e o título do encontro.
+        presentes_ultima: number | null;
+        ultima_chamada: string | null;
     };
     inscritos: Inscrito[];
     pode_confirmar: boolean;
+    encontros: {
+        id: number;
+        titulo: string;
+        data: string | null;
+        hora_inicio: string | null;
+        chamada_feita: boolean;
+    }[];
+    pode_chamada: boolean;
 }) {
+    // Mensagem da última ação (ex.: "Chamada registrada: 9 de 12 presentes").
+    const { sucesso } = usePage().props;
     // Os cartões do resumo, na ordem dos passos do desenho.
     const passos: { passo: string; numero: string; texto: string }[] = [
         {
@@ -84,7 +105,18 @@ export default function DetalhesCurso({
             numero: String(resumo.confirmadas),
             texto: 'pagamento confirmado',
         },
-        { passo: '3 · Presença', numero: '—', texto: 'em breve (#44)' },
+        {
+            passo: '3 · Presença',
+            // Presentes na última chamada (— = nenhuma chamada ainda).
+            numero:
+                resumo.presentes_ultima === null
+                    ? '—'
+                    : String(resumo.presentes_ultima),
+            texto:
+                resumo.ultima_chamada !== null
+                    ? `presentes em "${resumo.ultima_chamada}"`
+                    : 'nenhuma chamada ainda',
+        },
         { passo: '4 · Certificado', numero: '—', texto: 'em breve (#44)' },
     ];
 
@@ -116,6 +148,15 @@ export default function DetalhesCurso({
                     </Button>
                 </div>
 
+                {sucesso && (
+                    <p
+                        role="status"
+                        className="rounded-md border border-green-600/40 bg-green-600/10 px-4 py-2 text-sm"
+                    >
+                        {sucesso}
+                    </p>
+                )}
+
                 {/* Resumo em passos: 2 colunas no celular, 5 na tela larga. */}
                 <section
                     aria-label="Resumo do curso"
@@ -139,6 +180,62 @@ export default function DetalhesCurso({
                     ))}
                 </section>
 
+                {/* Encontros e chamada (#44): cada encontro com o botão da chamada. */}
+                {encontros.length > 0 && (
+                    <section
+                        aria-labelledby="t-encontros"
+                        className="flex flex-col gap-3"
+                    >
+                        <h2 id="t-encontros" className="font-semibold">
+                            Encontros e chamada
+                        </h2>
+                        {/* 1 coluna no celular, 2 no tablet, 3 na tela larga. */}
+                        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {encontros.map((encontro) => (
+                                <li
+                                    key={encontro.id}
+                                    className="flex flex-col gap-2 rounded-md border border-border p-4 text-sm"
+                                >
+                                    <strong>{encontro.titulo}</strong>
+                                    <span className="text-muted-foreground">
+                                        {encontro.data && dataBr(encontro.data)}
+                                        {encontro.hora_inicio &&
+                                            ` às ${encontro.hora_inicio}`}
+                                    </span>
+                                    {/* Estado escrito (não só cor). */}
+                                    <span className="text-xs font-medium">
+                                        {encontro.chamada_feita
+                                            ? '✓ Chamada feita'
+                                            : 'Chamada ainda não feita'}
+                                    </span>
+                                    {pode_chamada && (
+                                        <Button
+                                            asChild
+                                            size="sm"
+                                            variant={
+                                                encontro.chamada_feita
+                                                    ? 'outline'
+                                                    : 'default'
+                                            }
+                                            className="mt-auto min-h-11"
+                                        >
+                                            <Link
+                                                href={chamada({
+                                                    curso: curso.id,
+                                                    aula: encontro.id,
+                                                })}
+                                            >
+                                                {encontro.chamada_feita
+                                                    ? 'Refazer a chamada'
+                                                    : 'Fazer a chamada'}
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
                 <section
                     aria-labelledby="t-inscritos"
                     className="flex flex-col gap-3"
@@ -194,8 +291,10 @@ export default function DetalhesCurso({
                                 )}
                                 {inscrito.situacao === 'confirmada' && (
                                     <span className="text-xs">
-                                        Próximo passo: presença nos encontros
-                                        (em breve)
+                                        {/* Presença escrita: veio em X de Y encontros com chamada. */}
+                                        {inscrito.encontros_com_chamada > 0
+                                            ? `Presença: ${inscrito.presencas} de ${inscrito.encontros_com_chamada} encontro(s)`
+                                            : 'Próximo passo: presença nos encontros'}
                                     </span>
                                 )}
 

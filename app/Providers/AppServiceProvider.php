@@ -123,6 +123,13 @@ class AppServiceProvider extends ServiceProvider
             || $usuario->temPermissao('pagamentos.confirmar')
             || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
 
+        // "curso.chamada" (#44, desenho de 10/10/2026: "o admin de equipe ou o instrutor marca
+        // quem veio"): fazer a chamada de um encontro. Passam o Comando Geral, o DONO do
+        // curso e o administrador da EQUIPE DONA do curso (só da própria equipe).
+        Gate::define('curso.chamada', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id)
+            || ($usuario->temPermissao('filiados.equipe') && $curso->equipe_id !== null && $usuario->filiado?->equipe_id === $curso->equipe_id));
+
         // "curso.conteudo" (#39 / #41): ver as aulas, o vídeo enviado e baixar a apostila.
         // Passam: o Comando Geral, quem chancela, quem propôs o curso e quem tem
         // MATRÍCULA CONFIRMADA (aguardando pagamento ainda não). Sem isso: 403, mesmo com o link.

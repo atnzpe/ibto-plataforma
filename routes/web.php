@@ -15,6 +15,7 @@ use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
 use App\Http\Controllers\Cursos\AssistirController;
 use App\Http\Controllers\Cursos\AulaArquivoController;
+use App\Http\Controllers\Cursos\ChamadaController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
 use App\Http\Controllers\Cursos\DetalhesCursoController;
@@ -147,6 +148,9 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
         Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
         // Detalhes do curso (#41): resumo e inscritos (só registro). Quem vê: Gate curso.inscritos.
         Route::get('cursos/{curso}/inscritos', DetalhesCursoController::class)->name('cursos.inscritos');
+        // Chamada do encontro (#44). Quem faz: Gate curso.chamada (conferido no controlador).
+        Route::get('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'edit'])->name('cursos.chamada');
+        Route::put('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'update'])->name('cursos.chamada.update');
 
         // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
         Route::controller(ConteudoController::class)->group(function () {
