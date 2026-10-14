@@ -9,7 +9,7 @@
 import { Form, Link } from '@inertiajs/react';
 import PagamentoConfigController from '@/actions/App/Http/Controllers/Cursos/PagamentoConfigController';
 import { Button } from '@/components/ui/button';
-import { CampoPagamento } from '@/pages/cursos/pagamento';
+import { CampoPagamento } from '@/components/cursos/campo-pagamento';
 import { edit as telaPagamento } from '@/routes/comando-geral/pagamento';
 
 /** Os dados próprios do curso e o estado da chave. */

@@ -11,8 +11,8 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import PagamentoConfigController from '@/actions/App/Http/Controllers/Cursos/PagamentoConfigController';
 import InputError from '@/components/input-error';
+import { CampoPagamento } from '@/components/cursos/campo-pagamento';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/comando-geral/pagamento';
 
@@ -26,50 +26,6 @@ type Config = {
     instrucoes: string | null;
     por_curso: boolean;
 };
-
-/**
- * Um campo de texto com rótulo e erro (para não repetir o mesmo bloco 5 vezes).
- *
- * @param nome O name do campo. Ex.: 'pix_chave'
- * @param rotulo O texto do rótulo. Ex.: 'Chave PIX'
- * @param valor O valor atual (vazio se null).
- * @param maximo Quantas letras no máximo. Ex.: 140
- * @param exemplo O texto de exemplo dentro do campo.
- * @param erro A mensagem de erro do servidor, se houver.
- * @returns O bloco rótulo + campo + erro.
- */
-export function CampoPagamento({
-    nome,
-    rotulo,
-    valor,
-    maximo,
-    exemplo,
-    erro,
-}: {
-    nome: string;
-    rotulo: string;
-    valor: string | null;
-    maximo: number;
-    exemplo: string;
-    erro?: string;
-}) {
-    // id único por campo, para ligar o rótulo ao campo (acessibilidade).
-    const id = `pag-${nome}`;
-
-    return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>{rotulo}</Label>
-            <Input
-                id={id}
-                name={nome}
-                defaultValue={valor ?? ''}
-                maxLength={maximo}
-                placeholder={exemplo}
-            />
-            <InputError message={erro} />
-        </div>
-    );
-}
 
 /**
  * @param config Os dados atuais do IBTO e a chave.
