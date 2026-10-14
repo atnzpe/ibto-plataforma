@@ -59,8 +59,9 @@ export default function EquipesIndex({ equipes }: { equipes: EquipeLista[] }) {
                     </p>
                 )}
 
-                <div className="overflow-x-auto rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                    <table className="tabela-cartoes w-full text-left text-sm">
                         <caption className="sr-only">
                             Lista das equipes filiadas
                         </caption>
@@ -110,7 +111,10 @@ export default function EquipesIndex({ equipes }: { equipes: EquipeLista[] }) {
                                     key={equipe.id}
                                     className="border-t border-border"
                                 >
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Logo"
+                                        className="px-4 py-2"
+                                    >
                                         {/* alt="": decorativa aqui, o nome está ao lado. */}
                                         {equipe.logo_url ? (
                                             <img
@@ -125,15 +129,26 @@ export default function EquipesIndex({ equipes }: { equipes: EquipeLista[] }) {
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2">{equipe.nome}</td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Equipe"
+                                        className="px-4 py-2"
+                                    >
+                                        {equipe.nome}
+                                    </td>
+                                    <td
+                                        data-rotulo="Cidade"
+                                        className="px-4 py-2"
+                                    >
                                         {equipe.local ?? (
                                             <span className="text-muted-foreground">
                                                 A preencher
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Áreas"
+                                        className="px-4 py-2"
+                                    >
                                         {equipe.areas.length > 0 ? (
                                             equipe.areas.join(', ')
                                         ) : (
@@ -143,6 +158,7 @@ export default function EquipesIndex({ equipes }: { equipes: EquipeLista[] }) {
                                         )}
                                     </td>
                                     <td
+                                        data-rotulo="Situação"
                                         className={`px-4 py-2 ${CORES_SITUACAO[equipe.status] ?? ''}`}
                                     >
                                         {equipe.status_rotulo}

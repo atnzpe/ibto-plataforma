@@ -50,8 +50,9 @@ export default function NiveisIndex({ niveis }: { niveis: Nivel[] }) {
                     </p>
                 )}
 
-                <div className="overflow-x-auto rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                    <table className="tabela-cartoes w-full text-left text-sm">
                         <caption className="sr-only">Lista dos níveis</caption>
                         <thead className="bg-muted/50">
                             <tr>
@@ -81,8 +82,16 @@ export default function NiveisIndex({ niveis }: { niveis: Nivel[] }) {
                                     key={nivel.id}
                                     className="border-t border-border"
                                 >
-                                    <td className="px-4 py-2">{nivel.nome}</td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Nível"
+                                        className="px-4 py-2"
+                                    >
+                                        {nivel.nome}
+                                    </td>
+                                    <td
+                                        data-rotulo="Situação"
+                                        className="px-4 py-2"
+                                    >
                                         {/* Situação escrita (não só cor). */}
                                         {nivel.ativo ? (
                                             <span className="text-green-700 dark:text-green-400">

@@ -55,3 +55,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Dinheiro em CENTAVOS (inteiro): `intdiv` dá a parte inteira e `%` o resto; nas parcelas, a sobra vai para a 1ª e a soma sempre bate.
 - `&&` ("e") exige as duas condições (categoria em uso E troca de tipo); `||` ("ou") basta uma (valor zero OU acima do total). O ternário `? :` é um "se… então… senão" numa linha, e protege contra divisão por zero.
 - O que foi pago nunca muda: corrige-se com estorno; o histórico é só leitura e um teste garante que não existe rota para apagá-lo. Número fixo espalhado no código é "número mágico": dê um nome (constante) e leia de um lugar só.
+
+## 10/10/2026 — #37 "importar mesmo assim" e telas sem rolagem lateral
+
+- Dado FALTANDO é diferente de dado ERRADO: o que falta pode entrar e ser completado depois (selo "Incompleto"); o errado (CPF inválido, repetido) continua barrado, como no PDV, que vende sem o CPF na nota, mas não com um CPF inválido.
+- Para o banco aceitar "vazio", a coluna precisa ser `nullable` (aceita NULL); no MySQL, vários NULL numa coluna `unique` não contam como repetidos.
+- Uma regra de estilo única (`tabela-cartoes`) vale para todas as tabelas: abaixo de 1024 px cada linha vira um cartão, e o `data-rotulo` leva o nome da coluna para dentro do cartão.

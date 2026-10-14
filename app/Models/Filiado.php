@@ -26,12 +26,12 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int|null $user_id
  * @property string $registro
- * @property string $cpf
- * @property string $nascimento
+ * @property string|null $cpf
+ * @property string|null $nascimento
  * @property string|null $telefone
- * @property string $cpf_hash
- * @property string $municipio
- * @property string $uf
+ * @property string|null $cpf_hash
+ * @property string|null $municipio
+ * @property string|null $uf
  * @property int|null $equipe_id
  * @property CategoriaFiliado|null $categoria
  * @property int|null $nivel_id
@@ -71,6 +71,14 @@ class Filiado extends Model
         static::saving(function (Filiado $filiado): void {
             // Só mexe quando o CPF foi informado ou trocado.
             if ($filiado->isDirty('cpf')) {
+                // Importado sem CPF ("importar mesmo assim"): os dois ficam vazios.
+                // Vários vazios não contam como CPF repetido.
+                if (blank($filiado->cpf)) {
+                    $filiado->cpf = null;
+                    $filiado->cpf_hash = null;
+
+                    return;
+                }
                 $filiado->cpf = Documento::apenasDigitos($filiado->cpf);
                 $filiado->cpf_hash = self::hashDoCpf($filiado->cpf);
             }
@@ -114,6 +122,27 @@ class Filiado extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Cadastro INCOMPLETO: entrou pela importação com o "importar mesmo assim"
+     * (Gleyson, 10/10/2026) e ainda falta CPF, nascimento, município, UF ou o
+     * e-mail da conta. Mostra o selo "Incompleto" na lista; completar na edição.
+     * Precisa da conta carregada (with('usuario')) para olhar o e-mail.
+     *
+     * @return bool true = falta algum dado.
+     */
+    public function incompleto(): bool
+    {
+        // getAttributes() lê o valor guardado SEM descriptografar (mais leve e sem mostrar o dado).
+        $guardado = $this->getAttributes();
+
+        return ($guardado['cpf_hash'] ?? null) === null
+            || ($guardado['nascimento'] ?? null) === null
+            || blank($this->municipio)
+            || blank($this->uf)
+            // Conta existe, mas sem e-mail (sem conta nenhuma não conta aqui).
+            || ($this->usuario !== null && $this->usuario->email === null);
     }
 
     /**

@@ -52,8 +52,9 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                     </p>
                 )}
 
-                <div className="overflow-x-auto rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                    <table className="tabela-cartoes w-full text-left text-sm">
                         {/* Título da tabela só para leitor de tela (visualmente, o h1 já diz). */}
                         <caption className="sr-only">
                             Lista das áreas de atuação
@@ -92,7 +93,10 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                                     key={area.id}
                                     className="border-t border-border"
                                 >
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Imagem"
+                                        className="px-4 py-2"
+                                    >
                                         {/* Miniatura da imagem; sem imagem, o aviso escrito.
                                             alt="" : a imagem é decorativa aqui, o nome está ao lado. */}
                                         {area.imagem_url ? (
@@ -108,8 +112,16 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-2">{area.nome}</td>
-                                    <td className="px-4 py-2">
+                                    <td
+                                        data-rotulo="Nome"
+                                        className="px-4 py-2"
+                                    >
+                                        {area.nome}
+                                    </td>
+                                    <td
+                                        data-rotulo="Situação"
+                                        className="px-4 py-2"
+                                    >
                                         {/* Situação escrita (não só cor), para quem não distingue cores. */}
                                         {area.ativa ? (
                                             <span className="text-green-700 dark:text-green-400">
