@@ -2,7 +2,10 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {{-- viewport-fit=cover: a página ocupa a tela INTEIRA do celular, inclusive em volta
+             do entalhe (notch) e da barra de gestos. As margens de segurança (SafeArea, pedido
+             do Gleyson em 10/10/2026) ficam no app.css, para nada ficar escondido atrás deles. --}}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
         @unless (config('app.indexavel'))
             <meta name="robots" content="noindex, nofollow">
