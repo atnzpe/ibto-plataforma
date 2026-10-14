@@ -98,7 +98,7 @@ test('caminho completo: enviar, relacionar colunas e valores, prévia e confirma
     $this->actingAs($this->admin)
         ->post(route('cadastros.filiados.importar.confirmar', $codigo))
         ->assertRedirect(route('cadastros.filiados.index'))
-        ->assertSessionHas('sucesso', 'Importação concluída: 2 filiado(s) cadastrado(s) e convidado(s); 0 linha(s) recusada(s).');
+        ->assertSessionHas('sucesso', 'Importação concluída: 2 filiado(s) cadastrado(s); 0 linha(s) não importada(s).');
 
     expect(Filiado::count())->toBe(2);
     expect(Filiado::whereNotNull('abrangencia')->value('abrangencia'))->toBe('nacional');

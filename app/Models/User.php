@@ -21,8 +21,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * @property int $id
  * @property string $name
- * @property string $email
+ * @property string|null $email
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $desativada_em
  * @property string $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
@@ -55,6 +56,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return [
             'email_verified_at' => 'datetime',
+            // Quando a conta foi desativada (null = ativa). Ver BloquearContaDesativada.
+            'desativada_em' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
@@ -150,6 +153,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             return false;
         }
 
-        return in_array(strtolower($this->email), $lista, true);
+        // (string): conta sem e-mail (filiado importado incompleto) vira "" e não bate com a lista.
+        return in_array(strtolower((string) $this->email), $lista, true);
     }
 }

@@ -203,6 +203,9 @@ class ImportacaoFiliadosController extends Controller
         return Inertia::render('cadastros/filiados/importar-previa', [
             'codigo' => $codigo,
             'validas' => count($resultado['validas']),
+            // Linhas a que só FALTA dado: entram com o "importar mesmo assim".
+            // Só a linha e o que falta (LGPD: os dados da pessoa não vão para a tela).
+            'incompletas' => array_map(fn (array $incompleta) => ['linha' => $incompleta['linha'], 'faltas' => $incompleta['faltas']], $resultado['incompletas']),
             // Só linha e motivo (LGPD).
             'recusadas' => $resultado['recusadas'],
             // Se houve a etapa de valores (para o botão "voltar" ir para ela).
@@ -223,16 +226,26 @@ class ImportacaoFiliadosController extends Controller
         abort_unless(isset($dados['mapa']), 422);
 
         $resultado = $importar->conferir($dados['linhas'], $dados['mapa'], $dados['relacoes'] ?? []);
-        $gravados = $importar->importar($resultado['validas']);
+
+        // "Importar mesmo assim" marcado na prévia: as incompletas entram junto.
+        // Desmarcado: só as válidas entram, e as incompletas contam como não importadas.
+        $mesmoAssim = $request->boolean('mesmo_assim');
+        $paraGravar = $mesmoAssim
+            ? [...$resultado['validas'], ...array_column($resultado['incompletas'], 'dados')]
+            : $resultado['validas'];
+        $gravados = $importar->importar($paraGravar);
 
         // O arquivo some da memória temporária de vez.
         Cache::forget($this->chave($codigo));
 
-        $recusadas = count($resultado['recusadas']) + $gravados['falhas'];
+        $recusadas = count($resultado['recusadas']) + $gravados['falhas'] + ($mesmoAssim ? 0 : count($resultado['incompletas']));
+        // Quantas entraram com dado faltando (para lembrar de completar).
+        $incompletas = $mesmoAssim ? count($resultado['incompletas']) : 0;
 
         return to_route('cadastros.filiados.index')->with(
             'sucesso',
-            "Importação concluída: {$gravados['importados']} filiado(s) cadastrado(s) e convidado(s); {$recusadas} linha(s) recusada(s).",
+            "Importação concluída: {$gravados['importados']} filiado(s) cadastrado(s); {$recusadas} linha(s) não importada(s)."
+                .($incompletas > 0 ? " {$incompletas} cadastro(s) entraram incompletos: complete na lista (selo \"Incompleto\")." : ''),
         );
     }
 

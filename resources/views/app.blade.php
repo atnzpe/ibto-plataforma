@@ -2,7 +2,10 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {{-- viewport-fit=cover: a página ocupa a tela INTEIRA do celular, inclusive em volta
+             do entalhe (notch) e da barra de gestos. As margens de segurança (SafeArea, pedido
+             do Gleyson em 10/10/2026) ficam no app.css, para nada ficar escondido atrás deles. --}}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
         @unless (config('app.indexavel'))
             <meta name="robots" content="noindex, nofollow">
@@ -26,16 +29,17 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: #faf8f3; {{-- mesmo fundo do modo claro (app.css) --}}
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: #0f0e0b; {{-- mesmo fundo do modo escuro (app.css) --}}
             }
         </style>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        {{-- Cor da barra do navegador no celular: o preto da marca IBTO (igual ao site). --}}
+        <meta name="theme-color" content="#0a0a0a">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts

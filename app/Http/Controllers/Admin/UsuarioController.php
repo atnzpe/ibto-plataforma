@@ -54,6 +54,13 @@ class UsuarioController extends Controller
                 'nome' => $usuario->name,
                 'email' => $usuario->email,
                 'papeis' => $usuario->papeis->pluck('nome'),
+                // Estado da conta, para os botões de ação (#36, 10/10/2026):
+                // false = desativada (não entra; botão "Reativar").
+                'ativa' => $usuario->desativada_em === null,
+                // true = já criou a senha / confirmou o e-mail (sem botão de convite).
+                'senha_criada' => $usuario->hasVerifiedEmail(),
+                // true = é a própria pessoa logada (não pode se desativar).
+                'eu' => $usuario->id === $request->user()?->id,
             ]);
 
         return Inertia::render('admin/usuarios/index', [

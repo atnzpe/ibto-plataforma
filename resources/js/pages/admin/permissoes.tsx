@@ -81,8 +81,9 @@ export default function Permissoes({
                 >
                     {({ processing }) => (
                         <>
-                            <div className="overflow-x-auto rounded-md border border-border">
-                                <table className="w-full text-left text-sm">
+                            {/* Grade na tela larga; um cartão por permissão abaixo de 1024 px (tabela-cartoes, app.css). */}
+                            <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                                <table className="tabela-cartoes w-full text-left text-sm">
                                     <caption className="sr-only">
                                         Grade de papéis e permissões
                                     </caption>
@@ -129,6 +130,9 @@ export default function Permissoes({
                                                     return (
                                                         <td
                                                             key={papel.id}
+                                                            data-rotulo={
+                                                                papel.nome
+                                                            }
                                                             className="px-3 py-2 text-center"
                                                         >
                                                             {/* name="vinculos[papel][]": o navegador envia, por papel, a lista das marcadas.

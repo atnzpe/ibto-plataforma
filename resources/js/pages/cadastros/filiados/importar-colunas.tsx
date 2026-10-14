@@ -69,8 +69,9 @@ export default function ImportarColunas({
                 >
                     {({ processing }) => (
                         <>
-                            <div className="overflow-x-auto rounded-md border border-border">
-                                <table className="w-full text-left text-sm">
+                            {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                            <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                                <table className="tabela-cartoes w-full text-left text-sm">
                                     <caption className="sr-only">
                                         Colunas da planilha e campos do banco
                                     </caption>
@@ -107,7 +108,10 @@ export default function ImportarColunas({
                                                             `(coluna ${posicao + 1} sem nome)`}
                                                     </label>
                                                 </th>
-                                                <td className="px-4 py-2">
+                                                <td
+                                                    data-rotulo="Vai para o campo"
+                                                    className="px-4 py-2"
+                                                >
                                                     {/* name="mapa[posição]": o servidor recebe a escolha pela posição da coluna. */}
                                                     <select
                                                         id={`mapa-${posicao}`}

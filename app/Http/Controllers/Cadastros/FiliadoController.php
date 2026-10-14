@@ -54,7 +54,7 @@ class FiliadoController extends Controller
         $equipe = $limite ?? ($request->integer('equipe') ?: null);
 
         $filiados = Filiado::query()
-            ->with(['usuario:id,name', 'equipe:id,nome', 'nivel'])
+            ->with(['usuario:id,name,email', 'equipe:id,nome', 'nivel'])
             ->when($equipe !== null, fn ($consulta) => $consulta->where('equipe_id', $equipe))
             ->orderBy('registro')
             ->paginate(20)
@@ -68,8 +68,11 @@ class FiliadoController extends Controller
                 // Função (ex.: "Instrutor") e graduação (ex.: "Instrutor Expert IV").
                 'categoria' => $filiado->categoria?->rotulo(),
                 'nivel' => $filiado->nivel?->nome(),
-                'local' => "{$filiado->municipio}/{$filiado->uf}",
+                // Cidade/UF; o que faltar (importado incompleto) não aparece. Ex.: "Recife/PE", "PE".
+                'local' => implode('/', array_filter([$filiado->municipio, $filiado->uf])),
                 'status' => $filiado->status,
+                // true = falta dado (selo "Incompleto"; completar na edição).
+                'incompleto' => $filiado->incompleto(),
             ]);
 
         return Inertia::render('cadastros/filiados/index', [
@@ -179,14 +182,24 @@ class FiliadoController extends Controller
         }
 
         DB::transaction(function () use ($request, $filiado, $dados) {
+            $usuario = $filiado->usuario;
+            // A conta estava sem e-mail? (filiado importado incompleto)
+            $estavaSemEmail = $usuario !== null && $usuario->email === null;
+
             // Nome e e-mail ficam na conta do app.
-            $filiado->usuario?->update([
+            $usuario?->update([
                 'name' => $request->string('nome')->toString(),
                 'email' => $request->string('email')->toString(),
             ]);
 
             $filiado->update($dados);
             $filiado->areas()->sync($request->input('areas', []));
+
+            // E-mail completado agora: sai o convite que ficou pendente na importação.
+            // Se já tinha e-mail, nada muda (o reenvio tem botão próprio).
+            if ($estavaSemEmail) {
+                $usuario->notify(new ConviteFiliado);
+            }
         });
 
         return to_route('cadastros.filiados.index')
