@@ -7,10 +7,18 @@
  * inscrito. O certificado chega com a #44 ("em breve").
  * Sem rolagem lateral: resumo em grade e inscritos em cartões.
  */
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+import InputError from '@/components/input-error';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
-import { chamada, edit, index } from '@/routes/comando-geral/cursos';
+import {
+    chamada,
+    edit,
+    index,
+    matricular,
+} from '@/routes/comando-geral/cursos';
 import { ficha, index as matriculas } from '@/routes/comando-geral/matriculas';
 // Certificados (#44): ver, emitir e cancelar.
 import { ver as verCertificado } from '@/routes/certificados';
@@ -56,6 +64,8 @@ const SELO: Record<Inscrito['situacao'], string> = {
  * @param encontros Os encontros (aulas com data), com a chamada feita ou não.
  * @param pode_chamada true = pode fazer a chamada (dono, admin da equipe, Comando Geral).
  * @param pode_emitir true = pode emitir e cancelar certificados (só o IBTO).
+ * @param pode_matricular true = mostra "Matricular pessoa" (só o IBTO); false = o formulário nem aparece.
+ * @param fechado true = curso FECHADO (fora do site; só entra quem o IBTO matricular).
  * @returns A tela.
  */
 export default function DetalhesCurso({
@@ -66,6 +76,8 @@ export default function DetalhesCurso({
     encontros,
     pode_chamada,
     pode_emitir,
+    pode_matricular = false,
+    fechado = false,
 }: {
     curso: {
         id: number;
@@ -99,6 +111,8 @@ export default function DetalhesCurso({
     }[];
     pode_chamada: boolean;
     pode_emitir: boolean;
+    pode_matricular?: boolean;
+    fechado?: boolean;
 }) {
     // Mensagem da última ação (ex.: "Chamada registrada: 9 de 12 presentes").
     const { sucesso, errors } = usePage().props;
@@ -289,6 +303,66 @@ export default function DetalhesCurso({
                         </ul>
                     </section>
                 )}
+                {/* "MATRICULAR PESSOA" (14/10/2026): só o IBTO. O único jeito de entrar
+                    num curso FECHADO; também serve para quem pagou fora do site. */}
+                {pode_matricular && (
+                    <section
+                        aria-labelledby="t-matricular"
+                        className="flex flex-col gap-3 rounded-xl border border-border p-4"
+                    >
+                        <h2 id="t-matricular" className="font-semibold">
+                            Matricular pessoa
+                        </h2>
+                        {/* Curso fechado: lembra por que este formulário importa. */}
+                        {fechado && (
+                            <p className="text-sm text-muted-foreground">
+                                Este curso é fechado: não aparece no site e só
+                                entra quem for matriculado aqui.
+                            </p>
+                        )}
+                        {/* resetOnSuccess: limpa o campo depois de matricular, pronto para a próxima pessoa. */}
+                        <Form
+                            {...matricular.form(curso.id)}
+                            options={{ preserveScroll: true }}
+                            resetOnSuccess
+                            className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                        >
+                            {({ processing }) => (
+                                <>
+                                    <div className="grid flex-1 gap-2">
+                                        <Label htmlFor="pessoa">
+                                            Registro do filiado ou e-mail da
+                                            conta
+                                        </Label>
+                                        <Input
+                                            id="pessoa"
+                                            name="pessoa"
+                                            maxLength={150}
+                                            required
+                                            autoComplete="off"
+                                            placeholder="Ex.: BR20260007PE"
+                                            aria-describedby="erro-matricular"
+                                        />
+                                    </div>
+                                    {/* processing: trava o botão enquanto o servidor responde (evita clique duplo). */}
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="min-h-11"
+                                    >
+                                        Matricular
+                                    </Button>
+                                </>
+                            )}
+                        </Form>
+                        {/* O motivo da recusa, com o código (ex.: VAGAS_ESGOTADAS). */}
+                        <InputError
+                            id="erro-matricular"
+                            message={errors.matricular}
+                        />
+                    </section>
+                )}
+
                 <section
                     aria-labelledby="t-inscritos"
                     className="flex flex-col gap-3"

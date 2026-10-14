@@ -21,6 +21,7 @@ use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
 use App\Http\Controllers\Cursos\DetalhesCursoController;
 use App\Http\Controllers\Cursos\MatriculaPainelController;
+use App\Http\Controllers\Cursos\MatricularPeloIbtoController;
 use App\Http\Controllers\Cursos\PagamentoConfigController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
@@ -149,6 +150,9 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
         Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
         // Detalhes do curso (#41): resumo e inscritos (só registro). Quem vê: Gate curso.inscritos.
         Route::get('cursos/{curso}/inscritos', DetalhesCursoController::class)->name('cursos.inscritos');
+        // "Matricular pessoa" (14/10/2026): o IBTO matricula alguém pelo registro ou e-mail
+        // (único jeito de entrar num curso FECHADO). Quem pode: cursos.gerenciar (no controlador).
+        Route::post('cursos/{curso}/matricular', MatricularPeloIbtoController::class)->name('cursos.matricular');
         // Chamada do encontro (#44). Quem faz: Gate curso.chamada (conferido no controlador).
         Route::get('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'edit'])->name('cursos.chamada');
         Route::put('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'update'])->name('cursos.chamada.update');

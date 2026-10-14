@@ -79,7 +79,9 @@ class CursoController extends Controller
                 'titulo' => $curso->titulo,
                 'area' => $curso->area?->nome,
                 'modalidade' => $curso->modalidade->rotulo(),
-                'tipo' => $curso->tipo(),
+                // O tipo, com o aviso de curso FECHADO no fim (aparece na tabela e nos cartões).
+                // Ex.: 'Pago · aberto ao público · fechado (fora do site)'.
+                'tipo' => $curso->tipo().($curso->fechado ? ' · fechado (fora do site)' : ''),
                 'valor_centavos' => $curso->valor_centavos,
                 'data_inicio' => $curso->data_inicio?->toDateString(),
                 'vagas' => $curso->vagas,

@@ -131,6 +131,10 @@ class DetalhesCursoController extends Controller
             'pode_chamada' => Gate::allows('curso.chamada', $curso),
             // Emitir e cancelar certificados: só o IBTO (Gate certificados.emitir).
             'pode_emitir' => Gate::allows('certificados.emitir'),
+            // "Matricular pessoa" (14/10/2026): só o IBTO (cursos.gerenciar); false = o formulário nem aparece.
+            'pode_matricular' => Gate::allows('cursos.gerenciar'),
+            // true = curso FECHADO: a tela explica que só entra quem o IBTO matricular.
+            'fechado' => $curso->fechado,
         ]);
     }
 }
