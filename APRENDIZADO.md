@@ -73,3 +73,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - 404 em vez de 403 esconde que a página existe: quem não pode ver um curso fechado nem descobre que ele existe.
 - O percentual mora em cada curso (e não num "se o nome for Formação…"): uma exceção nova vira só um número no cadastro, sem mexer no código.
 - Divisão em centavos: a parte do IBTO arredonda para baixo (`intdiv`) e o instrutor fica com o resto; assim a soma das partes sempre bate com o valor pago.
+
+## 14/10/2026 — progresso das aulas e "Meu dossiê"
+
+- Regra usada por duas telas mora num SERVIÇO (`SalaDeAula`): a sala de aula e "Meus cursos" fazem a mesma conta, sem copiar código.
+- `flatMap` devolve uma lista comum, sem os atalhos de lista de modelos (`modelKeys`); `pluck('id')` funciona nas duas.
+- Página "só minha" não leva número de pessoa no endereço: o servidor usa quem está logado, então não dá para trocar o número e ver o dossiê de outro.
