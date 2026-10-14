@@ -43,15 +43,23 @@ class Matriculas
      *
      * @param  Curso  $curso  O curso. Ex.: "Combate Corpo a Corpo" (R$ 250,00, 20 vagas).
      * @param  User  $usuario  Quem está se matriculando.
+     * @param  bool  $peloIbto  true = é o IBTO matriculando a pessoa (único jeito de
+     *                          entrar num curso FECHADO). Ex.: false na inscrição pelo site.
      * @return CursoMatricula A matrícula criada (confirmada ou aguardando pagamento).
      *
      * @throws RegraCurso Quando a regra não deixa (o código diz o motivo).
      */
-    public function matricular(Curso $curso, User $usuario): CursoMatricula
+    public function matricular(Curso $curso, User $usuario, bool $peloIbto = false): CursoMatricula
     {
         // Só curso publicado (chancelado) recebe matrícula.
         if ($curso->situacao !== SituacaoCurso::Publicado) {
             throw new RegraCurso('CURSO_INDISPONIVEL', 'Este curso não está aberto para matrículas.');
+        }
+
+        // Curso FECHADO (ex.: Formação de instrutor): só o IBTO matricula.
+        // Se não for fechado, ou se for o IBTO, segue para as outras regras.
+        if ($curso->fechado && ! $peloIbto) {
+            throw new RegraCurso('CURSO_FECHADO', 'Este curso é fechado: a matrícula é feita pelo IBTO.');
         }
 
         // Curso com data: matrículas até o dia de início (inclusive).

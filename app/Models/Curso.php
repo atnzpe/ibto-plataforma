@@ -12,6 +12,7 @@ use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
 use App\Enums\SituacaoCurso;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $area_atuacao_id
  * @property ModalidadeCurso $modalidade
  * @property AcessoCurso $acesso
+ * @property bool $fechado true = curso FECHADO: fora do site, só quem o IBTO matricular (ex.: Formação de instrutor).
  * @property int $valor_centavos
  * @property int|null $vagas
  * @property Carbon|null $data_inicio
@@ -57,6 +59,7 @@ use Illuminate\Support\Carbon;
  */
 // Ficam de fora: "imagem" (gravada pelo App\Support\ImagemPublica) e a SITUAÇÃO e a
 // chancela (só o fluxo de chancela muda, pelo forceFill: App\Services\FluxoCurso, #40).
+// "fechado" também fica de fora: só o IBTO liga/desliga (forceFill no CursoController).
 #[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'material_incluso', 'contato_whatsapp', 'instrutor_nome', 'instrutor_especialidade', 'chamada'])]
 class Curso extends Model
 {
@@ -70,6 +73,8 @@ class Curso extends Model
             'modalidade' => ModalidadeCurso::class,
             'acesso' => AcessoCurso::class,
             'situacao' => SituacaoCurso::class,
+            // 0/1 do banco vira false/true no PHP.
+            'fechado' => 'boolean',
             'valor_centavos' => 'integer',
             'vagas' => 'integer',
             'carga_horaria' => 'integer',
@@ -78,6 +83,18 @@ class Curso extends Model
             // Dia e hora da chancela (texto do banco vira data e hora no PHP).
             'chancelado_em' => 'datetime',
         ];
+    }
+
+    /**
+     * Filtro pronto ("escopo") dos cursos que podem aparecer no SITE: tira os
+     * FECHADOS (ex.: Formação de instrutor). Uso: Curso::query()->noSite()->...
+     * O catálogo e as trilhas usam este mesmo filtro, para a regra ficar num lugar só.
+     *
+     * @param  Builder<Curso>  $consulta  A consulta que está sendo montada.
+     */
+    public function scopeNoSite(Builder $consulta): void
+    {
+        $consulta->where('fechado', false);
     }
 
     /**

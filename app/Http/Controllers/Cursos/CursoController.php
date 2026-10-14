@@ -102,11 +102,12 @@ class CursoController extends Controller
     /**
      * Formulário vazio.
      *
+     * @param  Request  $request  Quem está cadastrando (decide se aparece "Curso fechado").
      * @return Response A tela "cursos/formulario".
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('cursos/formulario', ['curso' => null, ...$this->opcoesDoFormulario()]);
+        return Inertia::render('cursos/formulario', ['curso' => null, 'pode_fechar' => $this->podeFechar($request->user()), ...$this->opcoesDoFormulario()]);
     }
 
     /**
@@ -126,6 +127,8 @@ class CursoController extends Controller
                 'responsavel_id' => $request->user()?->id,
                 // Curso de equipe: a equipe de quem propôs (vazio para o IBTO).
                 'equipe_id' => $request->user()?->can('cursos.gerenciar') ? null : $request->user()?->filiado?->equipe_id,
+                // Curso FECHADO (fora do site): só o IBTO marca; para os outros, nasce aberto.
+                'fechado' => $this->podeFechar($request->user()) && $request->boolean('fechado'),
             ])->save();
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_CRIADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
@@ -157,6 +160,8 @@ class CursoController extends Controller
                 'area_atuacao_id' => $curso->area_atuacao_id,
                 'modalidade' => $curso->modalidade->value,
                 'acesso' => $curso->acesso->value,
+                // true = curso FECHADO (fora do site; só o IBTO matricula).
+                'fechado' => $curso->fechado,
                 // Valor no formato do campo; gratuito = vazio. Ex.: 9000 → '90,00'.
                 'valor' => $curso->gratuito() ? '' : Dinheiro::paraCampo($curso->valor_centavos),
                 'vagas' => $curso->vagas,
@@ -195,6 +200,8 @@ class CursoController extends Controller
                 // A chave liga/desliga: desligada = estes dados ficam guardados, mas não valem.
                 'por_curso_ligado' => PagamentoConfig::atual()->por_curso,
             ] : null,
+            // Mostra a caixa "Curso fechado"? Só para o IBTO (quem gerencia ou chancela).
+            'pode_fechar' => $this->podeFechar($request->user()),
             ...$this->opcoesDoFormulario(),
         ]);
     }
@@ -211,6 +218,10 @@ class CursoController extends Controller
 
         DB::transaction(function () use ($request, $curso): void {
             $curso->update($request->paraGravar());
+            // "Fechado" só muda pelas mãos do IBTO; se outra pessoa salvar, fica como estava.
+            if ($this->podeFechar($request->user())) {
+                $curso->forceFill(['fechado' => $request->boolean('fechado')])->save();
+            }
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_EDITADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
         });
@@ -252,6 +263,19 @@ class CursoController extends Controller
         }
 
         return $consulta;
+    }
+
+    /**
+     * Pode marcar o curso como FECHADO (fora do site)? Só o IBTO: quem
+     * gerencia cursos (Comando Geral) ou quem chancela. Instrutor e admin de
+     * equipe, não (decisão de 14/10/2026: a Formação de instrutor é do IBTO).
+     *
+     * @param  User|null  $usuario  Quem está usando a tela. Ex.: a conta do Eduardo.
+     * @return bool true = pode ligar/desligar "Curso fechado".
+     */
+    private function podeFechar(?User $usuario): bool
+    {
+        return $usuario !== null && ($usuario->can('cursos.gerenciar') || $usuario->can('cursos.chancelar'));
     }
 
     /**

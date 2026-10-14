@@ -49,6 +49,8 @@ class CatalogoController extends Controller
 
         $consulta = Curso::query()
             ->where('situacao', SituacaoCurso::Publicado)
+            // Curso FECHADO (ex.: Formação de instrutor) não aparece no site.
+            ->noSite()
             ->with(['area:id,nome', 'instrutor:id,name'])
             // Os com data primeiro, do mais próximo ao mais distante; os sem data no fim.
             ->orderByRaw('data_inicio is null')->orderBy('data_inicio')->orderBy('titulo');
@@ -71,7 +73,7 @@ class CatalogoController extends Controller
             'cursos' => $consulta->limit(200)->get()->map(fn (Curso $curso) => $this->cartao($curso))->values(),
             // Só as áreas que têm curso publicado (filtro sem opções vazias).
             'areas' => AreaAtuacao::query()
-                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
+                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->noSite()->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
                 ->orderBy('nome')->get(['id', 'nome']),
             // Trilhas ativas, para o atalho "Trilhas de formação".
             'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
@@ -91,6 +93,16 @@ class CatalogoController extends Controller
         // Não publicado: só o Comando Geral, quem chancela ou o dono veem (prévia); os outros, 404.
         $previa = $curso->situacao !== SituacaoCurso::Publicado;
         abort_if($previa && ! Gate::allows('curso.conteudo', $curso), 404);
+
+        // Curso FECHADO: a página só abre para quem cuida do curso (Gate
+        // curso.conteudo) ou para quem foi matriculado nele. Os outros recebem
+        // 404 ("não existe"), para nem saber que o curso existe.
+        abort_if(
+            $curso->fechado
+                && ! Gate::allows('curso.conteudo', $curso)
+                && ! $curso->matriculas()->where('user_id', $request->user()?->id)->exists(),
+            404,
+        );
 
         $curso->load(['area:id,nome', 'instrutor:id,name', 'modulos' => fn ($modulos) => $modulos->where('ativo', true), 'modulos.aulas' => fn ($aulas) => $aulas->where('ativa', true)]);
 
@@ -163,7 +175,8 @@ class CatalogoController extends Controller
         abort_if(! $trilha->ativa && ! Gate::allows('cursos.gerenciar'), 404);
 
         // Os cursos da trilha (menos os cancelados), já na ordem das etapas.
-        $cursos = $trilha->cursos()->where('situacao', '!=', SituacaoCurso::Cancelado->value)->get();
+        // Os FECHADOS também ficam de fora: a trilha é pública.
+        $cursos = $trilha->cursos()->where('situacao', '!=', SituacaoCurso::Cancelado->value)->noSite()->get();
 
         // Agrupa por etapa: [1 => [cursos], 2 => [cursos, cursos], ...].
         $etapas = $cursos->groupBy(fn (Curso $curso) => (int) $curso->getRelationValue('pivot')?->getAttribute('ordem'))
