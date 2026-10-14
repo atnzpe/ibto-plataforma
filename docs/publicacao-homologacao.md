@@ -99,6 +99,23 @@ No repositório `atnzpe/ibto-plataforma` → **Settings** → **Environments** �
 
 **Ponto seguro:** plataforma no ar.
 
+### Parte I — Envio de vídeos e apostilas das aulas (#39)
+
+As aulas aceitam **vídeo enviado** (até 200 MB) e **apostila em PDF** (até 10 MB). Por padrão o PHP da HostGator aceita envios bem menores, então é preciso aumentar o limite **uma vez**:
+
+- [ ] cPanel → **MultiPHP INI Editor** → aba "Editor Mode" → escolha o domínio `cursos-homolog.ib-to.org`.
+- [ ] Ajuste (ou acrescente) estas quatro linhas e clique em **Save**:
+
+```ini
+upload_max_filesize = 210M
+post_max_size = 220M
+max_execution_time = 300
+max_input_time = 300
+```
+
+- O `post_max_size` é maior que o `upload_max_filesize` porque o formulário leva o vídeo **e** os outros campos juntos.
+- **Recomendação:** use **link do YouTube** sempre que puder. O vídeo enviado gasta espaço e tráfego da hospedagem compartilhada e deixa o site lento se muitos alunos assistirem ao mesmo tempo. Ele serve para vídeos curtos.
+
 ## Conferir (critério de aceite da #35)
 
 1. `http://cursos-homolog.ib-to.org` redireciona para `https://` sem pedir senha.
@@ -108,21 +125,22 @@ No repositório `atnzpe/ibto-plataforma` → **Settings** → **Environments** �
 
 ## Problemas comuns
 
-| Sintoma                                                    | Causa provável                                                                                                                                                                                      |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Internal Server Error" logo depois da senha               | `AuthUserFile` do `public/.htaccess` não acha `/home1/edua1187/.htpasswds/homolog.ib-to.org/passwd`                                                                                                 |
-| Erro 500 sem senha nenhuma                                 | Falta o `.env` ou o `APP_KEY`                                                                                                                                                                       |
-| Página abre, situação mostra ❌ `SAUDE_BANCO_INDISPONIVEL` | Dados do banco errados no `.env`, ou o usuário não foi adicionado ao banco                                                                                                                          |
-| Mudança nova não aparece                                   | O Cron ainda não rodou (até 5 min) ou `POS_DEPLOY_FALHOU` no log do dia (`storage/logs/laravel-AAAA-MM-DD.log`)                                                                                     |
-| Editei o `.env` no servidor e nada mudou                   | A plataforma ainda lê a cópia antiga em `bootstrap/cache/config.php`: apague esse arquivo e a mudança vale imediatamente                                                                            |
-| E-mail não chega e não existe log do dia                   | `MAIL_MAILER=log` no `.env` (só anota, não envia): trocar para `smtp` e apagar `bootstrap/cache/config.php`                                                                                         |
-| E-mail não sai e o log mostra erro de autenticação         | Acesso por "outros aplicativos" desligado no Titan (Parte C) ou senha errada no `.env`                                                                                                              |
-| `storage/logs/vendor-AAAA-MM-DD.log` com `VENDOR_FALHOU`   | O `vendor.zip` não descompactou (zip incompleto ou falta de espaço). O vendor antigo continua funcionando e o Cron tenta de novo em 5 min; se repetir, rodar o deploy de novo                       |
-| `storage/logs/vendor-AAAA-MM-DD.log` com `VENDOR_SEM_ZIP`  | O PHP 8.3 do servidor está sem a extensão zip: cPanel → **Select PHP Version** → marcar `zip` (ou pedir ao suporte da HostGator)                                                                    |
-| E-mail de confirmação não chega                            | Fila parada (Cron) ou senha do e-mail errada no `.env`                                                                                                                                              |
-| E-mail sumiu depois de 3 tentativas                        | Falhou 3 vezes e foi para a tabela `failed_jobs` (cPanel → phpMyAdmin → coluna `exception` mostra o motivo). Corrigir a causa (senha, Titan) e pedir o reenvio pelo botão da tela                   |
-| Pessoa diz que "não deixa entrar" ou "não tem permissão"   | Ver `storage/logs/seguranca-AAAA-MM-DD.log`: `LOGIN_BLOQUEADO` (muitas tentativas; espere 1 minuto) ou `PERMISSAO_NEGADA` (falta o papel ou a permissão da tela; ajustar em Usuários ou Permissões) |
-| Tela mostra "Algo deu errado" com `ERRO_TELA`              | Erro na tela React: procurar `ERRO_TELA` no log do dia (`storage/logs/laravel-AAAA-MM-DD.log`), que traz a mensagem e a página                                                                      |
-| Lista de arquivos ou o código aparece no navegador         | Document Root sem o `/public` (Parte A) — corrigir antes de qualquer outra coisa                                                                                                                    |
+| Sintoma                                                     | Causa provável                                                                                                                                                                                      |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Internal Server Error" logo depois da senha                | `AuthUserFile` do `public/.htaccess` não acha `/home1/edua1187/.htpasswds/homolog.ib-to.org/passwd`                                                                                                 |
+| Erro 500 sem senha nenhuma                                  | Falta o `.env` ou o `APP_KEY`                                                                                                                                                                       |
+| Página abre, situação mostra ❌ `SAUDE_BANCO_INDISPONIVEL`  | Dados do banco errados no `.env`, ou o usuário não foi adicionado ao banco                                                                                                                          |
+| Mudança nova não aparece                                    | O Cron ainda não rodou (até 5 min) ou `POS_DEPLOY_FALHOU` no log do dia (`storage/logs/laravel-AAAA-MM-DD.log`)                                                                                     |
+| Editei o `.env` no servidor e nada mudou                    | A plataforma ainda lê a cópia antiga em `bootstrap/cache/config.php`: apague esse arquivo e a mudança vale imediatamente                                                                            |
+| E-mail não chega e não existe log do dia                    | `MAIL_MAILER=log` no `.env` (só anota, não envia): trocar para `smtp` e apagar `bootstrap/cache/config.php`                                                                                         |
+| E-mail não sai e o log mostra erro de autenticação          | Acesso por "outros aplicativos" desligado no Titan (Parte C) ou senha errada no `.env`                                                                                                              |
+| `storage/logs/vendor-AAAA-MM-DD.log` com `VENDOR_FALHOU`    | O `vendor.zip` não descompactou (zip incompleto ou falta de espaço). O vendor antigo continua funcionando e o Cron tenta de novo em 5 min; se repetir, rodar o deploy de novo                       |
+| `storage/logs/vendor-AAAA-MM-DD.log` com `VENDOR_SEM_ZIP`   | O PHP 8.3 do servidor está sem a extensão zip: cPanel → **Select PHP Version** → marcar `zip` (ou pedir ao suporte da HostGator)                                                                    |
+| E-mail de confirmação não chega                             | Fila parada (Cron) ou senha do e-mail errada no `.env`                                                                                                                                              |
+| E-mail sumiu depois de 3 tentativas                         | Falhou 3 vezes e foi para a tabela `failed_jobs` (cPanel → phpMyAdmin → coluna `exception` mostra o motivo). Corrigir a causa (senha, Titan) e pedir o reenvio pelo botão da tela                   |
+| Pessoa diz que "não deixa entrar" ou "não tem permissão"    | Ver `storage/logs/seguranca-AAAA-MM-DD.log`: `LOGIN_BLOQUEADO` (muitas tentativas; espere 1 minuto) ou `PERMISSAO_NEGADA` (falta o papel ou a permissão da tela; ajustar em Usuários ou Permissões) |
+| Tela mostra "Algo deu errado" com `ERRO_TELA`               | Erro na tela React: procurar `ERRO_TELA` no log do dia (`storage/logs/laravel-AAAA-MM-DD.log`), que traz a mensagem e a página                                                                      |
+| Vídeo ou apostila da aula não sobe ("arquivo muito grande") | Limite do PHP no cPanel menor que o arquivo: ver a Parte I (MultiPHP INI Editor)                                                                                                                    |
+| Lista de arquivos ou o código aparece no navegador          | Document Root sem o `/public` (Parte A) — corrigir antes de qualquer outra coisa                                                                                                                    |
 
 O deploy nunca envia nem apaga o `.env`, os logs ou o `storage/app/versao-aplicada`. O arquivo `.ftp-deploy-sync-state.json` (lista do que já foi enviado) fica na pasta do projeto, fora da parte pública.

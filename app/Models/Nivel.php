@@ -82,6 +82,23 @@ class Nivel extends Model
     }
 
     /**
+     * POSIÇÃO de cada nível na hierarquia (como a faixa no Dojo Manager), para
+     * a liberação do conteúdo dos cursos (#39): "o meu nível e o seguinte".
+     * Ex.: [id do Praticante => 1, Monitor I => 2, Monitor II => 3, Instrutor I => 4, ...]
+     *
+     * @return array<int, int> id do nível => posição (1 = o mais baixo).
+     */
+    public static function posicoes(): array
+    {
+        $posicoes = [];
+        foreach (self::emOrdem(self::all()) as $indice => $nivel) {
+            $posicoes[$nivel->id] = $indice + 1;
+        }
+
+        return $posicoes;
+    }
+
+    /**
      * Põe os níveis na ordem da hierarquia: categoria (Praticante → Instrutor
      * Expert) e, dentro dela, o grau (I → V). Ordem alfabética não serviria:
      * "Instrutor" viria antes de "Monitor".

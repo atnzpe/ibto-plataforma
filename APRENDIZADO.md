@@ -61,3 +61,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Dado FALTANDO é diferente de dado ERRADO: o que falta pode entrar e ser completado depois (selo "Incompleto"); o errado (CPF inválido, repetido) continua barrado, como no PDV, que vende sem o CPF na nota, mas não com um CPF inválido.
 - Para o banco aceitar "vazio", a coluna precisa ser `nullable` (aceita NULL); no MySQL, vários NULL numa coluna `unique` não contam como repetidos.
 - Uma regra de estilo única (`tabela-cartoes`) vale para todas as tabelas: abaixo de 1024 px cada linha vira um cartão, e o `data-rotulo` leva o nome da coluna para dentro do cartão.
+
+## 10/10/2026 — cursos: trilha, sala de aula, cronograma; contas e identidade visual
+
+- Desativar não é apagar: uma data (`desativada_em`) e um "porteiro" (middleware) que confere cada pedido bastam para trancar a conta sem perder o histórico.
+- O lembrete de agenda é um arquivo de texto (.ics) com regras próprias: horário em UTC, vírgula e ponto e vírgula com "\" na frente, linhas de até 75 bytes.
+- Cor de marca também é acessibilidade: o contraste entre texto e fundo se CALCULA (mínimo 4,5:1), não se escolhe no olho.

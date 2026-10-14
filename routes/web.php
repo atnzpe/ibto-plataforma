@@ -10,8 +10,15 @@ use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
+use App\Http\Controllers\CursoImagemController;
+use App\Http\Controllers\Cursos\AssistirController;
+use App\Http\Controllers\Cursos\AulaArquivoController;
+use App\Http\Controllers\Cursos\ConteudoController;
+use App\Http\Controllers\Cursos\CursoController;
+use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
@@ -120,6 +127,76 @@ Route::middleware(['auth', 'verified'])
 Route::get('comando-geral', ComandoGeralController::class)
     ->middleware(['auth', 'verified', 'can:comando_geral.ver'])
     ->name('comando-geral');
+
+// Cursos (#39 / #38 / #40): o Comando Geral (cursos.gerenciar) e quem PROPÕE
+// (cursos.propor: instrutor, admin de equipe) — "can:cursos.acessar" deixa os
+// dois entrarem; cada curso confere quem pode mexer nele (Gate curso.editar).
+// Sem "destroy": apagar = cancelar ou encerrar, pelo fluxo de chancela.
+Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
+        // Ações do fluxo de chancela: enviar, chancelar, rejeitar, cancelar, encerrar.
+        Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
+
+        // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
+        Route::controller(ConteudoController::class)->group(function () {
+            Route::get('cursos/{curso}/conteudo', 'show')->name('cursos.conteudo');
+            Route::post('cursos/{curso}/modulos', 'storeModulo')->name('modulos.store');
+            Route::put('modulos/{modulo}', 'updateModulo')->name('modulos.update');
+            Route::post('modulos/{modulo}/mover', 'moverModulo')->name('modulos.mover');
+            Route::post('modulos/{modulo}/aulas', 'storeAula')->name('aulas.store');
+            Route::put('aulas/{aula}', 'updateAula')->name('aulas.update');
+            Route::post('aulas/{aula}/mover', 'moverAula')->name('aulas.mover');
+        });
+    });
+
+// Trilhas (#39): só o Comando Geral monta (cursos.gerenciar).
+Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
+    });
+
+// Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver
+// é conferido pelo Gate "curso.conteudo" (sem acesso: 403, mesmo com o link).
+Route::middleware(['auth', 'verified'])
+    ->prefix('cursos/aulas/{aula}')
+    ->name('cursos.aulas.')
+    ->controller(AulaArquivoController::class)
+    ->group(function () {
+        Route::get('apostila', 'apostila')->name('apostila');
+        Route::get('video', 'video')->name('video');
+    });
+
+// Sala de aula (#39, bloco C4c): as aulas em sequência (Anterior / Próxima).
+// Com login; quem pode ver é conferido pelo Gate "curso.conteudo" no controlador.
+// whereNumber: só números, para não confundir com /cursos/aulas/... acima.
+Route::middleware(['auth', 'verified'])
+    ->get('cursos/{curso}/assistir/{aula}', [AssistirController::class, 'show'])
+    ->whereNumber(['curso', 'aula'])
+    ->name('cursos.assistir');
+
+// CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
+// cursos publicados. Limite de 60 pedidos por minuto por IP.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('cursos', [CatalogoController::class, 'index'])->name('catalogo.index');
+    // whereNumber: só números no {curso} (não confunde com /cursos/aulas/...).
+    Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
+    // Trilha em fluxograma (#38, bloco C4b).
+    Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
+    Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
+        ->whereNumber(['curso', 'aula'])
+        ->name('catalogo.lembrete');
+});
+
+// Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.
+Route::get('imagens/cursos/{curso}', CursoImagemController::class)
+    ->middleware('throttle:120,1')
+    ->name('cursos.imagem');
 
 // Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
 // "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.

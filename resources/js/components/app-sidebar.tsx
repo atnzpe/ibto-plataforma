@@ -4,6 +4,7 @@ import {
     ContactRound,
     FolderGit2,
     Gauge,
+    GraduationCap,
     KeyRound,
     LayoutGrid,
     Medal,
@@ -35,6 +36,8 @@ import { index as niveis } from '@/routes/cadastros/niveis';
 import { index as equipes } from '@/routes/cadastros/equipes';
 // Lista de filiados (#37), para o item do menu.
 import { index as filiados } from '@/routes/cadastros/filiados';
+// Cursos e trilhas do Comando Geral (#39), para o item do menu.
+import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
 // Livro-caixa (#59), para o item do menu.
 import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
@@ -77,6 +80,13 @@ const cadastrosNavItems: (NavItem & {
         href: comandoGeral(),
         icon: Gauge,
         permissao: 'comando_geral_ver',
+    },
+    // Cursos (#39 / #40): Comando Geral e quem propõe (instrutor, admin de equipe).
+    {
+        title: 'Cursos',
+        href: cursosAdmin(),
+        icon: GraduationCap,
+        permissao: 'cursos_acessar',
     },
     {
         title: 'Áreas de atuação',
