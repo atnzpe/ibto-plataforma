@@ -221,7 +221,10 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
         )}
       />
+      {/* data-slot e data-lado: o app.css usa para dar a margem de segurança (SafeArea) a este menu fixo. */}
       <div
+        data-slot="sidebar-container"
+        data-lado={side}
         className={cn(
           "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
           side === "left"

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PermissaoController;
+use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
@@ -177,6 +178,18 @@ Route::middleware(['auth', 'verified', 'can:usuarios.gerenciar'])
         Route::resource('usuarios', UsuarioController::class)
             ->only(['index', 'edit', 'update'])
             ->parameters(['usuarios' => 'usuario']);
+
+        // Ações na conta (#36, 10/10/2026): desativar/reativar (soft delete),
+        // link de nova senha e convite. POST: mudam algo, então não vão por link comum.
+        Route::controller(UsuarioAcaoController::class)
+            ->prefix('usuarios/{usuario}')
+            ->name('usuarios.')
+            ->group(function () {
+                Route::post('desativar', 'desativar')->name('desativar');
+                Route::post('reativar', 'reativar')->name('reativar');
+                Route::post('nova-senha', 'novaSenha')->name('nova-senha');
+                Route::post('convite', 'convite')->name('convite');
+            });
     });
 
 require __DIR__.'/settings.php';
