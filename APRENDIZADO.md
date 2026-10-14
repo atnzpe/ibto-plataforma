@@ -61,3 +61,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Desativar não é apagar: uma data (`desativada_em`) e um "porteiro" (middleware) que confere cada pedido bastam para trancar a conta sem perder o histórico.
 - O lembrete de agenda é um arquivo de texto (.ics) com regras próprias: horário em UTC, vírgula e ponto e vírgula com "\" na frente, linhas de até 75 bytes.
 - Cor de marca também é acessibilidade: o contraste entre texto e fundo se CALCULA (mínimo 4,5:1), não se escolhe no olho.
+
+## 14/10/2026 — #44 chamada, certificado e QR code
+
+- O certificado guarda uma "foto" do dia da emissão (nome, curso, carga horária): se o curso mudar depois, o certificado já entregue não muda. A validação pública mostra só o nome abreviado (LGPD).
+- QR code em SVG é um desenho feito de texto, gerado no nosso servidor: fica nítido impresso e o endereço do certificado não passa por site de terceiros.
+- No PHP, o sinal que fecha o código (`?` seguido de `>`) encerra o PHP até dentro de um comentário `//`: o arquivo inteiro quebra com "Unclosed '{'".

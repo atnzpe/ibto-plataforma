@@ -4,8 +4,9 @@
  * CERTIFICADOS (#44):
  * - emitir / emitirAptos / cancelar: no Comando Geral, só o IBTO
  *   (Gate "certificados.emitir"); regras em App\Actions\Cursos\Certificados;
- * - ver: a página do certificado para imprimir ("Salvar como PDF"), para o
- *   dono do certificado ou quem vê os inscritos do curso;
+ * - ver: a página do certificado para imprimir ("Salvar como PDF"), com o
+ *   QR code que leva à validação (App\Support\QrCode), para o dono do
+ *   certificado ou quem vê os inscritos do curso;
  * - validar: PÚBLICA, pelo código; mostra só o necessário (curso, datas,
  *   carga horária e o NOME ABREVIADO). Código inventado: "não encontrado".
  *   Certificado cancelado: "cancelado" (deixa de validar).
@@ -18,6 +19,7 @@ use App\Exceptions\RegraCurso;
 use App\Models\Curso;
 use App\Models\CursoCertificado;
 use App\Models\CursoMatricula;
+use App\Support\QrCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -115,6 +117,9 @@ class CertificadoController extends Controller
             403,
         );
 
+        // O endereço da validação pública: vai impresso e dentro do QR code.
+        $validarUrl = route('certificados.validar', $certificado->codigo);
+
         return Inertia::render('certificados/ver', [
             'certificado' => [
                 'codigo' => $certificado->codigo,
@@ -125,8 +130,10 @@ class CertificadoController extends Controller
                 'concluido_em' => $certificado->concluido_em->toDateString(),
                 'emitido_em' => $certificado->emitido_em->toDateString(),
                 'valido' => $certificado->valido(),
-                // O endereço da validação pública (vai impresso no certificado).
-                'validar_url' => route('certificados.validar', $certificado->codigo),
+                'validar_url' => $validarUrl,
+                // O QR code (desenho SVG) que leva à validação: quem recebe o
+                // certificado aponta a câmera do celular e confere na hora.
+                'qr_svg' => QrCode::svg($validarUrl),
             ],
         ]);
     }

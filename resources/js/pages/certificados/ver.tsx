@@ -1,7 +1,7 @@
 /**
  * CERTIFICADO para imprimir / salvar em PDF (#44): nome, curso, carga
  * horária, data de conclusão, instrutor e o CÓDIGO único com o endereço da
- * validação pública. Página "limpa" (sem menu), em A4 deitado. O botão
+ * validação pública e o QR code que leva até ela. Página "limpa" (sem menu), em A4 deitado. O botão
  * "Imprimir / Salvar em PDF" abre a impressão do navegador (lá se escolhe
  * "Salvar como PDF") e não sai no papel.
  * Visual: as cores do IBTO; quando houver um modelo oficial (ex.: Canva), o
@@ -27,6 +27,8 @@ export default function VerCertificado({
         emitido_em: string;
         valido: boolean;
         validar_url: string;
+        // O desenho do QR code (texto SVG) que leva a validar_url.
+        qr_svg: string;
     };
 }) {
     return (
@@ -101,19 +103,39 @@ export default function VerCertificado({
                             </span>
                             <span className="text-[#5c5644]">Instrutor</span>
                         </div>
-                        <div className="flex flex-col items-center gap-1">
-                            <span className="font-mono text-[1.2em] font-semibold">
-                                {certificado.codigo}
-                            </span>
-                            <span className="text-[#5c5644]">
-                                Confira se este certificado é verdadeiro em:
-                            </span>
-                            <span className="font-mono [overflow-wrap:anywhere]">
-                                {certificado.validar_url}
-                            </span>
-                            <span className="text-[#5c5644]">
-                                Emitido em {dataBr(certificado.emitido_em)}
-                            </span>
+                        {/* Validação: o QR code à esquerda e o código com o endereço à direita. */}
+                        <div className="flex items-center justify-center gap-[4%]">
+                            {/*
+                             * O QR code (SVG gerado no NOSSO servidor, em
+                             * App\Support\QrCode, a partir do nosso próprio
+                             * endereço; por isso é seguro colocá-lo direto na
+                             * página com dangerouslySetInnerHTML). O tamanho
+                             * acompanha a folha (22% da largura desta coluna), e
+                             * o "[&>svg]" faz o desenho ocupar a caixa toda.
+                             */}
+                            <div
+                                className="aspect-square w-[22%] shrink-0 [&>svg]:h-full [&>svg]:w-full"
+                                role="img"
+                                aria-label={`QR code para validar o certificado ${certificado.codigo}`}
+                                dangerouslySetInnerHTML={{
+                                    __html: certificado.qr_svg,
+                                }}
+                            />
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="font-mono text-[1.2em] font-semibold">
+                                    {certificado.codigo}
+                                </span>
+                                <span className="text-[#5c5644]">
+                                    Aponte a câmera para o QR code ou confira
+                                    em:
+                                </span>
+                                <span className="font-mono [overflow-wrap:anywhere]">
+                                    {certificado.validar_url}
+                                </span>
+                                <span className="text-[#5c5644]">
+                                    Emitido em {dataBr(certificado.emitido_em)}
+                                </span>
+                            </div>
                         </div>
                     </footer>
                 </article>
