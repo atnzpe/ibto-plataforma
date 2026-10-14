@@ -8,10 +8,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    /* Fontes do site do IBTO: Poppins no texto; Audiowide na marca e nos destaques (classe font-display). */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Audiowide', ui-sans-serif, system-ui, sans-serif;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -61,75 +62,91 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * CORES DO IBTO (pedido do Gleyson, 10/10/2026: "cores e logo"). A mesma
+ * paleta do site público (landpage/src/index.css), tirada do emblema: preto
+ * + metal bronze/cáqui gravado.
+ * - bronze #6b5d3a: botões e destaques no fundo CLARO (texto branco em cima
+ *   dá 6,4:1 de contraste; o mínimo da acessibilidade, WCAG AA, é 4,5:1);
+ * - cáqui #c9bd94: destaques no fundo ESCURO (≈ 9:1 sobre o preto);
+ * - areia #f4f1e8: fundos suaves no claro;
+ * - o MENU LATERAL é sempre escuro, como o cabeçalho do site, e o logo
+ *   fica sobre ele.
+ * O vermelho de "perigo" (destructive) e as cores dos gráficos continuam.
+ */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --background: #faf8f3;
+    --foreground: #1c1b17;
+    --card: #ffffff;
+    --card-foreground: #1c1b17;
+    --popover: #ffffff;
+    --popover-foreground: #1c1b17;
+    --primary: #6b5d3a;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f1e8;
+    --secondary-foreground: #3f3a2c;
+    --muted: #f4f1e8;
+    /* Texto secundário: 6,9:1 sobre o branco. */
+    --muted-foreground: #5c5545;
+    --accent: #efe8d6;
+    --accent-foreground: #3f3a2c;
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --border: #e4dccb;
+    --input: #d6ccb4;
+    --ring: #6b5d3a;
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    /* Menu lateral escuro (igual nos dois modos). */
+    --sidebar: #12110e;
+    --sidebar-foreground: #e9e2cc;
+    --sidebar-primary: #c9bd94;
+    --sidebar-primary-foreground: #12110e;
+    --sidebar-accent: #2a2721;
+    --sidebar-accent-foreground: #f4f1e8;
+    --sidebar-border: #2a2721;
+    --sidebar-ring: #c9bd94;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: #0f0e0b;
+    --foreground: #f4f1e8;
+    --card: #171612;
+    --card-foreground: #f4f1e8;
+    --popover: #171612;
+    --popover-foreground: #f4f1e8;
+    /* No escuro, o destaque é o cáqui claro, com texto escuro em cima (≈ 9:1). */
+    --primary: #c9bd94;
+    --primary-foreground: #1c1b17;
+    --secondary: #2a2721;
+    --secondary-foreground: #f4f1e8;
+    --muted: #2a2721;
+    /* Texto secundário: ≈ 8:1 sobre o fundo. */
+    --muted-foreground: #b3a98a;
+    --accent: #2a2721;
+    --accent-foreground: #f4f1e8;
     --destructive: oklch(0.396 0.141 25.723);
     --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
+    --border: #3a362c;
+    --input: #3a362c;
+    --ring: #c9bd94;
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar: #0a0a0a;
+    --sidebar-foreground: #e9e2cc;
+    --sidebar-primary: #c9bd94;
+    --sidebar-primary-foreground: #0a0a0a;
+    --sidebar-accent: #2a2721;
+    --sidebar-accent-foreground: #f4f1e8;
+    --sidebar-border: #2a2721;
+    --sidebar-ring: #c9bd94;
 }
 
 @layer base {

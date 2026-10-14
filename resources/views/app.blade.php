@@ -29,16 +29,17 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: #faf8f3; {{-- mesmo fundo do modo claro (app.css) --}}
             }
 
             html.dark {
-                background-color: oklch(0.145 0 0);
+                background-color: #0f0e0b; {{-- mesmo fundo do modo escuro (app.css) --}}
             }
         </style>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        {{-- Cor da barra do navegador no celular: o preto da marca IBTO (igual ao site). --}}
+        <meta name="theme-color" content="#0a0a0a">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
