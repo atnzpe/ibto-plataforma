@@ -1,5 +1,9 @@
+/*
+ * Moldura das telas de ENTRAR, CADASTRAR, ESQUECI A SENHA etc. Com as cores e
+ * o logo do IBTO (pedido do Gleyson, 10/10/2026): o logo largo do site no
+ * topo, sobre a faixa escura, e o título da tela embaixo.
+ */
 import { Link } from '@inertiajs/react';
-import AppLogoIcon from '@/components/app-logo-icon';
 // Menu de idiomas (#53), no modo "dica do tradutor do navegador".
 import MenuIdiomas from '@/components/menu-idiomas';
 import { home } from '@/routes';
@@ -21,14 +25,16 @@ export default function AuthSimpleLayout({
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
+                        {/* Logo largo do IBTO (o mesmo do site), sobre a faixa escura da marca. */}
                         <Link
                             href={home()}
-                            className="flex flex-col items-center gap-2 font-medium"
+                            className="flex w-full justify-center rounded-xl bg-[#0a0a0a] px-4 py-3"
                         >
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
+                            <img
+                                src="/images/ibto-logo.webp"
+                                alt="IBTO — Instituto Brasileiro de Treinamento Operacional (página inicial)"
+                                className="h-16 w-auto max-w-full object-contain"
+                            />
                         </Link>
 
                         <div className="space-y-2 text-center">

@@ -236,8 +236,8 @@ export default function Historico({
                     .
                 </p>
 
-                {/* TABELA: só em tela larga. */}
-                <div className="hidden overflow-x-auto rounded-md border border-border md:block">
+                {/* TABELA: só em tela larga (lg = a partir de 1024 px). */}
+                <div className="hidden overflow-x-auto rounded-md border border-border lg:block">
                     <table className="w-full text-left text-sm">
                         <caption className="sr-only">
                             Histórico do financeiro
@@ -311,10 +311,10 @@ export default function Historico({
                     </table>
                 </div>
 
-                {/* CARTÕES: só no celular. */}
+                {/* CARTÕES: abaixo de 1024 px (celular, tablet, notebook com o menu aberto). */}
                 <ul
                     aria-label="Histórico do financeiro"
-                    className="flex flex-col gap-3 md:hidden"
+                    className="flex flex-col gap-3 lg:hidden"
                 >
                     {linhas.length === 0 && (
                         <li className="rounded-md border border-border px-4 py-6 text-center text-sm text-muted-foreground">

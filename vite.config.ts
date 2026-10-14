@@ -12,9 +12,15 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            // Fontes do site do IBTO (identidade visual, 10/10/2026), baixadas no build
+            // e servidas pela própria plataforma (sem pedido a servidor de fora).
+            // Poppins: o texto. Audiowide: a marca "IBTO" e os títulos de destaque.
             fonts: [
-                bunny('Instrument Sans', {
+                bunny('Poppins', {
                     weights: [400, 500, 600],
+                }),
+                bunny('Audiowide', {
+                    weights: [400],
                 }),
             ],
         }),

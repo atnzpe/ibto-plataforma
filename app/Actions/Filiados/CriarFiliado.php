@@ -26,7 +26,7 @@ class CriarFiliado
      * $dados = os campos do formulário ou de uma linha da planilha.
      * Ex.: ['nome' => 'Fulano', 'email' => 'fulano@exemplo.com', 'cpf' => '529.982.247-25', ...]
      *
-     * @param  array{nome: string, email: string, cpf: string, nascimento: string, telefone?: string|null, municipio: string, uf: string, equipe_id?: int|null, categoria?: string|null, nivel_id?: int|null, abrangencia?: string|null, documentacao_emitida?: bool, areas?: list<int>, registro?: string|null}  $dados
+     * @param  array{nome: string, email: string|null, cpf: string|null, nascimento: string|null, telefone?: string|null, municipio: string|null, uf: string, equipe_id?: int|null, categoria?: string|null, nivel_id?: int|null, abrangencia?: string|null, documentacao_emitida?: bool, areas?: list<int>, registro?: string|null}  $dados
      * @return Filiado O filiado criado, já com a conta (usuario) ligada.
      */
     public function executar(array $dados): Filiado
@@ -36,7 +36,8 @@ class CriarFiliado
             // A conta do app: senha aleatória e longa, que ninguém conhece (o convite cria a de verdade).
             $usuario = User::create([
                 'name' => $dados['nome'],
-                'email' => strtolower($dados['email']),
+                // Importado sem e-mail ("importar mesmo assim"): a conta fica sem e-mail (null).
+                'email' => $dados['email'] !== null ? strtolower($dados['email']) : null,
                 'password' => Str::password(32),
             ]);
 
@@ -69,7 +70,10 @@ class CriarFiliado
 
             // Convite por e-mail para a pessoa criar a própria senha (F3). Vai pela
             // fila e só sai depois que tudo acima foi gravado de vez.
-            $usuario->notify(new ConviteFiliado);
+            // Sem e-mail não há para onde mandar: o convite sai quando o e-mail for completado na edição.
+            if ($usuario->email !== null) {
+                $usuario->notify(new ConviteFiliado);
+            }
 
             return $filiado;
         });

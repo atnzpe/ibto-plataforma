@@ -239,9 +239,9 @@ export default function LancamentosIndex({
                     </div>
                 </div>
 
-                {/* TABELA: só em tela larga (md = a partir de 768 px). No celular
+                {/* TABELA: só em tela larga (lg = a partir de 1024 px). No celular
                     ela some e entram os cartões abaixo, sem rolagem lateral. */}
-                <div className="hidden overflow-x-auto rounded-md border border-border md:block">
+                <div className="hidden overflow-x-auto rounded-md border border-border lg:block">
                     <table className="w-full text-left text-sm">
                         <caption className="sr-only">
                             Lançamentos do filtro escolhido
@@ -350,7 +350,7 @@ export default function LancamentosIndex({
                     cartão, tudo na largura da tela, sem rolagem lateral. */}
                 <ul
                     aria-label="Lançamentos do filtro escolhido"
-                    className="flex flex-col gap-3 md:hidden"
+                    className="flex flex-col gap-3 lg:hidden"
                 >
                     {lancamentos.length === 0 && (
                         <li className="rounded-md border border-border px-4 py-6 text-center text-sm text-muted-foreground">

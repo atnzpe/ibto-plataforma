@@ -70,8 +70,9 @@ export default function ImportarValores({
                 >
                     {({ processing }) => (
                         <>
-                            <div className="overflow-x-auto rounded-md border border-border">
-                                <table className="w-full text-left text-sm">
+                            {/* Tabela na tela larga; cartões empilhados abaixo de 1024 px (classe tabela-cartoes, app.css). */}
+                            <div className="caixa-tabela-cartoes overflow-x-auto rounded-md border border-border">
+                                <table className="tabela-cartoes w-full text-left text-sm">
                                     <caption className="sr-only">
                                         Valores da planilha e o item do cadastro
                                     </caption>
@@ -103,7 +104,10 @@ export default function ImportarValores({
                                                 key={`${valor.campo}-${posicao}`}
                                                 className="border-t border-border"
                                             >
-                                                <td className="px-4 py-2 text-muted-foreground">
+                                                <td
+                                                    data-rotulo="Campo"
+                                                    className="px-4 py-2 text-muted-foreground"
+                                                >
                                                     {/* Só a primeira palavra do nome do campo (ex.: "Nível"). */}
                                                     {
                                                         campos[
@@ -121,7 +125,10 @@ export default function ImportarValores({
                                                         {valor.valor}
                                                     </label>
                                                 </th>
-                                                <td className="px-4 py-2">
+                                                <td
+                                                    data-rotulo="Vai virar"
+                                                    className="px-4 py-2"
+                                                >
                                                     {/* name="escolhas[posição]": o servidor junta pela ordem da lista. */}
                                                     <select
                                                         id={`escolha-${posicao}`}
