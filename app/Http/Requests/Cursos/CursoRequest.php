@@ -42,6 +42,9 @@ class CursoRequest extends FormRequest
             'acesso' => ['required', Rule::enum(AcessoCurso::class)],
             // Texto do valor; vazio = gratuito. A conversão fica no after() e no paraGravar().
             'valor' => ['nullable', 'string', 'max:20'],
+            // Parte do IBTO, em % (só o IBTO vê o campo; o controlador ignora para os outros).
+            // Vazio = fica como está (ou 20 no curso novo). Ex.: 20; a Formação de instrutor, 100.
+            'percentual_ibto' => ['nullable', 'integer', 'min:0', 'max:100'],
             'vagas' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'data_inicio' => ['nullable', 'date_format:Y-m-d'],
             // O fim não pode ser antes do início.
@@ -124,7 +127,8 @@ class CursoRequest extends FormRequest
     public function paraGravar(): array
     {
         return [
-            ...$this->safe()->except(['valor', 'imagem']),
+            // "percentual_ibto" fica de fora: só o IBTO grava (no CursoController).
+            ...$this->safe()->except(['valor', 'imagem', 'percentual_ibto']),
             'valor_centavos' => (int) $this->centavos(),
         ];
     }

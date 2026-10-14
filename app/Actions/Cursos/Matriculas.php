@@ -10,7 +10,11 @@
  *   não vendem a última unidade do estoque duas vezes;
  * - confirmarPagamento(): a baixa MANUAL do PIX (molde da anuidade): lança a
  *   receita "Inscrição em curso" no livro-caixa, já paga, e guarda a
- *   referência na matrícula. Não confirma duas vezes;
+ *   referência na matrícula. Não confirma duas vezes. E a DIVISÃO (decisão
+ *   de 14/10/2026): a parte do instrutor (100% − o percentual do IBTO
+ *   escolhido no curso) vira uma CONTA A PAGAR "Instrutores", pendente, que
+ *   o IBTO baixa no livro-caixa quando fizer o repasse. Curso com 100% do
+ *   IBTO (Formação de instrutor) não gera conta a pagar;
  * - cancelar(): SEM apagar; a vaga volta e o histórico fica.
  * Tudo com auditoria, só com números (LGPD).
  */
@@ -119,7 +123,7 @@ class Matriculas
      * @param  int  $formaPagamentoId  Como pagou. Ex.: o id do 'PIX'.
      * @return CursoMatricula A matrícula confirmada.
      *
-     * @throws RegraCurso Se já foi confirmada ou cancelada, ou falta a categoria.
+     * @throws RegraCurso Se já foi confirmada ou cancelada, ou falta uma categoria.
      */
     public function confirmarPagamento(CursoMatricula $matricula, string $pagoEm, int $formaPagamentoId): CursoMatricula
     {
@@ -128,8 +132,13 @@ class Matriculas
         if ($categoriaId === null) {
             throw new RegraCurso('CATEGORIA_INSCRICAO_AUSENTE', 'A categoria "Inscrição em curso" não existe no financeiro.');
         }
+        // A categoria "Instrutores" (despesa), onde entra o repasse ao instrutor.
+        $categoriaRepasseId = FinCategoria::where('nome', 'Instrutores')->where('tipo', 'despesa')->value('id');
+        if ($categoriaRepasseId === null) {
+            throw new RegraCurso('CATEGORIA_INSTRUTORES_AUSENTE', 'A categoria "Instrutores" não existe no financeiro.');
+        }
 
-        $confirmada = DB::transaction(function () use ($matricula, $pagoEm, $formaPagamentoId, $categoriaId): CursoMatricula {
+        $confirmada = DB::transaction(function () use ($matricula, $pagoEm, $formaPagamentoId, $categoriaId, $categoriaRepasseId): CursoMatricula {
             // Tranca a matrícula: dois cliques em "Confirmar" ao mesmo tempo não lançam duas receitas.
             $matricula = CursoMatricula::query()->lockForUpdate()->findOrFail($matricula->id);
 
@@ -153,6 +162,29 @@ class Matriculas
             // 2) A baixa: o dinheiro entrou.
             $this->caixa->pagar($receita, $pagoEm, $formaPagamentoId);
 
+            // 2b) A DIVISÃO pelo percentual do curso. Ex.: R$ 250,00 com 20% →
+            // IBTO R$ 50,00 e instrutor R$ 200,00.
+            $curso = $matricula->curso;
+            $divisao = $curso->divisao($matricula->valor_centavos);
+            // A parte do instrutor vira uma conta A PAGAR, pendente (o IBTO dá a
+            // baixa quando repassar). Parte zero (100% do IBTO): não lança nada.
+            $repasse = null;
+            if ($divisao['instrutor'] > 0) {
+                $repasse = $this->caixa->lancar([
+                    'tipo' => 'despesa',
+                    'categoria_id' => (int) $categoriaRepasseId,
+                    // Sem o nome do aluno (LGPD); o instrutor é o da vitrine do curso
+                    // (sem instrutor escolhido ainda: "a definir").
+                    'descricao' => 'Repasse ao instrutor ('.($curso->instrutorExibido() ?? 'a definir').") — {$curso->titulo} — matrícula nº {$matricula->id}",
+                    'valor_centavos' => $divisao['instrutor'],
+                    // Vence no dia do pagamento: aparece logo como "a pagar" no livro-caixa.
+                    'vencimento' => $pagoEm,
+                    'equipe_id' => $curso->equipe_id,
+                    'origem' => 'repasse',
+                    'origem_id' => $matricula->id,
+                ]);
+            }
+
             // 3) A matrícula guarda a referência do pagamento e quem confirmou.
             $matricula->forceFill([
                 'situacao' => SituacaoMatricula::Confirmada,
@@ -166,6 +198,10 @@ class Matriculas
                 'curso_id' => $matricula->curso_id,
                 'lancamento_id' => $receita->id,
                 'valor_centavos' => $matricula->valor_centavos,
+                // A divisão do dia (o percentual do curso pode mudar depois; o lançamento fica).
+                'percentual_ibto' => $curso->percentual_ibto,
+                'repasse_lancamento_id' => $repasse?->id,
+                'repasse_centavos' => $divisao['instrutor'],
             ]);
 
             return $matricula;

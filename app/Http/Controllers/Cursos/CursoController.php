@@ -104,12 +104,12 @@ class CursoController extends Controller
     /**
      * Formulário vazio.
      *
-     * @param  Request  $request  Quem está cadastrando (decide se aparece "Curso fechado").
+     * @param  Request  $request  Quem está cadastrando (decide se aparecem os campos só do IBTO).
      * @return Response A tela "cursos/formulario".
      */
     public function create(Request $request): Response
     {
-        return Inertia::render('cursos/formulario', ['curso' => null, 'pode_fechar' => $this->podeFechar($request->user()), ...$this->opcoesDoFormulario()]);
+        return Inertia::render('cursos/formulario', ['curso' => null, 'campos_ibto' => $this->camposDoIbto($request->user()), ...$this->opcoesDoFormulario()]);
     }
 
     /**
@@ -130,7 +130,11 @@ class CursoController extends Controller
                 // Curso de equipe: a equipe de quem propôs (vazio para o IBTO).
                 'equipe_id' => $request->user()?->can('cursos.gerenciar') ? null : $request->user()?->filiado?->equipe_id,
                 // Curso FECHADO (fora do site): só o IBTO marca; para os outros, nasce aberto.
-                'fechado' => $this->podeFechar($request->user()) && $request->boolean('fechado'),
+                'fechado' => $this->camposDoIbto($request->user()) && $request->boolean('fechado'),
+                // Parte do IBTO: o que o IBTO escolheu; para os outros (ou vazio), o padrão de 20%.
+                'percentual_ibto' => $this->camposDoIbto($request->user()) && $request->filled('percentual_ibto')
+                    ? $request->integer('percentual_ibto')
+                    : Curso::PERCENTUAL_IBTO_PADRAO,
             ])->save();
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_CRIADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
@@ -164,6 +168,8 @@ class CursoController extends Controller
                 'acesso' => $curso->acesso->value,
                 // true = curso FECHADO (fora do site; só o IBTO matricula).
                 'fechado' => $curso->fechado,
+                // Parte do IBTO em %. Ex.: 20 (o instrutor fica com 80).
+                'percentual_ibto' => $curso->percentual_ibto,
                 // Valor no formato do campo; gratuito = vazio. Ex.: 9000 → '90,00'.
                 'valor' => $curso->gratuito() ? '' : Dinheiro::paraCampo($curso->valor_centavos),
                 'vagas' => $curso->vagas,
@@ -202,8 +208,8 @@ class CursoController extends Controller
                 // A chave liga/desliga: desligada = estes dados ficam guardados, mas não valem.
                 'por_curso_ligado' => PagamentoConfig::atual()->por_curso,
             ] : null,
-            // Mostra a caixa "Curso fechado"? Só para o IBTO (quem gerencia ou chancela).
-            'pode_fechar' => $this->podeFechar($request->user()),
+            // Mostra os campos só do IBTO ("Curso fechado" e "Parte do IBTO")? Só para quem gerencia ou chancela.
+            'campos_ibto' => $this->camposDoIbto($request->user()),
             ...$this->opcoesDoFormulario(),
         ]);
     }
@@ -220,9 +226,13 @@ class CursoController extends Controller
 
         DB::transaction(function () use ($request, $curso): void {
             $curso->update($request->paraGravar());
-            // "Fechado" só muda pelas mãos do IBTO; se outra pessoa salvar, fica como estava.
-            if ($this->podeFechar($request->user())) {
-                $curso->forceFill(['fechado' => $request->boolean('fechado')])->save();
+            // "Fechado" e "Parte do IBTO" só mudam pelas mãos do IBTO; se outra pessoa
+            // salvar, ficam como estavam. Percentual vazio = continua o que já estava.
+            if ($this->camposDoIbto($request->user())) {
+                $curso->forceFill([
+                    'fechado' => $request->boolean('fechado'),
+                    'percentual_ibto' => $request->filled('percentual_ibto') ? $request->integer('percentual_ibto') : $curso->percentual_ibto,
+                ])->save();
             }
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_EDITADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
@@ -268,14 +278,15 @@ class CursoController extends Controller
     }
 
     /**
-     * Pode marcar o curso como FECHADO (fora do site)? Só o IBTO: quem
-     * gerencia cursos (Comando Geral) ou quem chancela. Instrutor e admin de
-     * equipe, não (decisão de 14/10/2026: a Formação de instrutor é do IBTO).
+     * Pode mexer nos campos SÓ DO IBTO ("Curso fechado" e "Parte do IBTO")?
+     * Só quem gerencia cursos (Comando Geral) ou quem chancela. Instrutor e
+     * admin de equipe, não (decisões de 14/10/2026: a Formação de instrutor é do
+     * IBTO, e é o IBTO quem escolhe o percentual de cada curso).
      *
      * @param  User|null  $usuario  Quem está usando a tela. Ex.: a conta do Eduardo.
-     * @return bool true = pode ligar/desligar "Curso fechado".
+     * @return bool true = vê e grava esses campos.
      */
-    private function podeFechar(?User $usuario): bool
+    private function camposDoIbto(?User $usuario): bool
     {
         return $usuario !== null && ($usuario->can('cursos.gerenciar') || $usuario->can('cursos.chancelar'));
     }

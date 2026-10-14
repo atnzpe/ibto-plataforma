@@ -33,6 +33,8 @@ type CursoEdicao = {
     acesso: string;
     // true = curso FECHADO: fora do site; só o IBTO matricula (ex.: Formação de instrutor).
     fechado: boolean;
+    // Parte do IBTO em %, de 0 a 100. Ex.: 20 (o instrutor fica com 80).
+    percentual_ibto: number;
     valor: string;
     vagas: number | null;
     data_inicio: string | null;
@@ -62,7 +64,7 @@ const classeSelect =
  * @param modalidades Presencial e online.
  * @param acessos Aberto ao público e só filiados.
  * @param pagamento_curso Dados para pagamento próprios do curso (só para quem tem "pagamentos.configurar"; null ou ausente = sem painel).
- * @param pode_fechar true = mostra a caixa "Curso fechado" (só o IBTO); false ou ausente = a caixa nem aparece.
+ * @param campos_ibto true = mostra os campos só do IBTO ("Curso fechado" e "Parte do IBTO"); false ou ausente = nem aparecem.
  * @returns A tela do formulário.
  */
 export default function CursoFormulario({
@@ -72,7 +74,7 @@ export default function CursoFormulario({
     modalidades,
     acessos,
     pagamento_curso = null,
-    pode_fechar = false,
+    campos_ibto = false,
 }: {
     curso: CursoEdicao | null;
     areas: { id: number; nome: string }[];
@@ -80,7 +82,7 @@ export default function CursoFormulario({
     modalidades: Opcao[];
     acessos: Opcao[];
     pagamento_curso?: PagamentoDoCurso | null;
-    pode_fechar?: boolean;
+    campos_ibto?: boolean;
 }) {
     const editando = curso !== null;
     const titulo = editando ? `Editar "${curso.titulo}"` : 'Novo curso';
@@ -374,9 +376,41 @@ export default function CursoFormulario({
                                             />
                                         </div>
                                     </div>
-                                    {/* CURSO FECHADO (só o IBTO vê esta caixa; o servidor confere de novo).
-                                        Sem a permissão, a caixa não aparece e o curso fica como está. */}
-                                    {pode_fechar && (
+                                    {/* CAMPOS SÓ DO IBTO: "Parte do IBTO" e "Curso fechado" (o servidor
+                                        confere de novo). Sem a permissão, nem aparecem e o curso fica como está. */}
+                                    {campos_ibto && (
+                                        <div className="grid gap-2 sm:max-w-xs">
+                                            <Label htmlFor="percentual_ibto">
+                                                Parte do IBTO (%)
+                                            </Label>
+                                            <Input
+                                                id="percentual_ibto"
+                                                name="percentual_ibto"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={0}
+                                                max={100}
+                                                // Curso novo: 20 (o padrão); na edição, o que está no banco.
+                                                defaultValue={
+                                                    curso?.percentual_ibto ?? 20
+                                                }
+                                                aria-describedby="percentual-dica"
+                                            />
+                                            <p
+                                                id="percentual-dica"
+                                                className="text-xs text-muted-foreground"
+                                            >
+                                                O resto vai para o instrutor.
+                                                Ex.: 20 = 20% do IBTO e 80% do
+                                                instrutor; 100 = tudo do IBTO
+                                                (Formação de instrutor).
+                                            </p>
+                                            <InputError
+                                                message={errors.percentual_ibto}
+                                            />
+                                        </div>
+                                    )}
+                                    {campos_ibto && (
                                         <div className="grid gap-1">
                                             {/* O campo escondido manda "0" quando a caixa está desmarcada
                                                 (caixa desmarcada não é enviada pelo navegador).

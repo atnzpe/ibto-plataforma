@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property AcessoCurso $acesso
  * @property bool $fechado true = curso FECHADO: fora do site, só quem o IBTO matricular (ex.: Formação de instrutor).
  * @property int $valor_centavos
+ * @property int $percentual_ibto Quanto do valor fica com o IBTO (0 a 100). Ex.: 20; a Formação de instrutor, 100.
  * @property int|null $vagas
  * @property Carbon|null $data_inicio
  * @property Carbon|null $data_fim
@@ -59,10 +60,14 @@ use Illuminate\Support\Carbon;
  */
 // Ficam de fora: "imagem" (gravada pelo App\Support\ImagemPublica) e a SITUAÇÃO e a
 // chancela (só o fluxo de chancela muda, pelo forceFill: App\Services\FluxoCurso, #40).
-// "fechado" também fica de fora: só o IBTO liga/desliga (forceFill no CursoController).
+// "fechado" e "percentual_ibto" também ficam de fora: só o IBTO muda (forceFill no CursoController).
 #[Fillable(['titulo', 'descricao', 'area_atuacao_id', 'modalidade', 'acesso', 'valor_centavos', 'vagas', 'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local', 'carga_horaria', 'instrutor_id', 'link_pagamento', 'material_incluso', 'contato_whatsapp', 'instrutor_nome', 'instrutor_especialidade', 'chamada'])]
 class Curso extends Model
 {
+    // Parte do IBTO quando ninguém escolheu outra (decisão de 14/10/2026: 20%).
+    // Um nome em vez do número solto no código ("número mágico").
+    public const PERCENTUAL_IBTO_PADRAO = 20;
+
     /**
      * @return array<string, string>
      */
@@ -76,6 +81,7 @@ class Curso extends Model
             // 0/1 do banco vira false/true no PHP.
             'fechado' => 'boolean',
             'valor_centavos' => 'integer',
+            'percentual_ibto' => 'integer',
             'vagas' => 'integer',
             'carga_horaria' => 'integer',
             'data_inicio' => 'date',
@@ -95,6 +101,24 @@ class Curso extends Model
     public function scopeNoSite(Builder $consulta): void
     {
         $consulta->where('fechado', false);
+    }
+
+    /**
+     * DIVIDE um valor pago entre o IBTO e o instrutor, pelo percentual do curso.
+     * Tudo em CENTAVOS (número inteiro, sem vírgula): a parte do IBTO é
+     * arredondada para baixo e o centavo que sobrar vai para o instrutor, assim
+     * a soma das duas partes é SEMPRE igual ao valor pago.
+     *
+     * @param  int  $valorCentavos  O que a pessoa pagou. Ex.: 25000 (R$ 250,00).
+     * @return array{ibto: int, instrutor: int} Ex.: com 20% → ['ibto' => 5000, 'instrutor' => 20000].
+     */
+    public function divisao(int $valorCentavos): array
+    {
+        // intdiv = divisão que joga fora a parte quebrada. Ex.: 999 × 20 ÷ 100 = 199 (e não 199,8).
+        $ibto = intdiv($valorCentavos * $this->percentual_ibto, 100);
+
+        // O instrutor fica com o resto (inclusive o centavo do arredondamento).
+        return ['ibto' => $ibto, 'instrutor' => $valorCentavos - $ibto];
     }
 
     /**
