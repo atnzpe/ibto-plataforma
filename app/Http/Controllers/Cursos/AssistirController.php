@@ -6,12 +6,12 @@
  * Dojo Manager.
  *
  * Quem entra: quem tem acesso ao conteúdo (Gate "curso.conteudo": o Comando
- * Geral, quem chancela e quem propôs o curso; os INSCRITOS entram no bloco C5).
+ * Geral, quem chancela, quem propôs o curso e os inscritos confirmados).
  * Sem acesso: 403, mesmo com o link.
  *
- * Regra do nível (do Dojo Manager): módulo com "nível mínimo" só abre para o
- * filiado daquele nível ou de um abaixo (CursoModulo::liberadoPara). A equipe
- * do curso vê tudo, para conferir.
+ * As regras (a sequência, o nível e o PROGRESSO "3 de 10 aulas") ficam em
+ * App\Services\SalaDeAula, porque "Meus cursos" usa as mesmas.
+ * Progresso (14/10/2026): o botão "Marcar como assistida" de cada aula.
  */
 
 namespace App\Http\Controllers\Cursos;
@@ -19,11 +19,10 @@ namespace App\Http\Controllers\Cursos;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\CursoAula;
-use App\Models\CursoModulo;
-use App\Models\Nivel;
 use App\Models\User;
+use App\Services\SalaDeAula;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,21 +30,24 @@ use Inertia\Response;
 class AssistirController extends Controller
 {
     /**
-     * A tela de uma aula, com a lista de todas e os botões de sequência.
+     * A tela de uma aula, com a lista de todas, o progresso e os botões de sequência.
      *
      * @param  Request  $request  Quem está assistindo.
      * @param  Curso  $curso  O curso do endereço. Ex.: /cursos/7/assistir/31 → curso 7.
      * @param  CursoAula  $aula  A aula do endereço. Ex.: aula 31.
+     * @param  SalaDeAula  $sala  As regras da sala de aula (o Laravel entrega pronto).
      * @return Response A tela "cursos/assistir".
      */
-    public function show(Request $request, Curso $curso, CursoAula $aula): Response
+    public function show(Request $request, Curso $curso, CursoAula $aula, SalaDeAula $sala): Response
     {
         // Sem acesso ao conteúdo do curso: 403.
         Gate::authorize('curso.conteudo', $curso);
 
         /** @var User $usuario */
         $usuario = $request->user();
-        $sequencia = $this->sequencia($curso, $usuario);
+        $sequencia = $sala->sequencia($curso, $usuario);
+        // As aulas que a pessoa já marcou como assistidas. Ex.: [31, 32].
+        $assistidas = $sala->assistidas($sequencia, $usuario);
 
         // A posição da aula pedida na sequência. Não está nela (de outro curso,
         // desativada ou de módulo bloqueado pelo nível): 404, como se não existisse.
@@ -73,50 +75,55 @@ class AssistirController extends Controller
                 'hora_inicio' => $aula->hora_inicio !== null ? substr($aula->hora_inicio, 0, 5) : null,
                 'hora_fim' => $aula->hora_fim !== null ? substr($aula->hora_fim, 0, 5) : null,
                 'quem_aplica' => $aula->quem_aplica,
+                // Esta aula já foi marcada como assistida? (o botão muda de texto)
+                'assistida' => in_array($aula->id, $assistidas, true),
+            ],
+            // O progresso: quantas assistidas de quantas. Ex.: 3 de 10 (30%).
+            'progresso' => [
+                'assistidas' => count($assistidas),
+                'total' => $sequencia->count(),
+                // Sem aulas, 0% (não divide por zero). intdiv = sem casas decimais.
+                'percentual' => $sequencia->count() > 0 ? intdiv(count($assistidas) * 100, $sequencia->count()) : 0,
             ],
             // "3 / 10": a posição começa em 1 para as pessoas.
             'posicao' => $posicao + 1,
             'total' => $sequencia->count(),
             'anterior_id' => $anterior?->id,
             'proxima_id' => $proxima?->id,
-            // A lista lateral: só id, título e módulo de cada aula.
+            // A lista lateral: id, título, módulo e o ✓ de cada aula.
             'aulas' => $sequencia->map(fn (CursoAula $daLista) => [
                 'id' => $daLista->id,
                 'titulo' => $daLista->titulo,
                 'modulo' => $daLista->modulo->titulo,
+                'assistida' => in_array($daLista->id, $assistidas, true),
             ])->values(),
         ]);
     }
 
     /**
-     * Todas as aulas que a pessoa pode ver, na ordem: módulo por módulo (pela
-     * ordem do módulo), e dentro dele pela ordem da aula. Ficam de fora as
-     * aulas e os módulos desativados e, para quem não é da equipe do curso,
-     * os módulos acima do nível da pessoa.
+     * Marca ou desmarca a aula como assistida (botão "Marcar como assistida").
      *
-     * @param  Curso  $curso  O curso.
-     * @param  User  $usuario  Quem está assistindo.
-     * @return Collection<int, CursoAula> As aulas em sequência (0, 1, 2...).
+     * @param  Request  $request  Com "assistida": true (marcar) ou false (desmarcar).
+     * @param  Curso  $curso  O curso do endereço. Ex.: /cursos/7/assistir/31/assistida → curso 7.
+     * @param  CursoAula  $aula  A aula do endereço. Ex.: aula 31.
+     * @param  SalaDeAula  $sala  As regras da sala de aula.
+     * @return RedirectResponse Volta para a mesma aula.
      */
-    private function sequencia(Curso $curso, User $usuario): Collection
+    public function marcar(Request $request, Curso $curso, CursoAula $aula, SalaDeAula $sala): RedirectResponse
     {
-        // Equipe do curso (Comando Geral, quem chancela ou quem propôs): vê tudo.
-        $daEquipe = $usuario->temPermissao('cursos.gerenciar')
-            || $usuario->temPermissao('cursos.chancelar')
-            || $curso->responsavel_id === $usuario->id;
+        // Mesma porta da tela: sem acesso ao conteúdo, 403.
+        Gate::authorize('curso.conteudo', $curso);
 
-        // Nível do filiado (null = sem nível) e a hierarquia dos níveis.
-        $nivelDoAluno = $usuario->filiado?->nivel_id;
-        $posicoes = $daEquipe ? [] : Nivel::posicoes();
+        /** @var User $usuario */
+        $usuario = $request->user();
 
-        return $curso->modulos()
-            ->where('ativo', true)
-            ->with(['aulas' => fn ($aulas) => $aulas->where('ativa', true)])
-            ->get()
-            // Módulo bloqueado pelo nível: sai inteiro (a equipe não passa por este filtro).
-            ->filter(fn (CursoModulo $modulo) => $daEquipe || $modulo->liberadoPara($nivelDoAluno, $posicoes))
-            // Junta as aulas de todos os módulos numa lista só, já na ordem.
-            ->flatMap(fn (CursoModulo $modulo) => $modulo->aulas->each(fn (CursoAula $aula) => $aula->setRelation('modulo', $modulo)))
-            ->values();
+        // Só aula que a pessoa pode ver (deste curso, ativa, nível liberado).
+        // Se não for, 404: não dá para marcar aula de outro curso pelo endereço.
+        abort_unless($sala->sequencia($curso, $usuario)->contains('id', $aula->id), 404);
+
+        // "assistida" vem como true/false (ou 1/0); sem o campo, conta como marcar.
+        $sala->marcar($aula, $usuario, $request->boolean('assistida', true));
+
+        return back();
     }
 }

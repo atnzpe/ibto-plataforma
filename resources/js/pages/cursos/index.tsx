@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatarReais } from '@/lib/dinheiro';
-import { conteudo, create, edit, index } from '@/routes/comando-geral/cursos';
+import {
+    conteudo,
+    create,
+    edit,
+    index,
+    inscritos,
+} from '@/routes/comando-geral/cursos';
 import { index as trilhas } from '@/routes/comando-geral/trilhas';
 
 /** Um curso como a lista mostra. */
@@ -33,6 +39,8 @@ type CursoLista = {
     situacao_rotulo: string;
     // Pode abrir para editar? Senão, o botão diz "Ver" (só olhar).
     pode_editar: boolean;
+    // Pode ver o resumo e os inscritos (botão "Inscritos", #41).
+    pode_ver_inscritos: boolean;
 };
 
 type Filtros = { busca: string; situacao: string; de: string; ate: string };
@@ -321,6 +329,23 @@ export default function CursosIndex({
                                                         : 'Ver'}
                                                 </Link>
                                             </Button>
+                                            {/* Resumo e inscritos (#41), para quem pode ver. */}
+                                            {curso.pode_ver_inscritos && (
+                                                <Button
+                                                    asChild
+                                                    size="sm"
+                                                    variant="outline"
+                                                >
+                                                    <Link
+                                                        href={inscritos(
+                                                            curso.id,
+                                                        )}
+                                                        aria-label={`Inscritos de ${curso.titulo}`}
+                                                    >
+                                                        Inscritos
+                                                    </Link>
+                                                </Button>
+                                            )}
                                         </span>
                                     </td>
                                 </tr>
@@ -362,8 +387,8 @@ export default function CursosIndex({
                             <span className="text-muted-foreground">
                                 {curso.tipo}
                             </span>
-                            {/* 2 botões iguais, na largura toda. */}
-                            <span className="grid grid-cols-2 gap-2">
+                            {/* Botões iguais (2 ou 3), na largura toda. */}
+                            <span className="grid auto-cols-fr grid-flow-col gap-2">
                                 <Button
                                     asChild
                                     variant="outline"
@@ -388,6 +413,20 @@ export default function CursosIndex({
                                         {curso.pode_editar ? 'Editar' : 'Ver'}
                                     </Link>
                                 </Button>
+                                {curso.pode_ver_inscritos && (
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        className="min-h-11"
+                                    >
+                                        <Link
+                                            href={inscritos(curso.id)}
+                                            aria-label={`Inscritos de ${curso.titulo}`}
+                                        >
+                                            Inscritos
+                                        </Link>
+                                    </Button>
+                                )}
                             </span>
                         </li>
                     ))}

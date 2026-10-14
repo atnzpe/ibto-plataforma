@@ -6,6 +6,9 @@ import {
     Gauge,
     GraduationCap,
     KeyRound,
+    ClipboardCheck,
+    FileText,
+    Landmark,
     LayoutGrid,
     Medal,
     Tags,
@@ -27,7 +30,9 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 // Painel inicial e o painel "Comando Geral" (#59 / #45).
-import { comandoGeral, dashboard } from '@/routes';
+import { comandoGeral, dashboard, meuDossie, meusCursos } from '@/routes';
+// Catálogo público de cursos (#38), para o item do menu do aluno.
+import { index as catalogo } from '@/routes/catalogo';
 // Lista das áreas de atuação (#37), para o item do menu.
 import { index as areasAtuacao } from '@/routes/cadastros/areas-atuacao';
 // Lista dos níveis (#37), para o item do menu.
@@ -38,6 +43,10 @@ import { index as equipes } from '@/routes/cadastros/equipes';
 import { index as filiados } from '@/routes/cadastros/filiados';
 // Cursos e trilhas do Comando Geral (#39), para o item do menu.
 import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
+// Matrículas (#41): conferir o PIX e confirmar, para o item do menu.
+import { index as matriculasAdmin } from '@/routes/comando-geral/matriculas';
+// Dados para pagamento (#41): PIX e conta, para o item do menu.
+import { edit as pagamentoAdmin } from '@/routes/comando-geral/pagamento';
 // Livro-caixa (#59), para o item do menu.
 import { index as financeiro } from '@/routes/financeiro/lancamentos';
 // Grade de papéis × permissões (#36), para o item do menu.
@@ -46,13 +55,25 @@ import { edit as permissoesAdmin } from '@/routes/admin/permissoes';
 import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
-// Página inicial de aluno, instrutor e admin de equipe. A equipe do IBTO não vê
-// este item: para ela, o início é o "Comando Geral" (Gleyson, 10/10/2026).
+// Página inicial de aluno, instrutor e admin de equipe: "Meus cursos" (desenho
+// aprovado em 10/10/2026), o dossiê e o catálogo. A equipe do IBTO não vê estes itens:
+// para ela, o início é o "Comando Geral" (Gleyson, 10/10/2026).
 const mainNavItems: NavItem[] = [
     {
-        title: 'Início',
-        href: dashboard(),
+        title: 'Meus cursos',
+        href: meusCursos(),
         icon: LayoutGrid,
+    },
+    // Meu dossiê: graduação, certificados, cursos, presenças e o que foi trabalhado.
+    {
+        title: 'Meu dossiê',
+        href: meuDossie(),
+        icon: FileText,
+    },
+    {
+        title: 'Catálogo de cursos',
+        href: catalogo(),
+        icon: BookOpen,
     },
 ];
 
@@ -87,6 +108,20 @@ const cadastrosNavItems: (NavItem & {
         href: cursosAdmin(),
         icon: GraduationCap,
         permissao: 'cursos_acessar',
+    },
+    // Matrículas (#41): quem confirma os pagamentos PIX (secretaria/tesouraria).
+    {
+        title: 'Matrículas',
+        href: matriculasAdmin(),
+        icon: ClipboardCheck,
+        permissao: 'pagamentos_confirmar',
+    },
+    // Dados para pagamento (#41): PIX e conta do IBTO e a chave "por curso".
+    {
+        title: 'Dados para pagamento',
+        href: pagamentoAdmin(),
+        icon: Landmark,
+        permissao: 'pagamentos_configurar',
     },
     {
         title: 'Áreas de atuação',

@@ -15,12 +15,14 @@ namespace App\Http\Controllers;
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
 use App\Enums\SituacaoCurso;
+use App\Enums\SituacaoMatricula;
 use App\Models\AreaAtuacao;
 use App\Models\Curso;
 use App\Models\CursoAula;
 use App\Models\CursoModulo;
 use App\Models\Trilha;
 use App\Support\Calendario;
+use App\Support\DadosPagamento;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -47,6 +49,8 @@ class CatalogoController extends Controller
 
         $consulta = Curso::query()
             ->where('situacao', SituacaoCurso::Publicado)
+            // Curso FECHADO (ex.: Formação de instrutor) não aparece no site.
+            ->noSite()
             ->with(['area:id,nome', 'instrutor:id,name'])
             // Os com data primeiro, do mais próximo ao mais distante; os sem data no fim.
             ->orderByRaw('data_inicio is null')->orderBy('data_inicio')->orderBy('titulo');
@@ -69,7 +73,7 @@ class CatalogoController extends Controller
             'cursos' => $consulta->limit(200)->get()->map(fn (Curso $curso) => $this->cartao($curso))->values(),
             // Só as áreas que têm curso publicado (filtro sem opções vazias).
             'areas' => AreaAtuacao::query()
-                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
+                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->noSite()->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
                 ->orderBy('nome')->get(['id', 'nome']),
             // Trilhas ativas, para o atalho "Trilhas de formação".
             'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
@@ -89,6 +93,16 @@ class CatalogoController extends Controller
         // Não publicado: só o Comando Geral, quem chancela ou o dono veem (prévia); os outros, 404.
         $previa = $curso->situacao !== SituacaoCurso::Publicado;
         abort_if($previa && ! Gate::allows('curso.conteudo', $curso), 404);
+
+        // Curso FECHADO: a página só abre para quem cuida do curso (Gate
+        // curso.conteudo) ou para quem foi matriculado nele. Os outros recebem
+        // 404 ("não existe"), para nem saber que o curso existe.
+        abort_if(
+            $curso->fechado
+                && ! Gate::allows('curso.conteudo', $curso)
+                && ! $curso->matriculas()->where('user_id', $request->user()?->id)->exists(),
+            404,
+        );
 
         $curso->load(['area:id,nome', 'instrutor:id,name', 'modulos' => fn ($modulos) => $modulos->where('ativo', true), 'modulos.aulas' => fn ($aulas) => $aulas->where('ativa', true)]);
 
@@ -134,6 +148,12 @@ class CatalogoController extends Controller
             ],
             // Quem está logado (para o botão: "Entrar para se inscrever" ou a inscrição, no bloco C5).
             'logado' => $request->user() !== null,
+            // Vagas que ainda restam (#41): null = sem limite. Ex.: 3.
+            'vagas_restantes' => $curso->vagas !== null
+                ? max(0, $curso->vagas - $curso->matriculas()->ocupandoVaga()->count())
+                : null,
+            // A matrícula da pessoa logada que ainda vale (aguardando ou confirmada), ou null.
+            'matricula' => $this->matriculaDe($request, $curso),
             // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.
             // Visitante sem login: false (o Gate recusa quem não está logado).
             'pode_assistir' => Gate::allows('curso.conteudo', $curso),
@@ -155,7 +175,8 @@ class CatalogoController extends Controller
         abort_if(! $trilha->ativa && ! Gate::allows('cursos.gerenciar'), 404);
 
         // Os cursos da trilha (menos os cancelados), já na ordem das etapas.
-        $cursos = $trilha->cursos()->where('situacao', '!=', SituacaoCurso::Cancelado->value)->get();
+        // Os FECHADOS também ficam de fora: a trilha é pública.
+        $cursos = $trilha->cursos()->where('situacao', '!=', SituacaoCurso::Cancelado->value)->noSite()->get();
 
         // Agrupa por etapa: [1 => [cursos], 2 => [cursos, cursos], ...].
         $etapas = $cursos->groupBy(fn (Curso $curso) => (int) $curso->getRelationValue('pivot')?->getAttribute('ordem'))
@@ -279,6 +300,42 @@ class CatalogoController extends Controller
             'Content-Type' => 'text/calendar; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"encontro-ibto-{$aula->id}.ics\"",
         ]);
+    }
+
+    /**
+     * A matrícula da pessoa logada neste curso, para o quadro da inscrição (#41).
+     * Leva o PIX só quando ela está aguardando pagamento.
+     *
+     * @param  Request  $request  Quem está vendo (pode ser visitante).
+     * @param  Curso  $curso  O curso da página.
+     * @return array<string, mixed>|null null = visitante ou sem matrícula valendo.
+     */
+    private function matriculaDe(Request $request, Curso $curso): ?array
+    {
+        $usuario = $request->user();
+        // Visitante: sem matrícula.
+        if ($usuario === null) {
+            return null;
+        }
+
+        // A mais recente que ainda ocupa vaga (as canceladas não contam).
+        $matricula = $curso->matriculas()->ocupandoVaga()->where('user_id', $usuario->id)->latest('id')->first();
+        if ($matricula === null) {
+            return null;
+        }
+
+        $aguardando = $matricula->situacao === SituacaoMatricula::AguardandoPagamento;
+
+        return [
+            'id' => $matricula->id,
+            'situacao' => $matricula->situacao->value,
+            'situacao_rotulo' => $matricula->situacao->rotulo(),
+            'valor_centavos' => $matricula->valor_centavos,
+            'tem_comprovante' => $matricula->comprovante !== null,
+            // Dados para pagamento (do curso ou do IBTO, conforme a chave liga/desliga),
+            // só para quem precisa pagar. Ver App\Support\DadosPagamento.
+            'pagamento' => $aguardando ? DadosPagamento::doCurso($curso) : null,
+        ];
     }
 
     /**

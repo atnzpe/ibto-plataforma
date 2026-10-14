@@ -6,7 +6,9 @@
  * Datas fixas para os números serem previsíveis. Dados INVENTADOS.
  */
 
+use App\Actions\Cursos\Matriculas;
 use App\Actions\Filiados\CriarFiliado;
+use App\Models\Curso;
 use App\Models\Filiado;
 use App\Models\FinCategoria;
 use App\Models\FinFormaPagamento;
@@ -124,4 +126,29 @@ test('filiados: ativos, convites pendentes e todas as categorias (mesmo com zero
     // Recém-criado: ainda não usou o convite.
     expect($filiados['convites_pendentes'])->toBe(1);
     expect($filiados['por_categoria'])->toHaveCount(5);
+});
+
+test('cursos: turmas abertas, vagas livres, aguardando pagamento e confirmadas no mês', function () {
+    $hoje = Carbon::parse('2026-10-15');
+    Carbon::setTestNow($hoje);
+
+    // Aberto (sem data), 3 vagas, com 1 aguardando e 1 confirmada; outro já começou (não conta).
+    $aberto = Curso::create(['titulo' => 'Aberto', 'modalidade' => 'online', 'acesso' => 'aberto', 'valor_centavos' => 10000, 'vagas' => 3]);
+    $aberto->forceFill(['situacao' => 'publicado'])->save();
+    $passado = Curso::create(['titulo' => 'Passado', 'modalidade' => 'presencial', 'acesso' => 'aberto', 'valor_centavos' => 0, 'vagas' => 5, 'data_inicio' => '2026-10-01', 'local' => 'Recife']);
+    $passado->forceFill(['situacao' => 'publicado'])->save();
+
+    $matriculas = app(Matriculas::class);
+    $matriculas->matricular($aberto, User::factory()->create());
+    $pago = $matriculas->matricular($aberto, User::factory()->create());
+    $matriculas->confirmarPagamento($pago, '2026-10-15', (int) FinFormaPagamento::where('nome', 'PIX')->value('id'));
+
+    expect(app(ComandoGeral::class)->painel($hoje)['cursos'])->toBe([
+        'turmas_abertas' => 1,
+        'vagas_livres' => 1,
+        'aguardando_pagamento' => 1,
+        'confirmadas_no_mes' => 1,
+    ]);
+
+    Carbon::setTestNow();
 });

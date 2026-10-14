@@ -10,6 +10,8 @@ import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import CursoController from '@/actions/App/Http/Controllers/Cursos/CursoController';
 // Painel da situação e dos botões do fluxo de chancela (#40).
+import PainelPagamentoCurso from '@/components/cursos/painel-pagamento-curso';
+import type { PagamentoDoCurso } from '@/components/cursos/painel-pagamento-curso';
 import PainelSituacao from '@/components/cursos/painel-situacao';
 import type { DadosSituacao } from '@/components/cursos/painel-situacao';
 import InputError from '@/components/input-error';
@@ -29,6 +31,10 @@ type CursoEdicao = {
     area_atuacao_id: number | null;
     modalidade: string;
     acesso: string;
+    // true = curso FECHADO: fora do site; só o IBTO matricula (ex.: Formação de instrutor).
+    fechado: boolean;
+    // Parte do IBTO em %, de 0 a 100. Ex.: 20 (o instrutor fica com 80).
+    percentual_ibto: number;
     valor: string;
     vagas: number | null;
     data_inicio: string | null;
@@ -57,6 +63,8 @@ const classeSelect =
  * @param instrutores As contas com o papel Instrutor.
  * @param modalidades Presencial e online.
  * @param acessos Aberto ao público e só filiados.
+ * @param pagamento_curso Dados para pagamento próprios do curso (só para quem tem "pagamentos.configurar"; null ou ausente = sem painel).
+ * @param campos_ibto true = mostra os campos só do IBTO ("Curso fechado" e "Parte do IBTO"); false ou ausente = nem aparecem.
  * @returns A tela do formulário.
  */
 export default function CursoFormulario({
@@ -65,12 +73,16 @@ export default function CursoFormulario({
     instrutores,
     modalidades,
     acessos,
+    pagamento_curso = null,
+    campos_ibto = false,
 }: {
     curso: CursoEdicao | null;
     areas: { id: number; nome: string }[];
     instrutores: { id: number; name: string }[];
     modalidades: Opcao[];
     acessos: Opcao[];
+    pagamento_curso?: PagamentoDoCurso | null;
+    campos_ibto?: boolean;
 }) {
     const editando = curso !== null;
     const titulo = editando ? `Editar "${curso.titulo}"` : 'Novo curso';
@@ -364,6 +376,77 @@ export default function CursoFormulario({
                                             />
                                         </div>
                                     </div>
+                                    {/* CAMPOS SÓ DO IBTO: "Parte do IBTO" e "Curso fechado" (o servidor
+                                        confere de novo). Sem a permissão, nem aparecem e o curso fica como está. */}
+                                    {campos_ibto && (
+                                        <div className="grid gap-2 sm:max-w-xs">
+                                            <Label htmlFor="percentual_ibto">
+                                                Parte do IBTO (%)
+                                            </Label>
+                                            <Input
+                                                id="percentual_ibto"
+                                                name="percentual_ibto"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={0}
+                                                max={100}
+                                                // Curso novo: 20 (o padrão); na edição, o que está no banco.
+                                                defaultValue={
+                                                    curso?.percentual_ibto ?? 20
+                                                }
+                                                aria-describedby="percentual-dica"
+                                            />
+                                            <p
+                                                id="percentual-dica"
+                                                className="text-xs text-muted-foreground"
+                                            >
+                                                O resto vai para o instrutor.
+                                                Ex.: 20 = 20% do IBTO e 80% do
+                                                instrutor; 100 = tudo do IBTO
+                                                (Formação de instrutor).
+                                            </p>
+                                            <InputError
+                                                message={errors.percentual_ibto}
+                                            />
+                                        </div>
+                                    )}
+                                    {campos_ibto && (
+                                        <div className="grid gap-1">
+                                            {/* O campo escondido manda "0" quando a caixa está desmarcada
+                                                (caixa desmarcada não é enviada pelo navegador).
+                                                Marcada, o "1" da caixa substitui o "0". */}
+                                            <input
+                                                type="hidden"
+                                                name="fechado"
+                                                value="0"
+                                            />
+                                            <label className="flex items-center gap-2 text-sm font-medium">
+                                                <input
+                                                    type="checkbox"
+                                                    name="fechado"
+                                                    value="1"
+                                                    // Curso novo nasce aberto; na edição, vem como está no banco.
+                                                    defaultChecked={
+                                                        curso?.fechado ?? false
+                                                    }
+                                                    aria-describedby="fechado-dica"
+                                                    className="size-4"
+                                                />
+                                                Curso fechado (não aparece no
+                                                site)
+                                            </label>
+                                            <p
+                                                id="fechado-dica"
+                                                className="text-xs text-muted-foreground"
+                                            >
+                                                Fica fora do catálogo e das
+                                                trilhas; ninguém se inscreve
+                                                sozinho, só quem o IBTO
+                                                matricular. Ex.: Formação de
+                                                instrutor.
+                                            </p>
+                                        </div>
+                                    )}
                                     <div className="grid gap-4 sm:grid-cols-3">
                                         <div className="grid gap-2">
                                             <Label htmlFor="vagas">Vagas</Label>
@@ -573,6 +656,13 @@ export default function CursoFormulario({
                         </>
                     )}
                 </Form>
+                {/* Dados para pagamento do curso (#41): painel separado, só com a permissão. */}
+                {editando && pagamento_curso && (
+                    <PainelPagamentoCurso
+                        cursoId={curso.id}
+                        dados={pagamento_curso}
+                    />
+                )}
             </div>
         </>
     );

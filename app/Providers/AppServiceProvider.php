@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\SituacaoCurso;
+use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
 use App\Models\Filiado;
 use App\Models\User;
@@ -114,12 +115,33 @@ class AppServiceProvider extends ServiceProvider
                 && in_array($curso->situacao, [SituacaoCurso::Rascunho, SituacaoCurso::Rejeitado], true);
         });
 
-        // "curso.conteudo" (#39): ver as aulas, o vídeo enviado e baixar a apostila.
-        // Por enquanto: o Comando Geral e quem propôs o curso; os INSCRITOS entram
-        // no bloco C5 (matrícula). Sem isso: 403, mesmo com o link.
+        // "curso.inscritos" (#41, detalhes do curso): ver o resumo e a lista dos inscritos
+        // (só REGISTRO e equipe, sem nome: LGPD). Passam o Comando Geral, quem chancela,
+        // quem confirma pagamentos e o DONO do curso (o instrutor faz a chamada, #44).
+        Gate::define('curso.inscritos', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $usuario->temPermissao('cursos.chancelar')
+            || $usuario->temPermissao('pagamentos.confirmar')
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
+
+        // "curso.chamada" (#44, desenho de 10/10/2026: "o admin de equipe ou o instrutor marca
+        // quem veio"): fazer a chamada de um encontro. Passam o Comando Geral, o DONO do
+        // curso e o administrador da EQUIPE DONA do curso (só da própria equipe).
+        Gate::define('curso.chamada', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id)
+            || ($usuario->temPermissao('filiados.equipe') && $curso->equipe_id !== null && $usuario->filiado?->equipe_id === $curso->equipe_id));
+
+        // "certificados.emitir" (#44): emitir e cancelar certificados. Só o IBTO (o certificado
+        // é documento oficial do IBTO): quem cuida de todos os cursos ou chancela.
+        Gate::define('certificados.emitir', fn (User $usuario): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $usuario->temPermissao('cursos.chancelar'));
+
+        // "curso.conteudo" (#39 / #41): ver as aulas, o vídeo enviado e baixar a apostila.
+        // Passam: o Comando Geral, quem chancela, quem propôs o curso e quem tem
+        // MATRÍCULA CONFIRMADA (aguardando pagamento ainda não). Sem isso: 403, mesmo com o link.
         Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
             || $usuario->temPermissao('cursos.chancelar')
-            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id));
+            || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id)
+            || $curso->matriculas()->where('user_id', $usuario->id)->where('situacao', SituacaoMatricula::Confirmada->value)->exists());
     }
 
     /**

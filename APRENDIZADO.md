@@ -67,3 +67,21 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Desativar não é apagar: uma data (`desativada_em`) e um "porteiro" (middleware) que confere cada pedido bastam para trancar a conta sem perder o histórico.
 - O lembrete de agenda é um arquivo de texto (.ics) com regras próprias: horário em UTC, vírgula e ponto e vírgula com "\" na frente, linhas de até 75 bytes.
 - Cor de marca também é acessibilidade: o contraste entre texto e fundo se CALCULA (mínimo 4,5:1), não se escolhe no olho.
+
+## 14/10/2026 — #44 chamada, certificado e QR code
+
+- O certificado guarda uma "foto" do dia da emissão (nome, curso, carga horária): se o curso mudar depois, o certificado já entregue não muda. A validação pública mostra só o nome abreviado (LGPD).
+- QR code em SVG é um desenho feito de texto, gerado no nosso servidor: fica nítido impresso e o endereço do certificado não passa por site de terceiros.
+- No PHP, o sinal que fecha o código (`?` seguido de `>`) encerra o PHP até dentro de um comentário `//`: o arquivo inteiro quebra com "Unclosed '{'".
+
+## 14/10/2026 — curso fechado, matrícula pelo IBTO e divisão do dinheiro
+
+- 404 em vez de 403 esconde que a página existe: quem não pode ver um curso fechado nem descobre que ele existe.
+- O percentual mora em cada curso (e não num "se o nome for Formação…"): uma exceção nova vira só um número no cadastro, sem mexer no código.
+- Divisão em centavos: a parte do IBTO arredonda para baixo (`intdiv`) e o instrutor fica com o resto; assim a soma das partes sempre bate com o valor pago.
+
+## 14/10/2026 — progresso das aulas e "Meu dossiê"
+
+- Regra usada por duas telas mora num SERVIÇO (`SalaDeAula`): a sala de aula e "Meus cursos" fazem a mesma conta, sem copiar código.
+- `flatMap` devolve uma lista comum, sem os atalhos de lista de modelos (`modelKeys`); `pluck('id')` funciona nas duas.
+- Página "só minha" não leva número de pessoa no endereço: o servidor usa quem está logado, então não dá para trocar o número e ver o dossiê de outro.

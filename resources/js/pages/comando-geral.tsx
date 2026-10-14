@@ -1,11 +1,11 @@
 /**
  * Painel "COMANDO GERAL" (#59 bloco 4 / #45): os indicadores do IBTO, no
  * desenho aprovado pelo Gleyson em 09/10/2026 — 4 totais do mês, entradas ×
- * saídas de 6 meses, anuidade do ano, próximos vencimentos, filiados e a
- * régua de cobrança (só o REGISTRO, sem nome: LGPD).
+ * saídas de 6 meses, anuidade do ano, próximos vencimentos, filiados, a
+ * régua de cobrança (só o REGISTRO, sem nome: LGPD) e o quadro dos cursos (#41).
  * Responsivo: tudo em grade que vira uma coluna no celular, sem rolagem lateral.
  */
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 import { edit as editarFiliado } from '@/routes/cadastros/filiados';
@@ -15,6 +15,8 @@ import {
     index as livroCaixa,
 } from '@/routes/financeiro/lancamentos';
 import { comandoGeral } from '@/routes';
+// Matrículas (#41), para o atalho "Conferir pagamentos" do quadro Cursos.
+import { index as matriculas } from '@/routes/comando-geral/matriculas';
 
 /** O que o servidor manda (App\Services\ComandoGeral). */
 type Painel = {
@@ -57,6 +59,13 @@ type Painel = {
         equipes: number;
         convites_pendentes: number;
         por_categoria: { categoria: string; quantidade: number }[];
+    };
+    // Quadro dos cursos (#39 e #41). vagas_livres null = algum curso sem limite.
+    cursos: {
+        turmas_abertas: number;
+        vagas_livres: number | null;
+        aguardando_pagamento: number;
+        confirmadas_no_mes: number;
     };
     pode_lancar: boolean;
     pode_ver_financeiro: boolean;
@@ -101,9 +110,12 @@ export default function ComandoGeral(props: Painel) {
         anuidade,
         vencimentos,
         filiados,
+        cursos,
         pode_lancar,
         pode_ver_financeiro,
     } = props;
+    // O que a pessoa pode abrir (para o atalho "Conferir pagamentos").
+    const { pode } = usePage().props;
 
     // Nome do mês do painel. Ex.: '2027-10' → 'outubro de 2027'.
     const [ano, mes] = props.mes.split('-').map(Number);
@@ -509,11 +521,8 @@ export default function ComandoGeral(props: Painel) {
                         )}
                     </section>
 
-                    {/* Cursos: espaço reservado até existirem os cursos (#39 e #41). */}
-                    <section
-                        aria-labelledby="t-cursos"
-                        className="flex flex-col gap-3 rounded-xl border border-dashed border-border p-5"
-                    >
+                    {/* Cursos (#39 e #41): turmas abertas, vagas livres e matrículas; certificados com a #44. */}
+                    <section aria-labelledby="t-cursos" className={bloco}>
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <h2
                                 id="t-cursos"
@@ -521,15 +530,58 @@ export default function ComandoGeral(props: Painel) {
                             >
                                 Cursos
                             </h2>
-                            <span className="text-xs text-muted-foreground">
-                                Chega com as issues #39 e #41
-                            </span>
+                            {/* Atalho para conferir os PIX (só para quem confirma pagamentos). */}
+                            {pode.pagamentos_confirmar && (
+                                <Link
+                                    href={matriculas({
+                                        query: {
+                                            situacao: 'aguardando_pagamento',
+                                        },
+                                    })}
+                                    className="text-sm underline underline-offset-4"
+                                >
+                                    Conferir pagamentos
+                                </Link>
+                            )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            Turmas abertas, vagas livres, inscritos e
-                            certificados do mês aparecem aqui quando os cursos
-                            existirem na plataforma.
-                        </p>
+                        {/* 2 colunas no celular, 4 na tela larga. */}
+                        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                            <div>
+                                <dt className="text-xs text-muted-foreground">
+                                    Turmas abertas
+                                </dt>
+                                <dd className="text-2xl font-semibold">
+                                    {cursos.turmas_abertas}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-xs text-muted-foreground">
+                                    Vagas livres
+                                </dt>
+                                {/* null = algum curso aberto sem limite de vagas. */}
+                                <dd className="text-2xl font-semibold">
+                                    {cursos.vagas_livres ?? 'Sem limite'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-xs text-muted-foreground">
+                                    Aguardando pagamento
+                                </dt>
+                                <dd
+                                    className={`text-2xl font-semibold ${cursos.aguardando_pagamento > 0 ? 'text-[#a33a00] dark:text-amber-300' : ''}`}
+                                >
+                                    {cursos.aguardando_pagamento}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-xs text-muted-foreground">
+                                    Confirmadas no mês
+                                </dt>
+                                <dd className="text-2xl font-semibold">
+                                    {cursos.confirmadas_no_mes}
+                                </dd>
+                            </div>
+                        </dl>
                     </section>
                 </div>
             </div>

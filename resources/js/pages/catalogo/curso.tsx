@@ -9,6 +9,8 @@
  * outro no celular.
  */
 import { Head, Link } from '@inertiajs/react';
+import QuadroMatricula from '@/components/cursos/quadro-matricula';
+import type { MatriculaDaPessoa } from '@/components/cursos/quadro-matricula';
 import { Button } from '@/components/ui/button';
 // Janela do encontro (C4d): componentes prontos de "janela" (modal) acessível.
 import {
@@ -22,7 +24,6 @@ import {
 import { formatarReais } from '@/lib/dinheiro';
 import { dataBr } from '@/pages/catalogo/index';
 import type { CartaoCurso } from '@/pages/catalogo/index';
-import { login } from '@/routes';
 import { index as catalogo, trilha as paginaDaTrilha } from '@/routes/catalogo';
 import { assistir } from '@/routes/cursos';
 
@@ -150,16 +151,24 @@ const selo = 'rounded-full px-3 py-0.5 text-xs';
  * @param curso Tudo o que a página mostra.
  * @param logado true se há alguém logado (muda o botão da inscrição).
  * @param pode_assistir true se a pessoa pode ver o conteúdo (botão e aulas viram links para a sala de aula).
+ * @param vagas_restantes Quantas vagas sobram (null = sem limite). Ex.: 3
+ * @param matricula A matrícula da pessoa logada (aguardando ou confirmada), ou null.
  * @returns A página do curso.
  */
 export default function PaginaCurso({
     curso,
     logado,
     pode_assistir,
+    vagas_restantes,
+    matricula,
 }: {
     curso: CursoDetalhe;
     logado: boolean;
     pode_assistir: boolean;
+    // Vagas que sobram (#41); null = sem limite.
+    vagas_restantes: number | null;
+    // A matrícula da pessoa logada, ou null.
+    matricula: MatriculaDaPessoa | null;
 }) {
     // A primeira aula (para o botão "Assistir as aulas"), só para quem pode assistir.
     const primeiraAula = pode_assistir
@@ -437,8 +446,14 @@ export default function PaginaCurso({
                         )}
 
                         <ol className="flex list-decimal flex-col gap-1 pl-5 text-sm text-[#3f3a2c]">
-                            <li>Inscreva-se e pague pelo link (PIX).</li>
-                            <li>O IBTO confirma o pagamento e a sua vaga.</li>
+                            <li>
+                                Garanta a sua vaga, pague pelo PIX e envie o
+                                comprovante aqui.
+                            </li>
+                            <li>
+                                O IBTO confirma o pagamento e você recebe um
+                                e-mail.
+                            </li>
                             <li>
                                 Depois do curso: presença, certificado e
                                 registro no seu dossiê.
@@ -457,15 +472,15 @@ export default function PaginaCurso({
                                 Assistir as aulas
                             </Link>
                         )}
-                        {/* A inscrição pela plataforma entra no bloco C5; por enquanto, entrar e falar no WhatsApp. */}
-                        {!logado && (
-                            <Link
-                                href={login()}
-                                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#6b5d3a] text-base font-semibold text-white no-underline hover:bg-[#5a4e30]"
-                            >
-                                Entrar para se inscrever
-                            </Link>
-                        )}
+                        {/* Matrícula (#41): entrar, garantir a vaga, PIX e comprovante, ou confirmada. */}
+                        <QuadroMatricula
+                            cursoId={curso.id}
+                            logado={logado}
+                            gratuito={curso.valor_centavos === 0}
+                            previa={curso.previa}
+                            vagasRestantes={vagas_restantes}
+                            matricula={matricula}
+                        />
                         {curso.whatsapp_url && (
                             <a
                                 href={curso.whatsapp_url}

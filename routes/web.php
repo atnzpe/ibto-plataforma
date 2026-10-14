@@ -11,22 +11,30 @@ use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\ComandoGeralController;
 use App\Http\Controllers\ConviteController;
 use App\Http\Controllers\CursoImagemController;
 use App\Http\Controllers\Cursos\AssistirController;
 use App\Http\Controllers\Cursos\AulaArquivoController;
+use App\Http\Controllers\Cursos\ChamadaController;
 use App\Http\Controllers\Cursos\ConteudoController;
 use App\Http\Controllers\Cursos\CursoController;
+use App\Http\Controllers\Cursos\DetalhesCursoController;
+use App\Http\Controllers\Cursos\MatriculaPainelController;
+use App\Http\Controllers\Cursos\MatricularPeloIbtoController;
+use App\Http\Controllers\Cursos\PagamentoConfigController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
+use App\Http\Controllers\MatriculaController;
+use App\Http\Controllers\MeuDossieController;
+use App\Http\Controllers\MeusCursosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::inertia('/', 'welcome')->name('home');
 
@@ -59,9 +67,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return to_route('comando-geral');
         }
 
-        // Demais pessoas: a página inicial delas (vira "Meus cursos e trilhas", #38/#39).
-        return Inertia::render('dashboard');
+        // Demais pessoas: a página inicial delas é "Meus cursos" (desenho aprovado em 10/10/2026).
+        return to_route('meus-cursos');
     })->name('dashboard');
+
+    // Meus cursos: trilha de formação, cursos matriculados e o próximo passo de cada um.
+    Route::get('meus-cursos', MeusCursosController::class)->name('meus-cursos');
+
+    // Meu dossiê: o histórico da pessoa (graduação, certificados, cursos, presenças e
+    // o que foi trabalhado). Sem número no endereço: cada um só vê o próprio.
+    Route::get('meu-dossie', MeuDossieController::class)->name('meu-dossie');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.
@@ -139,6 +154,18 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
         Route::resource('cursos', CursoController::class)->except(['show', 'destroy']);
         // Ações do fluxo de chancela: enviar, chancelar, rejeitar, cancelar, encerrar.
         Route::post('cursos/{curso}/situacao', [CursoController::class, 'situacao'])->name('cursos.situacao');
+        // Detalhes do curso (#41): resumo e inscritos (só registro). Quem vê: Gate curso.inscritos.
+        Route::get('cursos/{curso}/inscritos', DetalhesCursoController::class)->name('cursos.inscritos');
+        // "Matricular pessoa" (14/10/2026): o IBTO matricula alguém pelo registro ou e-mail
+        // (único jeito de entrar num curso FECHADO). Quem pode: cursos.gerenciar (no controlador).
+        Route::post('cursos/{curso}/matricular', MatricularPeloIbtoController::class)->name('cursos.matricular');
+        // Chamada do encontro (#44). Quem faz: Gate curso.chamada (conferido no controlador).
+        Route::get('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'edit'])->name('cursos.chamada');
+        Route::put('cursos/{curso}/aulas/{aula}/chamada', [ChamadaController::class, 'update'])->name('cursos.chamada.update');
+        // Certificados (#44): emitir um, emitir todos os aptos e cancelar. Só o IBTO (Gate no controlador).
+        Route::post('cursos/{curso}/certificados/{matricula}', [CertificadoController::class, 'emitir'])->name('cursos.certificados.emitir');
+        Route::post('cursos/{curso}/certificados', [CertificadoController::class, 'emitirAptos'])->name('cursos.certificados.aptos');
+        Route::post('certificados/{certificado}/cancelar', [CertificadoController::class, 'cancelar'])->name('certificados.cancelar');
 
         // Conteúdo do curso (#39, bloco C2): módulos e aulas, em ordem.
         Route::controller(ConteudoController::class)->group(function () {
@@ -160,6 +187,34 @@ Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])
         Route::resource('trilhas', TrilhaController::class)->except(['show', 'destroy']);
     });
 
+// Dados para pagamento (#41, 10/10/2026): os do IBTO, a chave liga/desliga
+// "por curso" e os dados próprios de um curso. Só "pagamentos.configurar".
+// password.confirm:...,900 = pede a SENHA DE NOVO, que vale por 15 minutos
+// (900 segundos), mesmo para quem já está logado. Limite de 10 pedidos por minuto.
+Route::middleware(['auth', 'verified', 'can:pagamentos.configurar', 'password.confirm:password.confirm,900', 'throttle:10,1'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->controller(PagamentoConfigController::class)
+    ->group(function () {
+        Route::get('pagamento', 'edit')->name('pagamento.edit');
+        Route::put('pagamento', 'update')->name('pagamento.update');
+        Route::put('cursos/{curso}/pagamento', 'curso')->name('cursos.pagamento');
+    });
+
+// Matrículas (#41, bloco C5c): a secretaria/tesouraria confere o comprovante,
+// confirma o pagamento ou cancela (permissão pagamentos.confirmar).
+Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])
+    ->prefix('comando-geral/matriculas')
+    ->name('comando-geral.matriculas.')
+    ->controller(MatriculaPainelController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        // A ficha (nome e e-mail), com o registro de acesso na auditoria (LGPD).
+        Route::get('{matricula}', 'ficha')->whereNumber('matricula')->name('ficha');
+        Route::post('{matricula}/confirmar', 'confirmar')->name('confirmar');
+        Route::post('{matricula}/cancelar', 'cancelar')->name('cancelar');
+    });
+
 // Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver
 // é conferido pelo Gate "curso.conteudo" (sem acesso: 403, mesmo com o link).
 Route::middleware(['auth', 'verified'])
@@ -171,6 +226,23 @@ Route::middleware(['auth', 'verified'])
         Route::get('video', 'video')->name('video');
     });
 
+// Matrícula pelo lado do aluno (#41, bloco C5b): garantir a vaga, enviar e ver
+// o comprovante do PIX, desistir. Com login; a dona de cada matrícula é conferida
+// no controlador. Limite de 20 pedidos por minuto (envio de arquivo).
+Route::middleware(['auth', 'verified', 'throttle:20,1'])
+    ->controller(MatriculaController::class)
+    ->group(function () {
+        Route::post('cursos/{curso}/matricula', 'store')->whereNumber('curso')->name('matriculas.store');
+        Route::post('matriculas/{matricula}/comprovante', 'comprovante')->name('matriculas.comprovante');
+        Route::get('matriculas/{matricula}/comprovante', 'verComprovante')->name('matriculas.comprovante.ver');
+        Route::post('matriculas/{matricula}/desistir', 'desistir')->name('matriculas.desistir');
+    });
+
+// O certificado para imprimir / salvar em PDF (#44): com login; o dono ou quem vê os inscritos.
+Route::middleware(['auth', 'verified'])
+    ->get('certificados/{codigo}', [CertificadoController::class, 'ver'])
+    ->name('certificados.ver');
+
 // Sala de aula (#39, bloco C4c): as aulas em sequência (Anterior / Próxima).
 // Com login; quem pode ver é conferido pelo Gate "curso.conteudo" no controlador.
 // whereNumber: só números, para não confundir com /cursos/aulas/... acima.
@@ -178,6 +250,11 @@ Route::middleware(['auth', 'verified'])
     ->get('cursos/{curso}/assistir/{aula}', [AssistirController::class, 'show'])
     ->whereNumber(['curso', 'aula'])
     ->name('cursos.assistir');
+// Progresso (14/10/2026): marcar/desmarcar a aula como assistida. Mesma porta da sala de aula.
+Route::middleware(['auth', 'verified'])
+    ->put('cursos/{curso}/assistir/{aula}/assistida', [AssistirController::class, 'marcar'])
+    ->whereNumber(['curso', 'aula'])
+    ->name('cursos.assistida');
 
 // CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
 // cursos publicados. Limite de 60 pedidos por minuto por IP.
@@ -187,6 +264,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
     // Trilha em fluxograma (#38, bloco C4b).
     Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    // Validação PÚBLICA do certificado pelo código (#44). Ex.: /validar/IBTO-7K2M-9QXA
+    Route::get('validar/{codigo}', [CertificadoController::class, 'validar'])->name('certificados.validar');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
     Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
         ->whereNumber(['curso', 'aula'])
