@@ -30,6 +30,7 @@ use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
 use App\Http\Controllers\MatriculaController;
+use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeusCursosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Meus cursos: trilha de formação, cursos matriculados e o próximo passo de cada um.
     Route::get('meus-cursos', MeusCursosController::class)->name('meus-cursos');
+
+    // Meu dossiê: o histórico da pessoa (graduação, certificados, cursos, presenças e
+    // o que foi trabalhado). Sem número no endereço: cada um só vê o próprio.
+    Route::get('meu-dossie', MeuDossieController::class)->name('meu-dossie');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.

@@ -7,6 +7,7 @@ import {
     GraduationCap,
     KeyRound,
     ClipboardCheck,
+    FileText,
     Landmark,
     LayoutGrid,
     Medal,
@@ -29,7 +30,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 // Painel inicial e o painel "Comando Geral" (#59 / #45).
-import { comandoGeral, dashboard, meusCursos } from '@/routes';
+import { comandoGeral, dashboard, meuDossie, meusCursos } from '@/routes';
 // Catálogo público de cursos (#38), para o item do menu do aluno.
 import { index as catalogo } from '@/routes/catalogo';
 // Lista das áreas de atuação (#37), para o item do menu.
@@ -55,13 +56,19 @@ import { index as usuariosAdmin } from '@/routes/admin/usuarios';
 import type { NavItem } from '@/types';
 
 // Página inicial de aluno, instrutor e admin de equipe: "Meus cursos" (desenho
-// aprovado em 10/10/2026) e o catálogo. A equipe do IBTO não vê estes itens:
+// aprovado em 10/10/2026), o dossiê e o catálogo. A equipe do IBTO não vê estes itens:
 // para ela, o início é o "Comando Geral" (Gleyson, 10/10/2026).
 const mainNavItems: NavItem[] = [
     {
         title: 'Meus cursos',
         href: meusCursos(),
         icon: LayoutGrid,
+    },
+    // Meu dossiê: graduação, certificados, cursos, presenças e o que foi trabalhado.
+    {
+        title: 'Meu dossiê',
+        href: meuDossie(),
+        icon: FileText,
     },
     {
         title: 'Catálogo de cursos',

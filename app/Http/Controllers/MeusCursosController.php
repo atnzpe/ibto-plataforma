@@ -10,8 +10,9 @@
  *   Instrutor I...; decisão de 10/10/2026), cada um "feito", "atual" ou "a seguir";
  * - os CURSOS da pessoa (matrículas aguardando pagamento ou confirmadas),
  *   com o próximo passo de cada um (pagar ou assistir).
- * Ficam para depois: a foto do filiado (upload com LGPD, #47) e o dossiê
- * (presenças e certificados, #44).
+ * O histórico (presenças, certificados, o que foi trabalhado) fica em
+ * "Meu dossiê" (MeuDossieController). Fica para depois: a foto do filiado
+ * (upload com LGPD, #47).
  */
 
 namespace App\Http\Controllers;
