@@ -17,10 +17,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SituacaoMatricula;
-use App\Models\CursoAula;
 use App\Models\CursoMatricula;
 use App\Models\Nivel;
 use App\Models\User;
+use App\Services\SalaDeAula;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,9 +31,10 @@ class MeusCursosController extends Controller
      * A página "Meus cursos".
      *
      * @param  Request  $request  Quem está logado.
+     * @param  SalaDeAula  $sala  As regras da sala de aula (progresso e "Continuar").
      * @return Response A tela "meus-cursos".
      */
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, SalaDeAula $sala): Response
     {
         /** @var User $usuario */
         $usuario = $request->user();
@@ -74,9 +75,11 @@ class MeusCursosController extends Controller
                 'situacao_rotulo' => $matricula->situacao->rotulo(),
                 // Código do certificado VÁLIDO (#44), para "Ver certificado"; null = não tem.
                 'certificado' => $matricula->certificado?->valido() ? $matricula->certificado->codigo : null,
-                // Primeira aula liberada (para "Assistir"), só na matrícula confirmada.
-                'primeira_aula_id' => $matricula->situacao === SituacaoMatricula::Confirmada
-                    ? $this->primeiraAula($matricula->curso_id)
+                // PROGRESSO das aulas (14/10/2026), só na matrícula confirmada:
+                // "3 de 10 (30%)" e a aula do botão "Continuar" (a 1ª não assistida).
+                // Aguardando pagamento, ou curso sem aulas: null (o botão vira "Ver o curso").
+                'progresso' => $matricula->situacao === SituacaoMatricula::Confirmada
+                    ? $this->progressoComAulas($sala->progresso($matricula->curso, $usuario))
                     : null,
             ])->values(),
         ]);
@@ -111,21 +114,13 @@ class MeusCursosController extends Controller
     }
 
     /**
-     * A primeira aula ativa (em módulo ativo) do curso, ou null se não tem aula.
+     * O progresso, ou null quando o curso ainda não tem aula (nada para assistir).
      *
-     * @param  int  $cursoId  Ex.: 7
-     * @return int|null O id da aula. Ex.: 31
+     * @param  array{assistidas: int, total: int, percentual: int, continuar_id: int|null}  $progresso  O que a SalaDeAula calculou.
+     * @return array{assistidas: int, total: int, percentual: int, continuar_id: int|null}|null
      */
-    private function primeiraAula(int $cursoId): ?int
+    private function progressoComAulas(array $progresso): ?array
     {
-        $aula = CursoAula::query()
-            ->where('ativa', true)
-            ->whereHas('modulo', fn ($modulo) => $modulo->where('curso_id', $cursoId)->where('ativo', true))
-            ->join('curso_modulos', 'curso_modulos.id', '=', 'curso_aulas.modulo_id')
-            // Na ordem: módulo, depois aula.
-            ->orderBy('curso_modulos.ordem')->orderBy('curso_aulas.ordem')->orderBy('curso_aulas.id')
-            ->value('curso_aulas.id');
-
-        return $aula !== null ? (int) $aula : null;
+        return $progresso['total'] > 0 ? $progresso : null;
     }
 }

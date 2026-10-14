@@ -244,6 +244,11 @@ Route::middleware(['auth', 'verified'])
     ->get('cursos/{curso}/assistir/{aula}', [AssistirController::class, 'show'])
     ->whereNumber(['curso', 'aula'])
     ->name('cursos.assistir');
+// Progresso (14/10/2026): marcar/desmarcar a aula como assistida. Mesma porta da sala de aula.
+Route::middleware(['auth', 'verified'])
+    ->put('cursos/{curso}/assistir/{aula}/assistida', [AssistirController::class, 'marcar'])
+    ->whereNumber(['curso', 'aula'])
+    ->name('cursos.assistida');
 
 // CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
 // cursos publicados. Limite de 60 pedidos por minuto por IP.

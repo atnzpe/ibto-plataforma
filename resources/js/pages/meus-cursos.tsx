@@ -27,8 +27,15 @@ type MeuCurso = {
     data_inicio: string | null;
     situacao: 'aguardando_pagamento' | 'confirmada';
     situacao_rotulo: string;
-    // Primeira aula liberada (só na confirmada com aulas), ou null.
-    primeira_aula_id: number | null;
+    // PROGRESSO das aulas (só na confirmada com aulas), ou null.
+    // Ex.: { assistidas: 3, total: 10, percentual: 30, continuar_id: 34 }
+    progresso: {
+        assistidas: number;
+        total: number;
+        percentual: number;
+        // A 1ª aula não assistida (todas assistidas: a 1ª, para rever).
+        continuar_id: number | null;
+    } | null;
     // Código do certificado válido (#44), ou null.
     certificado: string | null;
 };
@@ -255,7 +262,37 @@ export default function MeusCursos({
                                         {meu.situacao_rotulo}
                                     </span>
 
-                                    {/* O próximo passo: certificado (concluído), assistir (confirmada com aulas) ou ver o curso. */}
+                                    {/* Barra de PROGRESSO (só com aulas): número escrito + barra. */}
+                                    {meu.progresso && (
+                                        <div className="flex flex-col gap-1">
+                                            <div
+                                                role="progressbar"
+                                                aria-label={`Progresso em ${meu.titulo}`}
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                                aria-valuenow={
+                                                    meu.progresso.percentual
+                                                }
+                                                className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                                            >
+                                                {/* A largura da parte cheia é a porcentagem. */}
+                                                <div
+                                                    className="h-full rounded-full bg-primary"
+                                                    style={{
+                                                        width: `${meu.progresso.percentual}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs text-muted-foreground">
+                                                {meu.progresso.assistidas} de{' '}
+                                                {meu.progresso.total} aulas (
+                                                {meu.progresso.percentual}%)
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* O próximo passo: certificado (concluído), começar/continuar/rever as aulas
+                                        (confirmada com aulas) ou ver o curso. */}
                                     <div className="mt-auto pt-2">
                                         {meu.certificado !== null ? (
                                             <Button
@@ -273,7 +310,7 @@ export default function MeusCursos({
                                                     Ver certificado
                                                 </a>
                                             </Button>
-                                        ) : meu.primeira_aula_id !== null ? (
+                                        ) : meu.progresso?.continuar_id ? (
                                             <Button
                                                 asChild
                                                 className="min-h-11 w-full"
@@ -281,10 +318,19 @@ export default function MeusCursos({
                                                 <Link
                                                     href={assistir({
                                                         curso: meu.curso_id,
-                                                        aula: meu.primeira_aula_id,
+                                                        aula: meu.progresso
+                                                            .continuar_id,
                                                     })}
                                                 >
-                                                    Assistir
+                                                    {/* Nenhuma assistida: "Começar"; todas: "Rever"; no meio: "Continuar". */}
+                                                    {meu.progresso
+                                                        .assistidas === 0
+                                                        ? 'Começar as aulas'
+                                                        : meu.progresso
+                                                                .percentual ===
+                                                            100
+                                                          ? 'Rever as aulas'
+                                                          : 'Continuar'}
                                                 </Link>
                                             </Button>
                                         ) : (

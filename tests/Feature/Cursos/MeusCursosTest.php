@@ -75,7 +75,8 @@ test('cursos: o pago aguardando leva para pagar; o gratuito confirmado leva para
             ->has('cursos', 2)
             // As mais novas primeiro: o gratuito (2ª matrícula) e depois o pago.
             ->where('cursos.0.titulo', 'Gratuito')
-            ->where('cursos.0.primeira_aula_id', $aula->id)
+            ->where('cursos.0.progresso.continuar_id', $aula->id)
+            ->where('cursos.0.progresso.percentual', 0)
             ->where('cursos.1.situacao', 'aguardando_pagamento')
-            ->where('cursos.1.primeira_aula_id', null));
+            ->where('cursos.1.progresso', null));
 });

@@ -5,12 +5,14 @@
  * posição ("3 / 10"). Ao lado (tela larga) ou embaixo (celular), a lista de
  * todas as aulas, para pular direto. Sem rolagem lateral: o vídeo se ajusta
  * à largura da tela (proporção 16:9).
+ * PROGRESSO (14/10/2026): a barra "3 de 10 aulas assistidas (30%)", o botão
+ * "Marcar como assistida" e o ✓ de cada aula na lista.
  */
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
 import { curso as paginaDoCurso } from '@/routes/catalogo';
-import { assistir } from '@/routes/cursos';
+import { assistida as marcarAssistida, assistir } from '@/routes/cursos';
 
 /** Como tocar o vídeo (vem de CursoAula::video() no servidor). */
 type Video =
@@ -61,7 +63,8 @@ function Tocador({ video, titulo }: { video: Video; titulo: string }) {
  * @param total Quantas aulas a pessoa pode ver. Ex.: 10
  * @param anterior_id A aula anterior, ou null na primeira.
  * @param proxima_id A próxima, ou null na última.
- * @param aulas Todas as aulas (para a lista).
+ * @param aulas Todas as aulas (para a lista), com o ✓ das assistidas.
+ * @param progresso Quantas assistidas de quantas. Ex.: { assistidas: 3, total: 10, percentual: 30 }
  * @returns A tela da sala de aula.
  */
 export default function Assistir({
@@ -72,6 +75,7 @@ export default function Assistir({
     anterior_id,
     proxima_id,
     aulas,
+    progresso,
 }: {
     curso: { id: number; titulo: string };
     aula: {
@@ -86,12 +90,15 @@ export default function Assistir({
         hora_inicio: string | null;
         hora_fim: string | null;
         quem_aplica: string | null;
+        // true = a pessoa já marcou esta aula como assistida.
+        assistida: boolean;
     };
     posicao: number;
     total: number;
     anterior_id: number | null;
     proxima_id: number | null;
-    aulas: { id: number; titulo: string; modulo: string }[];
+    aulas: { id: number; titulo: string; modulo: string; assistida: boolean }[];
+    progresso: { assistidas: number; total: number; percentual: number };
 }) {
     /**
      * Endereço de outra aula deste curso.
@@ -100,6 +107,18 @@ export default function Assistir({
      * @returns Ex.: '/cursos/7/assistir/31'
      */
     const irPara = (id: number) => assistir({ curso: curso.id, aula: id });
+
+    /**
+     * Marca ou desmarca a aula aberta como assistida (o servidor grava e a
+     * tela volta atualizada, sem pular para o topo).
+     */
+    const alternarAssistida = () =>
+        router.put(
+            marcarAssistida({ curso: curso.id, aula: aula.id }).url,
+            // O contrário do que está agora: assistida → desmarca; não assistida → marca.
+            { assistida: !aula.assistida },
+            { preserveScroll: true },
+        );
 
     return (
         <>
@@ -122,6 +141,30 @@ export default function Assistir({
                                 ? ` · ${aula.duracao_minutos} min`
                                 : ''}
                         </p>
+                        {/* Barra de PROGRESSO: o texto diz o número (não só a cor), e o
+                            role="progressbar" faz o leitor de tela anunciar a porcentagem. */}
+                        <div className="mt-2 flex flex-col gap-1">
+                            <div
+                                role="progressbar"
+                                aria-label="Progresso no curso"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={progresso.percentual}
+                                className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                            >
+                                {/* A parte preenchida: a largura é a porcentagem. Ex.: 30% → 30% da barra. */}
+                                <div
+                                    className="h-full rounded-full bg-primary"
+                                    style={{
+                                        width: `${progresso.percentual}%`,
+                                    }}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {progresso.assistidas} de {progresso.total}{' '}
+                                aulas assistidas ({progresso.percentual}%)
+                            </p>
+                        </div>
                     </div>
 
                     {aula.video && (
@@ -157,6 +200,20 @@ export default function Assistir({
                             </a>
                         </Button>
                     )}
+
+                    {/* Marcar como assistida: na largura toda no celular. Marcada, o botão
+                        mostra o ✓ e um clique desmarca (se marcou por engano). */}
+                    <Button
+                        type="button"
+                        variant={aula.assistida ? 'secondary' : 'default'}
+                        onClick={alternarAssistida}
+                        aria-pressed={aula.assistida}
+                        className="min-h-11 w-full sm:w-fit"
+                    >
+                        {aula.assistida
+                            ? '✓ Assistida (clique para desmarcar)'
+                            : 'Marcar como assistida'}
+                    </Button>
 
                     {/* Anterior / Próxima: 2 botões iguais, lado a lado, em qualquer tela. */}
                     <nav
@@ -218,8 +275,20 @@ export default function Assistir({
                                     }
                                     className="flex min-h-11 items-start gap-3 px-3 py-2 text-sm hover:bg-muted/50 aria-[current=page]:bg-muted aria-[current=page]:font-semibold"
                                 >
+                                    {/* Assistida: ✓ no lugar do número (com o texto para o leitor de tela). */}
                                     <span className="w-6 shrink-0 text-right font-mono text-muted-foreground">
-                                        {indice + 1}
+                                        {item.assistida ? (
+                                            <>
+                                                <span aria-hidden="true">
+                                                    ✓
+                                                </span>
+                                                <span className="sr-only">
+                                                    Assistida:
+                                                </span>
+                                            </>
+                                        ) : (
+                                            indice + 1
+                                        )}
                                     </span>
                                     <span className="min-w-0">
                                         {item.titulo}
