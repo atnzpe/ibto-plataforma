@@ -67,3 +67,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - O certificado guarda uma "foto" do dia da emissão (nome, curso, carga horária): se o curso mudar depois, o certificado já entregue não muda. A validação pública mostra só o nome abreviado (LGPD).
 - QR code em SVG é um desenho feito de texto, gerado no nosso servidor: fica nítido impresso e o endereço do certificado não passa por site de terceiros.
 - No PHP, o sinal que fecha o código (`?` seguido de `>`) encerra o PHP até dentro de um comentário `//`: o arquivo inteiro quebra com "Unclosed '{'".
+
+## 14/10/2026 — curso fechado, matrícula pelo IBTO e divisão do dinheiro
+
+- 404 em vez de 403 esconde que a página existe: quem não pode ver um curso fechado nem descobre que ele existe.
+- O percentual mora em cada curso (e não num "se o nome for Formação…"): uma exceção nova vira só um número no cadastro, sem mexer no código.
+- Divisão em centavos: a parte do IBTO arredonda para baixo (`intdiv`) e o instrutor fica com o resto; assim a soma das partes sempre bate com o valor pago.
