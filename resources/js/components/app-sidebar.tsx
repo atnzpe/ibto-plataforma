@@ -4,6 +4,7 @@ import {
     ContactRound,
     Gauge,
     GraduationCap,
+    Images,
     KeyRound,
     ClipboardCheck,
     FileText,
@@ -46,6 +47,8 @@ import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
 // Matrículas (#41): conferir o PIX e confirmar, para o item do menu.
 import { index as matriculasAdmin } from '@/routes/comando-geral/matriculas';
 // Blog (#61): notícias e eventos, para o item do menu.
+// Galeria de eventos (#61, B2), para o item do menu.
+import { index as galeriaAdmin } from '@/routes/comando-geral/galeria';
 import { index as blogAdmin } from '@/routes/comando-geral/blog';
 // Dados para pagamento (#41): PIX e conta, para o item do menu.
 import { edit as pagamentoAdmin } from '@/routes/comando-geral/pagamento';
@@ -117,6 +120,13 @@ const cadastrosNavItems: (NavItem & {
         title: 'Blog',
         href: blogAdmin(),
         icon: Newspaper,
+        permissao: 'blog_publicar',
+    },
+    // Galeria de eventos (#61, B2): álbuns de fotos.
+    {
+        title: 'Galeria de eventos',
+        href: galeriaAdmin(),
+        icon: Images,
         permissao: 'blog_publicar',
     },
     {

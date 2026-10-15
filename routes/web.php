@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\PermissaoController;
 use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
+use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
+use App\Http\Controllers\Blog\GaleriaController;
 use App\Http\Controllers\Blog\PostCapaController;
 use App\Http\Controllers\Blog\PostController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
@@ -284,6 +286,9 @@ Route::middleware('throttle:60,1')->group(function () {
     // post, pelo slug. Ex.: /blog?categoria=evento e /blog/formacao-no-estande
     Route::get('blog', [BlogController::class, 'index'])->name('blog.index');
     Route::get('blog/{post:slug}', [BlogController::class, 'show'])->name('blog.post');
+    // GALERIA DE EVENTOS PÚBLICA (#61, B2): os álbuns publicados e as fotos de cada um.
+    Route::get('eventos', [GaleriaController::class, 'index'])->name('galeria.index');
+    Route::get('eventos/{album:slug}', [GaleriaController::class, 'show'])->name('galeria.album');
     // Validação PÚBLICA do certificado pelo código (#44). Ex.: /validar/IBTO-7K2M-9QXA
     Route::get('validar/{codigo}', [CertificadoController::class, 'validar'])->name('certificados.validar');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
@@ -301,7 +306,18 @@ Route::middleware(['auth', 'verified', 'can:blog.publicar'])
     ->group(function () {
         Route::resource('blog', PostController::class)->except(['show', 'destroy']);
         Route::post('blog/{blog}/situacao', [PostController::class, 'situacao'])->name('blog.situacao');
+        // Galeria de eventos (#61, bloco B2): álbuns, envio de fotos, descrições e o caminho.
+        Route::resource('galeria', AlbumController::class)->parameters(['galeria' => 'album'])->except(['show', 'destroy']);
+        Route::post('galeria/{album}/situacao', [AlbumController::class, 'situacao'])->name('galeria.situacao');
+        Route::post('galeria/{album}/fotos', [AlbumController::class, 'enviarFotos'])->name('galeria.fotos.enviar');
+        Route::put('galeria/{album}/fotos', [AlbumController::class, 'salvarFotos'])->name('galeria.fotos.salvar');
+        Route::delete('galeria/fotos/{foto}', [AlbumController::class, 'apagarFoto'])->name('galeria.fotos.apagar');
     });
+
+// Foto da galeria (#61, B2): pública só de álbum publicado e foto descrita.
+Route::get('imagens/galeria/{foto}', [GaleriaController::class, 'foto'])
+    ->middleware('throttle:300,1')
+    ->name('galeria.foto');
 
 // Capa de um post do blog (#61): pública só quando o post já está no site.
 Route::get('imagens/blog/{post}', PostCapaController::class)
