@@ -20,9 +20,11 @@ return [
     'allowed_methods' => ['GET'],
 
     // Os sites que podem ler. Ex.: CORS_ORIGENS=https://ib-to.org,https://homolog.ib-to.org
+    // O "?:" faz a linha VAZIA no .env (CORS_ORIGENS=) também usar o padrão:
+    // sem isso, um .env copiado do exemplo deixaria ninguém ler.
     'allowed_origins' => array_values(array_filter(array_map(
         'trim',
-        explode(',', (string) env('CORS_ORIGENS', 'https://ib-to.org,https://www.ib-to.org,https://homolog.ib-to.org')),
+        explode(',', (string) (env('CORS_ORIGENS') ?: 'https://ib-to.org,https://www.ib-to.org,https://homolog.ib-to.org')),
     ))),
 
     'allowed_origins_patterns' => [],
