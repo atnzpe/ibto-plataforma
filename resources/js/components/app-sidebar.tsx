@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
+import BotaoSuporte from '@/components/botao-suporte';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
@@ -191,6 +192,8 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
+                {/* Suporte técnico pelo WhatsApp (15/10/2026), logo acima do nome da pessoa. */}
+                <BotaoSuporte jeito="menu" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

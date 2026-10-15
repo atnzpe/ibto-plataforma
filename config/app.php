@@ -50,6 +50,15 @@ return [
     ))), // array_filter tira os pedaços vazios (ex.: vírgula sobrando no fim).
 
     /*
+    | SUPORTE TÉCNICO pelo WhatsApp (pedido do Gleyson, 15/10/2026): o número
+    | que o botão "Suporte técnico" abre, com o código do país e o DDD, só
+    | números (os outros sinais são tirados aqui). Ex.: SUPORTE_WHATSAPP=5581999990000
+    | Fica no .env (dado pessoal fora do código). Vazio = o botão não aparece.
+    */
+
+    'suporte_whatsapp' => preg_replace('/\D/', '', (string) env('SUPORTE_WHATSAPP', '')),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------

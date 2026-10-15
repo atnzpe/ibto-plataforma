@@ -8,6 +8,7 @@
  */
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import BotaoSuporte from '@/components/botao-suporte';
 import MenuIdiomas from '@/components/menu-idiomas';
 import { dashboard, login } from '@/routes';
 import { index as catalogo } from '@/routes/catalogo';
@@ -65,9 +66,11 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
                 {children}
             </main>
 
-            <footer className="border-t border-[#e4dccb] py-6 text-center text-xs text-[#5c5644]">
+            <footer className="flex flex-col items-center gap-2 border-t border-[#e4dccb] py-6 text-center text-xs text-[#5c5644]">
                 Instituto Brasileiro de Treinamento Operacional · Instruções com
                 propósito. Treinamento com resultados.
+                {/* Suporte técnico pelo WhatsApp (15/10/2026). */}
+                <BotaoSuporte />
             </footer>
         </div>
     );

@@ -52,3 +52,7 @@ MAIL_USERNAME=<endereço completo da conta de e-mail>
 MAIL_PASSWORD=<senha da conta de e-mail>
 MAIL_FROM_ADDRESS=<o mesmo endereço da conta>
 MAIL_FROM_NAME="${APP_NAME}"
+
+# Suporte técnico pelo WhatsApp (botão "Suporte técnico"): código do país + DDD + número, só números.
+# Vazio = o botão não aparece. Ex.: SUPORTE_WHATSAPP=5581999990000
+SUPORTE_WHATSAPP=
