@@ -117,6 +117,8 @@ test('a página do certificado: o dono vê; outra pessoa não (403)', function (
         ->assertOk()
         ->assertInertia(fn ($tela) => $tela->component('certificados/ver')
             ->where('certificado.nome', 'Gleyson Atanazio da Silva')
+            // O local do curso (rodapé do modelo institucional, 15/10/2026).
+            ->where('certificado.local', 'Recife')
             // O QR code vem pronto como desenho SVG (sem a linha "xml" do começo).
             ->where('certificado.qr_svg', fn (string $svg) => str_starts_with($svg, '<svg')));
     $this->actingAs(User::factory()->create())->get(route('certificados.ver', $certificado->codigo))->assertForbidden();

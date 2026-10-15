@@ -40,6 +40,19 @@ type Aula = {
     introducao: string | null;
     lembrete_url: string | null;
     google_agenda_url: string | null;
+    // A situação desta aula para a pessoa logada (só com matrícula confirmada); null = nada a mostrar.
+    minha_situacao: 'presente' | 'falta' | 'aguardando' | 'assistida' | null;
+};
+
+// Texto e cor de cada situação da aula (ESCRITA, não só cor), no fundo escuro do módulo.
+const SITUACAO_AULA: Record<
+    NonNullable<Aula['minha_situacao']>,
+    { texto: string; classe: string }
+> = {
+    presente: { texto: '✓ Presente', classe: 'bg-green-200 text-green-950' },
+    falta: { texto: '✗ Falta', classe: 'bg-red-200 text-red-950' },
+    aguardando: { texto: 'Aguardando', classe: 'bg-[#e9e2cc] text-[#1c1b17]' },
+    assistida: { texto: '✓ Assistida', classe: 'bg-green-200 text-green-950' },
 };
 
 type CursoDetalhe = CartaoCurso & {
@@ -152,6 +165,7 @@ const selo = 'rounded-full px-3 py-0.5 text-xs';
  * @param logado true se há alguém logado (muda o botão da inscrição).
  * @param pode_assistir true se a pessoa pode ver o conteúdo (botão e aulas viram links para a sala de aula).
  * @param vagas_restantes Quantas vagas sobram (null = sem limite). Ex.: 3
+ * @param vagas_preenchidas Quantas vagas já estão ocupadas. Ex.: 14
  * @param matricula A matrícula da pessoa logada (aguardando ou confirmada), ou null.
  * @returns A página do curso.
  */
@@ -160,6 +174,7 @@ export default function PaginaCurso({
     logado,
     pode_assistir,
     vagas_restantes,
+    vagas_preenchidas = 0,
     matricula,
 }: {
     curso: CursoDetalhe;
@@ -167,6 +182,8 @@ export default function PaginaCurso({
     pode_assistir: boolean;
     // Vagas que sobram (#41); null = sem limite.
     vagas_restantes: number | null;
+    // Vagas já ocupadas (aguardando ou confirmadas). Ex.: 14.
+    vagas_preenchidas?: number;
     // A matrícula da pessoa logada, ou null.
     matricula: MatriculaDaPessoa | null;
 }) {
@@ -360,6 +377,19 @@ export default function PaginaCurso({
                                                         {!aula.data &&
                                                             aula.duracao_minutos &&
                                                             ` — ${aula.duracao_minutos} min`}
+                                                        {/* A situação desta aula para quem está matriculado (desenho de 10/10/2026). */}
+                                                        {aula.minha_situacao && (
+                                                            <span
+                                                                className={`ml-2 rounded px-1.5 py-0.5 text-xs font-medium ${SITUACAO_AULA[aula.minha_situacao].classe}`}
+                                                            >
+                                                                {
+                                                                    SITUACAO_AULA[
+                                                                        aula
+                                                                            .minha_situacao
+                                                                    ].texto
+                                                                }
+                                                            </span>
+                                                        )}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -434,10 +464,30 @@ export default function PaginaCurso({
                                     : formatarReais(curso.valor_centavos)}
                             </p>
                         </div>
+                        {/* Vagas limitadas: a barra "14 de 20 preenchidas" (desenho de 10/10/2026). Sem limite: nada. */}
                         {curso.vagas && (
-                            <p className="text-sm font-semibold text-[#a33a00]">
-                                Vagas limitadas · {curso.vagas} vagas
-                            </p>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex justify-between text-sm">
+                                    <span>Vagas</span>
+                                    <strong className="font-semibold">
+                                        {vagas_preenchidas} de {curso.vagas}{' '}
+                                        preenchidas
+                                    </strong>
+                                </div>
+                                <div
+                                    role="img"
+                                    aria-label={`${vagas_preenchidas} de ${curso.vagas} vagas preenchidas`}
+                                    className="h-2.5 overflow-hidden rounded-full bg-[#efe8d6]"
+                                >
+                                    {/* A parte cheia: a porcentagem preenchida (no máximo 100%). */}
+                                    <div
+                                        className="h-full bg-[#6b5d3a]"
+                                        style={{
+                                            width: `${Math.min(100, (vagas_preenchidas / curso.vagas) * 100)}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         )}
                         {curso.restrito && (
                             <p className="rounded-lg bg-[#1c1b17] px-3 py-2 text-sm text-[#c9bd94]">

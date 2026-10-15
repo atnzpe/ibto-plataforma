@@ -9,6 +9,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import BotaoSuporte from '@/components/botao-suporte';
+import { index as blog } from '@/routes/blog';
 import MenuIdiomas from '@/components/menu-idiomas';
 import { dashboard, login } from '@/routes';
 import { index as catalogo } from '@/routes/catalogo';
@@ -50,6 +51,13 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
                             className="inline-flex min-h-11 items-center rounded-lg px-3 text-[#e9e2cc] no-underline hover:bg-white/10"
                         >
                             Cursos
+                        </Link>
+                        {/* Blog (#61): notícias e eventos do IBTO. */}
+                        <Link
+                            href={blog()}
+                            className="inline-flex min-h-11 items-center rounded-lg px-3 text-[#e9e2cc] no-underline hover:bg-white/10"
+                        >
+                            Blog
                         </Link>
                         <Link
                             href={auth.user ? dashboard() : login()}

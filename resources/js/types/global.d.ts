@@ -29,6 +29,8 @@ declare module '@inertiajs/core' {
                 cursos_acessar: boolean;
                 pagamentos_confirmar: boolean;
                 pagamentos_configurar: boolean;
+                // Blog (#61): escrever, publicar e arquivar posts.
+                blog_publicar: boolean;
             };
             // Mensagem de sucesso da última ação (ex.: "Área cadastrada."), ou null.
             sucesso: string | null;

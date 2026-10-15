@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\PermissaoController;
 use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
+use App\Http\Controllers\Blog\BlogController;
+use App\Http\Controllers\Blog\PostCapaController;
+use App\Http\Controllers\Blog\PostController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
 use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
@@ -277,6 +280,10 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
     // Trilha em fluxograma (#38, bloco C4b).
     Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    // BLOG PÚBLICO (#61): a lista (com filtro por categoria) e a página de cada
+    // post, pelo slug. Ex.: /blog?categoria=evento e /blog/formacao-no-estande
+    Route::get('blog', [BlogController::class, 'index'])->name('blog.index');
+    Route::get('blog/{post:slug}', [BlogController::class, 'show'])->name('blog.post');
     // Validação PÚBLICA do certificado pelo código (#44). Ex.: /validar/IBTO-7K2M-9QXA
     Route::get('validar/{codigo}', [CertificadoController::class, 'validar'])->name('certificados.validar');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
@@ -284,6 +291,22 @@ Route::middleware('throttle:60,1')->group(function () {
         ->whereNumber(['curso', 'aula'])
         ->name('catalogo.lembrete');
 });
+
+// BLOG no Comando Geral (#61): lista, cadastro, edição e as ações do caminho
+// (revisão, publicar/agendar, arquivar). Quem entra: "blog.publicar".
+// Sem "show" (a prévia é a própria edição) e sem "destroy" (apagar = arquivar).
+Route::middleware(['auth', 'verified', 'can:blog.publicar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('blog', PostController::class)->except(['show', 'destroy']);
+        Route::post('blog/{blog}/situacao', [PostController::class, 'situacao'])->name('blog.situacao');
+    });
+
+// Capa de um post do blog (#61): pública só quando o post já está no site.
+Route::get('imagens/blog/{post}', PostCapaController::class)
+    ->middleware('throttle:120,1')
+    ->name('blog.capa');
 
 // Capa de um curso (#39): pública (catálogo e landpage), com limite por IP.
 Route::get('imagens/cursos/{curso}', CursoImagemController::class)
