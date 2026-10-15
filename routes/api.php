@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PublicoBlogController;
 use App\Http\Controllers\ErroTelaController;
 use App\Http\Controllers\SaudeController;
 use Illuminate\Support\Facades\Route;
@@ -17,3 +18,10 @@ Route::get('saude', SaudeController::class)
 Route::post('erros-tela', ErroTelaController::class)
     ->middleware('throttle:10,1')
     ->name('api.erros-tela');
+
+// API PÚBLICA DO BLOG (#61, bloco B3): os posts mais recentes já no site, em
+// JSON, para o bloco "Últimas do IBTO" da landpage. Só leitura; só o site do
+// IBTO lê pelo navegador (config/cors.php). Limite de 60 por minuto por IP.
+Route::get('publico/blog', PublicoBlogController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.publico.blog');
