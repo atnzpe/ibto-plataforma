@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -150,6 +151,16 @@ class Post extends Model
     public function curso(): BelongsTo
     {
         return $this->belongsTo(Curso::class);
+    }
+
+    /**
+     * Os álbuns da galeria ligados a este post (as fotos aparecem dentro dele).
+     *
+     * @return HasMany<GaleriaAlbum, $this>
+     */
+    public function albuns(): HasMany
+    {
+        return $this->hasMany(GaleriaAlbum::class);
     }
 
     /**

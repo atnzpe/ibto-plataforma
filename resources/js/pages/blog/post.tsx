@@ -5,6 +5,8 @@
  * ligado. Curso fechado não aparece (o servidor já manda sem ele).
  */
 import { Head, Link } from '@inertiajs/react';
+import GradeFotos from '@/components/grade-fotos';
+import type { FotoGaleria } from '@/components/grade-fotos';
 import { dataBr } from '@/pages/catalogo/index';
 import { curso as paginaDoCurso } from '@/routes/catalogo';
 import { index } from '@/routes/blog';
@@ -32,6 +34,8 @@ export default function PaginaPost({
         credito: string | null;
         video: Video | null;
         curso: { id: number; titulo: string } | null;
+        // As fotos dos álbuns publicados ligados a este post (galeria, B2).
+        fotos?: FotoGaleria[];
     };
 }) {
     return (
@@ -102,6 +106,19 @@ export default function PaginaPost({
                         className="aspect-video w-full rounded-xl bg-black"
                         aria-label={`Vídeo: ${post.titulo}`}
                     />
+                )}
+
+                {/* As fotos do evento (álbuns publicados ligados a este post). */}
+                {post.fotos && post.fotos.length > 0 && (
+                    <section
+                        aria-labelledby="t-fotos"
+                        className="flex flex-col gap-3"
+                    >
+                        <h2 id="t-fotos" className="text-lg font-semibold">
+                            Fotos do evento
+                        </h2>
+                        <GradeFotos fotos={post.fotos} />
+                    </section>
                 )}
 
                 {/* O curso ligado (só curso publicado e aberto). */}

@@ -13,8 +13,10 @@
 namespace App\Http\Controllers\Blog;
 
 use App\Enums\CategoriaPost;
+use App\Enums\SituacaoAlbum;
 use App\Enums\SituacaoCurso;
 use App\Http\Controllers\Controller;
+use App\Models\GaleriaAlbum;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -75,6 +77,10 @@ class BlogController extends Controller
                 'video' => $post->video(),
                 // O curso ligado: id e título, ou null (sem curso, ou curso fechado).
                 'curso' => $cursoNoSite ? ['id' => $curso->id, 'titulo' => $curso->titulo] : null,
+                // As fotos dos álbuns PUBLICADOS ligados a este post (galeria, B2).
+                'fotos' => $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->get()
+                    ->flatMap(fn (GaleriaAlbum $album) => GaleriaController::fotosParaTela($album))
+                    ->values()->all(),
             ],
         ]);
     }
