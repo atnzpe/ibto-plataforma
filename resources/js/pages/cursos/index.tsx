@@ -215,8 +215,8 @@ export default function CursosIndex({
                     />
                 </div>
 
-                {/* TABELA: só em tela larga. */}
-                <div className="hidden overflow-x-auto rounded-md border border-border md:block">
+                {/* TABELA: só em tela larga (a partir de 1024 px, a regra "nenhuma tela rola de lado"). */}
+                <div className="hidden overflow-x-auto rounded-md border border-border lg:block">
                     <table className="w-full text-left text-sm">
                         <caption className="sr-only">Lista dos cursos</caption>
                         <thead className="bg-muted/50">
@@ -354,10 +354,10 @@ export default function CursosIndex({
                     </table>
                 </div>
 
-                {/* CARTÕES: só no celular. */}
+                {/* CARTÕES: celular e tablet (abaixo de 1024 px). */}
                 <ul
                     aria-label="Lista dos cursos"
-                    className="flex flex-col gap-3 md:hidden"
+                    className="flex flex-col gap-3 lg:hidden"
                 >
                     {cursos.length === 0 && (
                         <li className="rounded-md border border-border px-4 py-6 text-center text-sm text-muted-foreground">
