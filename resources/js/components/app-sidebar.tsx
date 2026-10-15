@@ -10,6 +10,7 @@ import {
     Landmark,
     LayoutGrid,
     Medal,
+    Newspaper,
     Tags,
     UserCog,
     Users,
@@ -43,6 +44,8 @@ import { index as filiados } from '@/routes/cadastros/filiados';
 import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
 // Matrículas (#41): conferir o PIX e confirmar, para o item do menu.
 import { index as matriculasAdmin } from '@/routes/comando-geral/matriculas';
+// Blog (#61): notícias e eventos, para o item do menu.
+import { index as blogAdmin } from '@/routes/comando-geral/blog';
 // Dados para pagamento (#41): PIX e conta, para o item do menu.
 import { edit as pagamentoAdmin } from '@/routes/comando-geral/pagamento';
 // Livro-caixa (#59), para o item do menu.
@@ -107,6 +110,13 @@ const cadastrosNavItems: (NavItem & {
         href: pagamentoAdmin(),
         icon: Landmark,
         permissao: 'pagamentos_configurar',
+    },
+    // Blog (#61): notícias e eventos, com fotos e vídeos.
+    {
+        title: 'Blog',
+        href: blogAdmin(),
+        icon: Newspaper,
+        permissao: 'blog_publicar',
     },
     {
         title: 'Áreas de atuação',
