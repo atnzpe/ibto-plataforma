@@ -34,7 +34,16 @@
 # Usa o mesmo arquivo de senhas da homologação do site (homolog.ib-to.org),
 # então a equipe entra com o mesmo usuário e senha. Guia:
 # docs/publicacao-homologacao.md.
-<If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org' && %{HTTPS} == 'on'">
+#
+# EXCEÇÃO (15/10/2026, blog #61): ficam SEM senha só os pedidos de LEITURA
+# (GET) de /api/publico/... (os posts já publicados, para o bloco "Últimas do
+# IBTO" do site de testes) e de /imagens/... (capas e fotos). O site busca
+# esses dados "de fora", sem a senha, e sem a exceção receberia "acesso
+# negado". Esses endereços já se protegem sozinhos: só entregam o que está
+# publicado (rascunho dá "não existe"). O resto da homologação continua com senha.
+# THE_REQUEST é a primeira linha do pedido, como chegou (ex.: "GET /api/publico/blog HTTP/1.1"):
+# não muda quando o Laravel redireciona tudo para o index.php por dentro.
+<If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org' && %{HTTPS} == 'on' && %{THE_REQUEST} !~ m#^GET /(api/publico|imagens)/#">
     AuthType Basic
     AuthName "Homologacao IBTO Cursos"
     AuthUserFile "/home1/edua1187/.htpasswds/homolog.ib-to.org/passwd"
