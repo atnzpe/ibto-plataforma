@@ -185,6 +185,21 @@
         padding-right: env(safe-area-inset-right);
     }
 
+    /*
+     * JANELAS QUE ABREM POR CIMA DA TELA (Dialog: a do encontro com o
+     * "Lembrete", a de excluir a conta, a da verificação em duas etapas...):
+     * a janela nunca passa da área segura. A altura máxima é a da tela menos
+     * o entalhe, a barra de gestos e 2rem de folga; se o conteúdo for maior,
+     * a janela ganha rolagem PARA BAIXO (nunca para o lado). 15/10/2026.
+     */
+    [data-slot='dialog-content'] {
+        max-height: calc(
+            100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) -
+                2rem
+        );
+        overflow-y: auto;
+    }
+
     /* Gaveta do menu no celular (e qualquer outra gaveta): margem dos 4 lados. */
     [data-slot='sheet-content'] {
         padding-top: env(safe-area-inset-top);
