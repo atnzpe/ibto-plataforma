@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PublicoBlogController;
+use App\Http\Controllers\Api\PublicoCursosController;
 use App\Http\Controllers\ErroTelaController;
 use App\Http\Controllers\SaudeController;
 use Illuminate\Support\Facades\Route;
@@ -25,3 +26,10 @@ Route::post('erros-tela', ErroTelaController::class)
 Route::get('publico/blog', PublicoBlogController::class)
     ->middleware('throttle:60,1')
     ->name('api.publico.blog');
+
+// API PÚBLICA DOS CURSOS (#52): os cursos publicados e não fechados, em JSON,
+// para a página /cursos do site. Só leitura; só o site do IBTO lê pelo
+// navegador (config/cors.php). Limite de 60 por minuto por IP.
+Route::get('publico/cursos', PublicoCursosController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.publico.cursos');
