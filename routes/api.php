@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PublicoAreasController;
 use App\Http\Controllers\Api\PublicoBlogController;
 use App\Http\Controllers\Api\PublicoCursosController;
 use App\Http\Controllers\ErroTelaController;
@@ -33,3 +34,10 @@ Route::get('publico/blog', PublicoBlogController::class)
 Route::get('publico/cursos', PublicoCursosController::class)
     ->middleware('throttle:60,1')
     ->name('api.publico.cursos');
+
+// API PÚBLICA DAS ÁREAS DE ATUAÇÃO (#57): só as ativas, para a página "Áreas
+// de atuação" do site. Só leitura; só o site do IBTO lê pelo navegador
+// (config/cors.php). Limite de 60 por minuto por IP.
+Route::get('publico/areas-atuacao', PublicoAreasController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.publico.areas');
