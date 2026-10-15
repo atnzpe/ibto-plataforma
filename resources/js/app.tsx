@@ -21,6 +21,9 @@ void createInertiaApp({
             // Vitrine pública de cursos (#38): cabeçalho do IBTO, sem o menu lateral.
             case name.startsWith('catalogo/'):
                 return VitrineLayout;
+            // Blog público (#61): a mesma vitrine do IBTO.
+            case name.startsWith('blog/'):
+                return VitrineLayout;
             // Certificado para imprimir (#44): página limpa, sem menu nem cabeçalho.
             case name === 'certificados/ver':
                 return null;

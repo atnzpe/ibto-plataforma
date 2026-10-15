@@ -31,6 +31,8 @@ class HandleInertiaRequests extends Middleware
         'pagamentos.confirmar',
         // Dados para pagamento (#41): PIX e conta do IBTO e dos cursos.
         'pagamentos.configurar',
+        // Blog (#61): escrever, publicar e arquivar posts.
+        'blog.publicar',
     ];
 
     /**
