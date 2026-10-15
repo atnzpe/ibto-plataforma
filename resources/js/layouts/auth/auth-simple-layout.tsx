@@ -5,6 +5,7 @@
  */
 import { Link } from '@inertiajs/react';
 // Menu de idiomas (#53), no modo "dica do tradutor do navegador".
+import BotaoSuporte from '@/components/botao-suporte';
 import MenuIdiomas from '@/components/menu-idiomas';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
@@ -45,6 +46,10 @@ export default function AuthSimpleLayout({
                         </div>
                     </div>
                     {children}
+                    {/* Suporte técnico pelo WhatsApp (15/10/2026): quem não consegue entrar é quem mais precisa. */}
+                    <div className="flex justify-center">
+                        <BotaoSuporte />
+                    </div>
                 </div>
             </div>
         </div>

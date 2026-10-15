@@ -66,6 +66,9 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            // Número do suporte técnico no WhatsApp (só números), para o botão
+            // "Suporte técnico". null = sem número no .env (o botão não aparece).
+            'suporte_whatsapp' => config('app.suporte_whatsapp') ?: null,
             'auth' => [
                 'user' => $request->user(),
             ],

@@ -11,6 +11,8 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            // Número do suporte técnico no WhatsApp (só números); null = sem botão.
+            suporte_whatsapp: string | null;
             sidebarOpen: boolean;
             // O que o usuário logado pode fazer (HandleInertiaRequests). Só
             // esconde ou mostra menus; quem garante a permissão são as rotas.
