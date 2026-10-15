@@ -134,7 +134,9 @@ export default function MeusCursos({
                             </span>
                         )}
                     </div>
-                    {trilha.length > 0 && (
+                    {/* A barra só aparece quando já há nível alcançado: vazia (não filiado
+                        ou sem nível) ela parecia um defeito; a frase abaixo explica. */}
+                    {trilha.length > 0 && feitas > 0 && (
                         <div
                             role="img"
                             aria-label={`${feitas} de ${trilha.length} níveis alcançados`}
