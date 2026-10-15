@@ -120,7 +120,7 @@ max_input_time = 300
 
 1. `http://cursos-homolog.ib-to.org` redireciona para `https://` sem pedir senha.
 2. `https://cursos-homolog.ib-to.org` pede a **senha da homologação** (a mesma de `homolog.ib-to.org`).
-3. Depois da senha, a página inicial mostra ✅ "Plataforma no ar e banco de dados conectado" (vem de `/api/saude`).
+3. Depois da senha, a página inicial leva ao catálogo de cursos; e `https://cursos-homolog.ib-to.org/api/saude` responde que a plataforma está no ar e o banco conectado (desde 14/10/2026 a tela "Em construção" não existe mais).
 4. Criar conta → o e-mail de confirmação chega (até 5 minutos, pela fila) → entrar → painel → sair.
 
 ## Problemas comuns
