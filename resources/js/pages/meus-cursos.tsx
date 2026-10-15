@@ -11,7 +11,7 @@ import { Head, Link } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
-import { meusCursos } from '@/routes';
+import { meuDossie, meusCursos } from '@/routes';
 import { curso as paginaDoCurso, index as catalogo } from '@/routes/catalogo';
 import { ver as verCertificado } from '@/routes/certificados';
 import { assistir } from '@/routes/cursos';
@@ -60,12 +60,14 @@ const ETAPA: Record<string, { texto: string; classe: string }> = {
  * @param pessoa Quem está logado (com a equipe, se filiado).
  * @param trilha Os níveis da trilha de formação, em ordem, com o estado de cada um.
  * @param cursos Os cursos da pessoa.
+ * @param dossie Os 3 registros mais recentes do dossiê (certificados e presenças).
  * @returns A página.
  */
 export default function MeusCursos({
     pessoa,
     trilha,
     cursos,
+    dossie = [],
 }: {
     pessoa: {
         nome: string;
@@ -79,6 +81,12 @@ export default function MeusCursos({
     };
     trilha: { nome: string; estado: 'feita' | 'atual' | 'a_seguir' }[];
     cursos: MeuCurso[];
+    // Ex.: [{ tipo: 'certificado', titulo: 'Combate Corpo a Corpo', data: '2026-10-12' }]
+    dossie?: {
+        tipo: 'certificado' | 'presenca';
+        titulo: string;
+        data: string;
+    }[];
 }) {
     // Quantos níveis já alcançou (os feitos + o atual). Ex.: 3.
     const feitas = trilha.filter((etapa) => etapa.estado !== 'a_seguir').length;
@@ -358,6 +366,52 @@ export default function MeusCursos({
                             </li>
                         ))}
                     </ul>
+                </section>
+
+                {/* Resumo do dossiê (desenho de 10/10/2026): os 3 registros mais recentes e o link para o completo. */}
+                <section
+                    aria-labelledby="t-dossie"
+                    className="flex flex-col gap-3 rounded-xl border border-border p-4"
+                >
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 id="t-dossie" className="font-semibold">
+                            Meu dossiê
+                        </h2>
+                        <Link
+                            href={meuDossie()}
+                            className="text-sm underline underline-offset-4"
+                        >
+                            Ver o dossiê completo
+                        </Link>
+                    </div>
+                    {/* Sem registros ainda: uma frase explica de onde eles vêm. */}
+                    {dossie.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            Seus certificados e presenças aparecem aqui depois
+                            dos encontros.
+                        </p>
+                    ) : (
+                        <ul className="flex flex-col divide-y divide-border text-sm">
+                            {dossie.map((registro, posicao) => (
+                                <li
+                                    key={`${registro.tipo}-${posicao}`}
+                                    className="flex flex-wrap justify-between gap-2 py-2"
+                                >
+                                    <span>
+                                        <strong className="font-semibold">
+                                            {registro.tipo === 'certificado'
+                                                ? 'Certificado'
+                                                : 'Presença'}
+                                        </strong>{' '}
+                                        · {registro.titulo}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {dataBr(registro.data)}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
             </div>
         </>
