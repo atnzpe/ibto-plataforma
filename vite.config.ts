@@ -22,6 +22,11 @@ export default defineConfig({
                 bunny('Audiowide', {
                     weights: [400],
                 }),
+                // Cinzel: letras clássicas (estilo gravado em pedra) do modelo
+                // institucional de certificado do Mestre Eduardo (14/10/2026).
+                bunny('Cinzel', {
+                    weights: [600, 700],
+                }),
             ],
         }),
         inertia(),

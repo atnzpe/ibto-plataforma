@@ -15,6 +15,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Cursos\Certificados;
+use App\Enums\ModalidadeCurso;
 use App\Exceptions\RegraCurso;
 use App\Models\Curso;
 use App\Models\CursoCertificado;
@@ -127,6 +128,9 @@ class CertificadoController extends Controller
                 'curso' => $certificado->curso,
                 'carga_horaria' => $certificado->carga_horaria,
                 'instrutor' => $certificado->instrutor,
+                // Onde foi o curso (rodapé do modelo institucional): o local do
+                // curso, ou "Online". Ex.: 'Recife - PE'. Sem local: null (o campo some).
+                'local' => $matricula->curso->modalidade === ModalidadeCurso::Online ? 'Online' : $matricula->curso->local,
                 'concluido_em' => $certificado->concluido_em->toDateString(),
                 'emitido_em' => $certificado->emitido_em->toDateString(),
                 'valido' => $certificado->valido(),
