@@ -19,7 +19,9 @@ use App\Enums\SituacaoMatricula;
 use App\Models\AreaAtuacao;
 use App\Models\Curso;
 use App\Models\CursoAula;
+use App\Models\CursoAulaAssistida;
 use App\Models\CursoModulo;
+use App\Models\CursoPresenca;
 use App\Models\Trilha;
 use App\Support\Calendario;
 use App\Support\DadosPagamento;
@@ -106,6 +108,11 @@ class CatalogoController extends Controller
 
         $curso->load(['area:id,nome', 'instrutor:id,name', 'modulos' => fn ($modulos) => $modulos->where('ativo', true), 'modulos.aulas' => fn ($aulas) => $aulas->where('ativa', true)]);
 
+        // A situação de cada aula PARA ESTA PESSOA (desenho de 10/10/2026:
+        // "Presença confirmada / Aguardando / ✓"). Vazio para visitante ou
+        // quem não tem matrícula confirmada. Ex.: [31 => 'presente', 32 => 'aguardando'].
+        $minhaSituacao = $this->minhaSituacaoPorAula($request, $curso);
+
         return Inertia::render('catalogo/curso', [
             'curso' => [
                 ...$this->cartao($curso),
@@ -137,6 +144,8 @@ class CatalogoController extends Controller
                         'introducao' => $aula->introducao,
                         'lembrete_url' => $aula->data !== null ? route('catalogo.lembrete', ['curso' => $curso->id, 'aula' => $aula->id]) : null,
                         'google_agenda_url' => $this->linkGoogleAgenda($curso, $aula),
+                        // 'presente' | 'falta' | 'aguardando' (encontro) | 'assistida' (aula online) | null.
+                        'minha_situacao' => $minhaSituacao[$aula->id] ?? null,
                     ])->values(),
                 ])->values(),
                 // Trilhas de que este curso faz parte (com a etapa em cada uma).
@@ -149,6 +158,8 @@ class CatalogoController extends Controller
             // Quem está logado (para o botão: "Entrar para se inscrever" ou a inscrição, no bloco C5).
             'logado' => $request->user() !== null,
             // Vagas que ainda restam (#41): null = sem limite. Ex.: 3.
+            // Vagas já ocupadas (aguardando ou confirmadas), para a barra "14 de 20 preenchidas".
+            'vagas_preenchidas' => $curso->matriculas()->ocupandoVaga()->count(),
             'vagas_restantes' => $curso->vagas !== null
                 ? max(0, $curso->vagas - $curso->matriculas()->ocupandoVaga()->count())
                 : null,
@@ -300,6 +311,61 @@ class CatalogoController extends Controller
             'Content-Type' => 'text/calendar; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"encontro-ibto-{$aula->id}.ics\"",
         ]);
+    }
+
+    /**
+     * A situação de cada aula para a pessoa logada (só com matrícula CONFIRMADA):
+     * - encontro (aula com data): 'presente' ou 'falta' depois da chamada;
+     *   'aguardando' enquanto a chamada não foi feita;
+     * - aula sem data (online): 'assistida' quando a pessoa marcou.
+     *
+     * @param  Request  $request  Quem está vendo (pode ser visitante).
+     * @param  Curso  $curso  O curso da página, com os módulos e aulas já carregados.
+     * @return array<int, string> [id da aula => situação]. Ex.: [31 => 'presente']. Vazio = nada a mostrar.
+     */
+    private function minhaSituacaoPorAula(Request $request, Curso $curso): array
+    {
+        $usuario = $request->user();
+        // Visitante: nada a mostrar.
+        if ($usuario === null) {
+            return [];
+        }
+
+        // Só quem tem a matrícula confirmada tem situação nas aulas.
+        $matricula = $curso->matriculas()
+            ->where('user_id', $usuario->id)
+            ->where('situacao', SituacaoMatricula::Confirmada)
+            ->latest('id')
+            ->first();
+        if ($matricula === null) {
+            return [];
+        }
+
+        // Todas as aulas ativas do curso, numa lista só.
+        $aulas = $curso->modulos->flatMap(fn (CursoModulo $modulo) => $modulo->aulas);
+        // Presenças desta matrícula: [aula_id => true/false].
+        $presencas = CursoPresenca::query()->where('matricula_id', $matricula->id)->pluck('presente', 'aula_id');
+        // Aulas que a pessoa marcou como assistidas. Ex.: [33, 34].
+        $assistidas = CursoAulaAssistida::query()
+            ->where('user_id', $usuario->id)
+            ->whereIn('aula_id', $aulas->pluck('id'))
+            ->pluck('aula_id')
+            ->all();
+
+        $situacoes = [];
+        foreach ($aulas as $aula) {
+            if ($aula->data !== null) {
+                // Encontro: sem chamada ainda = aguardando; com chamada = presente ou falta.
+                $situacoes[$aula->id] = $aula->chamada_feita_em === null
+                    ? 'aguardando'
+                    : (($presencas[$aula->id] ?? false) ? 'presente' : 'falta');
+            } elseif (in_array($aula->id, $assistidas)) {
+                // Aula online marcada como assistida. Não marcada: sem situação (null).
+                $situacoes[$aula->id] = 'assistida';
+            }
+        }
+
+        return $situacoes;
     }
 
     /**

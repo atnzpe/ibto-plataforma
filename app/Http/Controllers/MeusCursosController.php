@@ -18,7 +18,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SituacaoMatricula;
+use App\Models\CursoCertificado;
 use App\Models\CursoMatricula;
+use App\Models\CursoPresenca;
 use App\Models\Nivel;
 use App\Models\User;
 use App\Services\SalaDeAula;
@@ -83,7 +85,58 @@ class MeusCursosController extends Controller
                     ? $this->progressoComAulas($sala->progresso($matricula->curso, $usuario))
                     : null,
             ])->values(),
+            // O resumo do dossiê (desenho de 10/10/2026): os 3 registros mais recentes.
+            'dossie' => $this->ultimosDoDossie($usuario),
         ]);
+    }
+
+    /**
+     * Os 3 registros mais recentes do dossiê da pessoa: certificados válidos e
+     * presenças em encontros, do mais novo para o mais antigo. O dossiê completo
+     * fica em "Meu dossiê" (MeuDossieController).
+     *
+     * @param  User  $usuario  Quem está logado.
+     * @return list<array{tipo: string, titulo: string, data: string}>
+     *                                                                 Ex.: [['tipo' => 'certificado', 'titulo' => 'Combate Corpo a Corpo', 'data' => '2026-10-12']]
+     */
+    private function ultimosDoDossie(User $usuario): array
+    {
+        // As matrículas da pessoa (para achar os certificados e as presenças dela).
+        $matriculas = CursoMatricula::query()->where('user_id', $usuario->id)->select('id');
+
+        // Certificados VÁLIDOS (cancelado não entra), com o nome do curso guardado na "foto".
+        $certificados = CursoCertificado::query()
+            ->whereIn('matricula_id', $matriculas)
+            ->whereNull('cancelado_em')
+            ->latest('emitido_em')
+            ->limit(3)
+            ->get()
+            ->map(fn (CursoCertificado $certificado) => [
+                'tipo' => 'certificado',
+                'titulo' => $certificado->curso,
+                'data' => $certificado->emitido_em->toDateString(),
+            ]);
+
+        // Presenças (só as "presente"), com o encontro e o curso.
+        $presencas = CursoPresenca::query()
+            ->whereIn('matricula_id', $matriculas)
+            ->where('presente', true)
+            ->with('aula.modulo.curso:id,titulo')
+            ->latest('id')
+            ->limit(3)
+            ->get()
+            ->map(fn (CursoPresenca $presenca) => [
+                'tipo' => 'presenca',
+                'titulo' => $presenca->aula->modulo->curso->titulo.' · '.$presenca->aula->titulo,
+                'data' => ($presenca->aula->data ?? $presenca->created_at)?->toDateString() ?? '',
+            ]);
+
+        // Junta os dois, do mais novo para o mais antigo, e fica com os 3 primeiros.
+        return array_values($certificados->concat($presencas)
+            ->sortByDesc('data')
+            ->take(3)
+            ->values()
+            ->all());
     }
 
     /**
