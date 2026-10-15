@@ -1,3 +1,8 @@
+/**
+ * CONFIRME SEU E-MAIL: aparece para quem criou a conta e ainda não clicou no
+ * link de confirmação. Dá para pedir o e-mail de novo ou sair. Textos em
+ * português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 // Components
 import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
@@ -9,12 +14,12 @@ import { send } from '@/routes/verification';
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
         <>
-            <Head title="Email verification" />
+            <Head title="Confirme seu e-mail" />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    Enviamos um novo link de confirmação para o e-mail que você
+                    informou no cadastro.
                 </div>
             )}
 
@@ -23,14 +28,14 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     <>
                         <Button disabled={processing} variant="secondary">
                             {processing && <Spinner />}
-                            Resend verification email
+                            Enviar o e-mail de confirmação de novo
                         </Button>
 
                         <TextLink
                             href={logout()}
                             className="mx-auto block text-sm"
                         >
-                            Log out
+                            Sair
                         </TextLink>
                     </>
                 )}
@@ -40,7 +45,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
 }
 
 VerifyEmail.layout = {
-    title: 'Email verification',
+    title: 'Confirme seu e-mail',
     description:
-        'Please verify your email address by clicking on the link we just emailed to you.',
+        'Clique no link que acabamos de enviar para o seu e-mail para confirmar a conta.',
 };

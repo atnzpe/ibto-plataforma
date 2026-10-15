@@ -36,7 +36,20 @@ use App\Http\Controllers\MeusCursosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+// PÁGINA INICIAL da plataforma (14/10/2026): não existe mais a tela "Em
+// construção". Quem entrou vai para a página inicial dele (o /dashboard decide:
+// Comando Geral ou "Meus cursos"); quem não entrou vai para a vitrine (o
+// catálogo de cursos, com "Entrar" e "Criar conta"). A conferência "plataforma
+// no ar" continua em /api/saude.
+Route::get('/', function (Request $request) {
+    // Logado: a página inicial certa para o papel dele.
+    if ($request->user() !== null) {
+        return to_route('dashboard');
+    }
+
+    // Visitante: o catálogo de cursos.
+    return to_route('catalogo.index');
+})->name('home');
 
 // Convite do filiado (#37, F3): link ASSINADO do e-mail ("signed": endereço
 // alterado ou vencido dá 403). Mesmo endereço para abrir (GET) e salvar (POST).

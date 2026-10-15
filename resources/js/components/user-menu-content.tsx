@@ -1,3 +1,7 @@
+/**
+ * MENU DO USUÁRIO (clique no nome, embaixo à esquerda): Configurações e Sair.
+ * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 import {
@@ -41,7 +45,7 @@ export function UserMenuContent({ user }: Props) {
                         onClick={cleanup}
                     >
                         <Settings className="mr-2" />
-                        Settings
+                        Configurações
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -55,7 +59,7 @@ export function UserMenuContent({ user }: Props) {
                     data-test="logout-button"
                 >
                     <LogOut className="mr-2" />
-                    Log out
+                    Sair
                 </Link>
             </DropdownMenuItem>
         </>

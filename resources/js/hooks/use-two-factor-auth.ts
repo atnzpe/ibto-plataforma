@@ -1,3 +1,8 @@
+/**
+ * AJUDANTE (hook) DA VERIFICAÇÃO EM DUAS ETAPAS: busca no servidor o QR code,
+ * a chave e os códigos de recuperação, e guarda os erros para a tela mostrar.
+ * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 import { useHttp } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
@@ -55,7 +60,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setQrCodeSvg(svg);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch QR code']);
+            setErrors((prev) => [
+                ...prev,
+                'Não foi possível carregar o QR code',
+            ]);
             setQrCodeSvg(null);
         }
     }, [submit]);
@@ -68,7 +76,7 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setManualSetupKey(key);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch a setup key']);
+            setErrors((prev) => [...prev, 'Não foi possível carregar a chave']);
             setManualSetupKey(null);
         }
     }, [submit]);
@@ -79,7 +87,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
             const codes = (await submit(recoveryCodes())) as string[];
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
+            setErrors((prev) => [
+                ...prev,
+                'Não foi possível carregar os códigos de recuperação',
+            ]);
             setRecoveryCodesList([]);
         }
     }, [submit]);
