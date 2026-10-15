@@ -1,3 +1,9 @@
+/**
+ * ENTRAR (tela de login): e-mail e senha, "Lembrar de mim", o link de
+ * "Esqueci minha senha" e o de criar conta. Também aceita a chave de acesso
+ * (passkey) pelo componente PasskeyVerify. Textos em português (tradução das
+ * telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
@@ -13,17 +19,25 @@ import { request } from '@/routes/password';
 import PasskeyVerify from '@/components/passkey-verify';
 
 type Props = {
+    // Aviso vindo do servidor. Ex.: "Enviamos o link para criar uma senha nova."
     status?: string;
+    // true = mostra o link "Esqueci minha senha".
     canResetPassword: boolean;
 };
 
+/**
+ * @param status Aviso do servidor (aparece em verde embaixo), ou vazio.
+ * @param canResetPassword true = mostra "Esqueci minha senha".
+ * @returns A tela de entrar.
+ */
 export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Entrar" />
 
             <PasskeyVerify />
 
+            {/* resetOnSuccess: depois de entrar, a senha não fica guardada no campo. */}
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
@@ -33,7 +47,7 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">E-mail</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -42,21 +56,22 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder="seu-email@exemplo.com"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password">Senha</Label>
+                                    {/* Só aparece se o servidor permitir trocar a senha por e-mail. */}
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
                                             className="ml-auto text-sm"
                                             tabIndex={5}
                                         >
-                                            Forgot your password?
+                                            Esqueci minha senha
                                         </TextLink>
                                     )}
                                 </div>
@@ -66,20 +81,22 @@ export default function Login({ status, canResetPassword }: Props) {
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder="Sua senha"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
+                            {/* Lembrar de mim: continua conectado neste aparelho por mais tempo. */}
                             <div className="flex items-center space-x-3">
                                 <Checkbox
                                     id="remember"
                                     name="remember"
                                     tabIndex={3}
                                 />
-                                <Label htmlFor="remember">Remember me</Label>
+                                <Label htmlFor="remember">Lembrar de mim</Label>
                             </div>
 
+                            {/* processing: trava o botão enquanto o servidor confere (evita clique duplo). */}
                             <Button
                                 type="submit"
                                 className="mt-4 w-full"
@@ -88,14 +105,14 @@ export default function Login({ status, canResetPassword }: Props) {
                                 data-test="login-button"
                             >
                                 {processing && <Spinner />}
-                                Log in
+                                Entrar
                             </Button>
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
+                            Ainda não tem conta?{' '}
                             <TextLink href={register()} tabIndex={5}>
-                                Sign up
+                                Criar conta
                             </TextLink>
                         </div>
                     </>
@@ -111,7 +128,8 @@ export default function Login({ status, canResetPassword }: Props) {
     );
 }
 
+// Título e frase do topo da tela (desenhados pelo layout de autenticação).
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Entrar na sua conta',
+    description: 'Digite seu e-mail e sua senha para entrar',
 };

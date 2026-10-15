@@ -1,3 +1,8 @@
+/**
+ * ESQUECI MINHA SENHA: a pessoa digita o e-mail e recebe o link para criar
+ * uma senha nova. Textos em português (tradução das telas do kit do Laravel,
+ * 14/10/2026, antes do piloto).
+ */
 // Components
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
@@ -12,7 +17,7 @@ import { email } from '@/routes/password';
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
         <>
-            <Head title="Forgot password" />
+            <Head title="Esqueci minha senha" />
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
@@ -25,14 +30,14 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">E-mail</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     name="email"
                                     autoComplete="off"
                                     autoFocus
-                                    placeholder="email@example.com"
+                                    placeholder="seu-email@exemplo.com"
                                 />
 
                                 <InputError message={errors.email} />
@@ -47,7 +52,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Email password reset link
+                                    Enviar o link para criar uma senha nova
                                 </Button>
                             </div>
                         </>
@@ -55,8 +60,8 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </Form>
 
                 <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                    <span>Ou volte para</span>
+                    <TextLink href={login()}>entrar</TextLink>
                 </div>
             </div>
         </>
@@ -64,6 +69,6 @@ export default function ForgotPassword({ status }: { status?: string }) {
 }
 
 ForgotPassword.layout = {
-    title: 'Forgot password',
-    description: 'Enter your email to receive a password reset link',
+    title: 'Esqueci minha senha',
+    description: 'Digite seu e-mail para receber o link de uma senha nova',
 };

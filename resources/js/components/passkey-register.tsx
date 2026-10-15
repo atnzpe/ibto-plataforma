@@ -1,3 +1,7 @@
+/**
+ * ADICIONAR UMA CHAVE DE ACESSO (passkey): dá um nome ao aparelho e registra.
+ * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 import { usePasskeyRegister } from '@laravel/passkeys/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
@@ -59,7 +63,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     if (!isSupported) {
         return (
             <div className="text-sm text-muted-foreground">
-                Passkeys are not supported in this browser.
+                Este navegador não aceita chaves de acesso.
             </div>
         );
     }
@@ -67,7 +71,7 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
     if (!showForm) {
         return (
             <Button variant="outline" onClick={() => setShowForm(true)}>
-                Add passkey
+                Adicionar chave de acesso
             </Button>
         );
     }
@@ -78,18 +82,18 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
             className="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
         >
             <div className="grid gap-2">
-                <Label htmlFor="passkey-name">Passkey name</Label>
+                <Label htmlFor="passkey-name">Nome da chave</Label>
                 <Input
                     id="passkey-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., MacBook Pro, iPhone"
+                    placeholder="Ex.: Notebook, celular"
                     className="mt-1 block w-full border-foreground/20"
                     autoFocus
                 />
                 <p className="text-xs text-muted-foreground">
-                    A name helps you identify this passkey later.
+                    O nome ajuda você a reconhecer esta chave depois.
                 </p>
             </div>
 
@@ -97,10 +101,10 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
 
             <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading || !name.trim()}>
-                    {isLoading ? 'Registering...' : 'Register passkey'}
+                    {isLoading ? 'Registrando...' : 'Registrar a chave'}
                 </Button>
                 <Button type="button" variant="ghost" onClick={handleCancel}>
-                    Cancel
+                    Cancelar
                 </Button>
             </div>
         </form>

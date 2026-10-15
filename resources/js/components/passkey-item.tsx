@@ -1,3 +1,8 @@
+/**
+ * UMA CHAVE DE ACESSO (passkey) na lista: nome, quando foi adicionada, quando
+ * foi usada e o botão de remover (com confirmação).
+ * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ */
 import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -43,13 +48,13 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                         )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Added {passkey.created_at_diff}
+                        Adicionada {passkey.created_at_diff}
                         {passkey.last_used_at_diff && (
                             <>
                                 <span className="mx-1 text-muted-foreground/50">
                                     /
                                 </span>
-                                Last used {passkey.last_used_at_diff}
+                                Último uso {passkey.last_used_at_diff}
                             </>
                         )}
                     </p>
@@ -64,26 +69,25 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove</span>
+                        <span className="sr-only">Remover</span>
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
-                    <DialogTitle>Remove passkey</DialogTitle>
+                    <DialogTitle>Remover a chave de acesso</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to remove the "{passkey.name}"
-                        passkey? You will no longer be able to use it to sign
-                        in.
+                        Tem certeza de que quer remover a chave "{passkey.name}
+                        "? Ela não vai mais servir para entrar.
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="secondary">Cancelar</Button>
                         </DialogClose>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
                             disabled={isDeleting}
                         >
-                            {isDeleting ? 'Removing...' : 'Remove passkey'}
+                            {isDeleting ? 'Removendo...' : 'Remover a chave'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
