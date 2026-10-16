@@ -57,8 +57,10 @@ class PublicoCursosController extends Controller
                 'url' => route('catalogo.curso', $curso->id),
             ])->values();
 
-        // Cache de 5 minutos: o site não consulta a plataforma a cada visita.
+        // Cache de 1 minuto (era 5; 16/10/2026): o site não consulta a plataforma a cada
+        // visita, mas um curso cancelado some do site em até 1 minuto (com 5, ele ficava
+        // aparecendo e o link dava 404). Blog, eventos e áreas mudam menos: seguem com 5.
         return response()->json(['cursos' => $cursos])
-            ->header('Cache-Control', 'public, max-age=300');
+            ->header('Cache-Control', 'public, max-age=60');
     }
 }

@@ -32,6 +32,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Corrigido
 
+- Curso cancelado some do site em até 1 minuto (a lista de cursos da API pública ficava 5 minutos guardada e o link levava a 404).
 - Deploy da homologação sem erro 500 no meio da troca de versão: o deploy põe a placa "em atualização" (503) antes de enviar o código e o Cron a tira depois das migrations e dos caches; novo job "Diagnóstico homologação" mostra os erros do log do servidor, sem dados pessoais.
 - Página Ajuda com o menu lateral e o topo duplicados: a tela desenhava o layout de novo; agora usa o layout do app, e um teste barra telas que importem o layout principal.
 
