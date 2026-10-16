@@ -91,3 +91,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - A vitrine pública mora no site e o cadastro na plataforma: a API entrega os dados e o site desenha; um redirecionamento com "plano B" (sem site configurado, a página continua abrindo) evita que algo some se o site cair.
 - Preferência da pessoa (tour ligado ou desligado, telas vistas) fica na CONTA, não no navegador: assim vale no computador e no celular. O valor padrão vai no banco E no modelo (`$attributes`), senão um usuário recém-criado chega "desligado" na primeira tela.
 - Balão de tour que aponta para um elemento que pode não existir precisa ser pulado (filtro antes de abrir), senão o tour quebra quando a tela muda.
+
+## 16/10/2026 — e-mails com a marca, deploy sem erro 500 e fotos (#78)
+
+- Erro 500 logo depois do deploy era o código novo chegando antes do banco e do cache de rotas: a "placa em atualização" (o mesmo arquivo do `php artisan down`) troca a tela quebrada por um aviso calmo até o Cron terminar. Sem SSH, um job do GitHub que lê o log por FTPS (escondendo e-mails) achou a causa em minutos.
+- Foto de pessoa é dado pessoal: fica na pasta PRIVADA e só sai por uma rota que confere a permissão (portão `usuario.foto`), como a ficha do aluno que só o professor e a secretaria abrem. Quem não pode ver recebe 404, que não confirma nem que a foto existe.
+- Grave a foto nova ANTES de apagar a antiga: se algo falhar no meio, a pessoa nunca fica sem nenhuma foto. Consentimento (LGPD) começa desmarcado e guarda data e quem marcou.
+
+**Perguntas para fixar:**
+
+1. Por que a rota da foto devolve 404 (e não 403) para quem não pode ver?
+2. O que a "placa em atualização" resolve que a ordem de envio dos arquivos não resolvia?
+3. Por que a foto é recortada em quadrado e reduzida para 400 px antes de gravar?
