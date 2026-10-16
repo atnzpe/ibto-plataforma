@@ -147,6 +147,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Clique no seu nome (embaixo, à esquerda) para abrir o menu da conta: Configurações, Tour guiado e Sair.',
                     'Em Configurações, troque nome, e-mail e senha.',
+                    'Em Configurações → Perfil, "Escolher foto" coloca a sua foto (JPG, PNG ou WebP, até 5 MB; ela é recortada em quadrado). Ela aparece no menu da conta e ajuda o instrutor a reconhecer você na chamada.',
+                    'Se você é filiado, ali também ficam a foto 3x4 (a da carteirinha) e a caixa "Autorizo o uso da minha foto na Rede Nacional do site". A caixa começa desmarcada: sem ela, a foto nunca sai da plataforma.',
                     'O menu de idiomas (no topo) explica como traduzir a tela para inglês ou espanhol.',
                     'O "?" do topo abre o tour da tela; "Tour guiado: ligado/desligado" controla se ele abre sozinho.',
                     'Problema técnico? Use o botão "Suporte técnico": ele abre o WhatsApp com a mensagem pronta.',
@@ -201,6 +203,7 @@ export const MANUAIS: Manual[] = [
                     'Curso só gravado: o certificado sai sozinho quando o aluno marca a última aula; não precisa emitir.',
                 ],
                 regras: [
+                    'Na chamada e nos inscritos aparece a foto de quem colocou foto, para ajudar a reconhecer o aluno. Você só vê a foto dos alunos dos SEUS cursos.',
                     'Quem não for marcado leva falta: a chamada sempre registra todos os confirmados.',
                     'O texto "o que foi trabalhado" aparece no dossiê de cada aluno presente.',
                 ],
@@ -219,9 +222,11 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Filiados": a lista mostra só a sua equipe.',
                     'Use "Novo filiado" para cadastrar e "Convite" para a pessoa criar a senha.',
+                    'Na ficha do filiado, "Escolher foto 3x4" coloca a foto da carteirinha. Só marque "O filiado autorizou o uso da foto na Rede Nacional" com a autorização assinada em mãos.',
                 ],
                 regras: [
                     'Cada equipe tem um limite de filiados definido pelo Comando Geral.',
+                    'Fotos ficam em pasta privada: só a própria pessoa, o admin da equipe dela, o Comando Geral e os instrutores dos cursos dela veem. Marcar ou desmarcar a autorização de imagem fica na auditoria, com quem fez.',
                     'CPF, nascimento, endereço e telefone ficam criptografados no banco e nunca aparecem em listas nem relatórios (LGPD).',
                 ],
                 tela: { endereco: '/cadastros/filiados', nome: 'Filiados' },

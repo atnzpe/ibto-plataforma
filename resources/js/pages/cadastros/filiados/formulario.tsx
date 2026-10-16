@@ -11,6 +11,9 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+// Foto 3x4 e autorização de imagem (#78).
+import FotoFiliado from '@/components/foto-filiado';
+import type { FotoDoFiliado } from '@/components/foto-filiado';
 // Quadro da anuidade na ficha (#37 + #59).
 import QuadroAnuidadeFiliado from '@/components/financeiro/quadro-anuidade';
 import type { QuadroAnuidade } from '@/components/financeiro/quadro-anuidade';
@@ -39,7 +42,7 @@ type FiliadoFormulario = {
     status: string;
     // true quando a pessoa já criou a senha pelo convite.
     conta_ativada: boolean;
-};
+} & Omit<FotoDoFiliado, 'id'>;
 
 /** Uma opção com número e nome. */
 type Opcao = { id: number; nome: string };
@@ -141,6 +144,9 @@ export default function FiliadoFormularioTela({
                         )}
                     </div>
                 )}
+
+                {/* Foto 3x4 e autorização de imagem (#78): só na edição (o filiado já existe). */}
+                {editando && <FotoFiliado filiado={filiado} />}
 
                 {/* Anuidade (#37 + #59): só na edição e só para quem vê o financeiro. */}
                 {editando && anuidade && (

@@ -190,6 +190,9 @@ jobs:
             # Arquivos enviados pelas pessoas na plataforma (ex.: imagem de cada
             # área de atuação, #37): só existem no servidor, o deploy nunca mexe.
             storage/app/public/**
+            # Arquivos PRIVADOS enviados pelas pessoas (apostilas, vídeos, comprovantes e
+            # fotos de perfil, #78): também só existem no servidor; o deploy nunca mexe.
+            storage/app/private/**
             # A placa "em atualização" (posta no passo anterior; quem tira é o Cron).
             storage/framework/down
             # VERSAO_DEPLOY vai no passo seguinte, POR ÚLTIMO (ver o comentário lá).

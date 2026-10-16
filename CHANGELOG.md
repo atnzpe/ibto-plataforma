@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Foto de perfil e foto 3x4 do filiado (#78): enviadas em Configurações → Perfil ou na ficha do filiado; recortadas em quadrado, reduzidas para 400 px e gravadas em WebP numa pasta privada; aparecem no menu da conta, nos inscritos e na chamada só para quem pode ver; autorização de imagem para a Rede Nacional, desmarcada por padrão, com data e auditoria.
 - Blog e eventos mostrados no site `ib-to.org`: API pública do post inteiro e da galeria, paginação e filtro por categoria; as páginas `/blog` e `/eventos` da plataforma levam ao site (#61, PR #33).
 - CORS das imagens para o modo offline do site; `robots.txt` e `llms.txt` da plataforma (#61, PR #33).
 - Tour guiado nas telas principais (#68): abre sozinho na primeira visita de cada tela, botão "?" para rever, interruptor "Tour guiado" no menu da conta (salvo na conta), textos em português, teclado e leitor de tela.

@@ -1,5 +1,5 @@
 /**
- * CONFIGURAÇÕES · PERFIL: trocar o nome e o e-mail da conta; reenviar a
+ * CONFIGURAÇÕES · PERFIL: a foto de perfil (#78); trocar o nome e o e-mail da conta; reenviar a
  * confirmação do e-mail; e a área de excluir a conta (DeleteUser).
  * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
  */
@@ -7,6 +7,9 @@ import { Form, Head, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
+import FotoFiliado from '@/components/foto-filiado';
+import type { FotoDoFiliado } from '@/components/foto-filiado';
+import FotoPerfil from '@/components/foto-perfil';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -23,9 +26,12 @@ type PageProps = {
 export default function Profile({
     mustVerifyEmail,
     status,
+    filiado = null,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    // Foto 3x4 e autorização de imagem (#78), só para quem é filiado.
+    filiado?: FotoDoFiliado | null;
 }) {
     const { auth } = usePage<PageProps>().props;
 
@@ -39,8 +45,14 @@ export default function Profile({
                 <Heading
                     variant="small"
                     title="Perfil"
-                    description="Atualize seu nome e seu e-mail"
+                    description="Atualize sua foto, seu nome e seu e-mail"
                 />
+
+                {/* Foto de perfil (#78): enviada na hora, fora do formulário do nome e e-mail. */}
+                <FotoPerfil />
+
+                {/* Quem é filiado também cuida da foto 3x4 e da autorização de imagem (#78). */}
+                {filiado && <FotoFiliado filiado={filiado} primeiraPessoa />}
 
                 <Form
                     {...ProfileController.update.form()}

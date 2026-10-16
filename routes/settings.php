@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\FotoController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\TourController;
@@ -34,6 +35,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('settings/tour/vistos', [TourController::class, 'visto'])
         ->middleware('throttle:30,1')
         ->name('tour.visto');
+
+    // FOTO DE PERFIL (#78): enviar (troca a antiga) e tirar. Limite de 10 por minuto:
+    // ninguém troca de foto mais que isso, e protege o servidor de envios em massa.
+    Route::post('settings/foto', [FotoController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('foto.update');
+    Route::delete('settings/foto', [FotoController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('foto.destroy');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {
