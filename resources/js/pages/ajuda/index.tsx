@@ -12,7 +12,6 @@ import { Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/app-layout';
 import { type IdDoManual, manuaisVisiveis, secoesDaBusca } from '@/lib/manuais';
 
 /**
@@ -57,7 +56,7 @@ export default function Ajuda({ manuais }: { manuais: IdDoManual[] }) {
     }, []);
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Ajuda', href: '/ajuda' }]}>
+        <>
             <Head title="Ajuda — manual de instruções" />
             <div className="px-safe-4 mx-auto flex w-full max-w-4xl flex-col gap-6 py-6">
                 <div>
@@ -207,6 +206,13 @@ export default function Ajuda({ manuais }: { manuais: IdDoManual[] }) {
                     </section>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+// O layout com o menu lateral já vem do app.tsx (para toda tela com login); aqui só o
+// "caminho" no topo. Antes a página desenhava o layout de novo, e o menu e o topo
+// apareciam duplicados (corrigido em 17/10/2026).
+Ajuda.layout = {
+    breadcrumbs: [{ title: 'Ajuda', href: '/ajuda' }],
+};
