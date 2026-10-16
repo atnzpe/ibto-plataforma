@@ -1,0 +1,26 @@
+# Plataforma de cursos do IBTO (Instituto Brasileiro de Treinamento Operacional)
+
+> Plataforma oficial de cursos do IBTO: catálogo de cursos presenciais e online, inscrição com pagamento, área do aluno, chamada dos encontros, certificados com validação pública e o dossiê de formação de cada filiado.
+
+O site institucional do IBTO é https://ib-to.org (blog, eventos, áreas de atuação, rede nacional e contato). Esta plataforma, em https://cursos.ib-to.org, é onde os cursos acontecem.
+
+## Páginas públicas
+
+- [Catálogo de cursos](https://cursos.ib-to.org/cursos): cursos publicados e abertos, com filtros por área, modalidade e busca. Cada curso mostra datas, local, carga horária, instrutor, valor, cronograma dos encontros e o botão de inscrição.
+- Página de um curso: https://cursos.ib-to.org/cursos/<número>.
+- Trilha de formação: https://cursos.ib-to.org/trilhas/<número> (a sequência recomendada de cursos).
+- Validação de certificado: https://cursos.ib-to.org/validar/<código> confirma se um certificado emitido pelo IBTO é verdadeiro (mostra o nome abreviado, o curso e a data).
+
+## Dados públicos em JSON (somente leitura, sem login)
+
+- https://cursos.ib-to.org/api/publico/cursos: cursos publicados (cursos fechados, como a Formação de Instrutores, nunca aparecem).
+- https://cursos.ib-to.org/api/publico/areas-atuacao: áreas de atuação ativas.
+- https://cursos.ib-to.org/api/publico/blog: publicações do blog (com ?pagina= e ?categoria=noticia|evento); /api/publico/blog/<slug> traz uma publicação inteira.
+- https://cursos.ib-to.org/api/publico/eventos: álbuns de fotos de eventos; /api/publico/eventos/<slug> traz um álbum.
+
+## Notas para agentes e crawlers
+
+- Conteúdo em português do Brasil (pt-BR).
+- Áreas com login (Comando Geral, Meus cursos, Meu dossiê, configurações) são privadas: não tente acessá-las.
+- Nenhum dado pessoal de filiados (CPF, nascimento, endereço, telefone) é público.
+- Limite de uso da API: 60 pedidos por minuto por endereço IP.

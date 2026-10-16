@@ -18,21 +18,35 @@ use App\Enums\SituacaoCurso;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
 use App\Models\Post;
+use App\Support\SitePublico;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as RespostaHttp;
 
 class BlogController extends Controller
 {
     /**
      * A lista: os posts no site, os mais novos primeiro, 12 por página.
      *
+     * Com o site configurado (#61, B4), leva a pessoa para a lista do SITE,
+     * mantendo o filtro de categoria. Ex.: /blog?categoria=evento →
+     * https://homolog.ib-to.org/blog?categoria=evento
+     *
      * @param  Request  $request  Ex.: /blog?categoria=evento
-     * @return Response A tela "blog/index".
+     * @return Response|RespostaHttp A tela "blog/index", ou o redirecionamento para o site.
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RespostaHttp
     {
         $categoria = CategoriaPost::tryFrom((string) $request->query('categoria', ''));
+
+        // Site configurado: o blog público mora lá. Inertia::location troca a página
+        // inteira (funciona também quando o clique veio de dentro da plataforma).
+        // Sem site: segue e mostra a lista da própria plataforma (plano B).
+        $noSite = SitePublico::endereco('/blog', ['categoria' => $categoria->value ?? '']);
+        if ($noSite !== null) {
+            return Inertia::location($noSite);
+        }
 
         $consulta = Post::query()->noSite()->orderByDesc('publicar_em')->orderByDesc('id');
         // Categoria escolhida: só ela. Sem escolha: todas.
@@ -56,13 +70,21 @@ class BlogController extends Controller
     /**
      * A página de um post. Post que ainda não está no site: 404 ("não existe").
      *
+     * Com o site configurado (#61, B4), leva a pessoa para a página do post no SITE.
+     *
      * @param  Post  $post  O post do endereço, pelo slug (ex.: /blog/formacao-no-estande).
-     * @return Response A tela "blog/post".
+     * @return Response|RespostaHttp A tela "blog/post", ou o redirecionamento para o site.
      */
-    public function show(Post $post): Response
+    public function show(Post $post): Response|RespostaHttp
     {
         // Rascunho, em revisão, agendado ou arquivado: para o público, não existe.
         abort_unless($post->visivelNoSite(), 404);
+
+        // Site configurado: a página do post mora lá. Sem site: mostra aqui (plano B).
+        $noSite = SitePublico::endereco('/blog/'.$post->slug);
+        if ($noSite !== null) {
+            return Inertia::location($noSite);
+        }
 
         $curso = $post->curso;
         // O link do curso: só curso publicado e aberto (curso fechado não aparece no site).

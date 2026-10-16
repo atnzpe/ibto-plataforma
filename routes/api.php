@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\PublicoAreasController;
 use App\Http\Controllers\Api\PublicoBlogController;
 use App\Http\Controllers\Api\PublicoCursosController;
+use App\Http\Controllers\Api\PublicoEventosController;
+use App\Http\Controllers\Api\PublicoPostController;
 use App\Http\Controllers\ErroTelaController;
 use App\Http\Controllers\SaudeController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,23 @@ Route::post('erros-tela', ErroTelaController::class)
 Route::get('publico/blog', PublicoBlogController::class)
     ->middleware('throttle:60,1')
     ->name('api.publico.blog');
+
+// Um post inteiro, para a página do post no SITE (#61, B4). O slug só aceita
+// letras minúsculas, números e hífen (o formato que a plataforma gera); outro
+// formato nem chega ao banco (responde 404 direto).
+Route::get('publico/blog/{slug}', PublicoPostController::class)
+    ->where('slug', '[a-z0-9-]+')
+    ->middleware('throttle:60,1')
+    ->name('api.publico.post');
+
+// Galeria de eventos para o SITE (#61, B4): a lista de álbuns e cada álbum.
+Route::get('publico/eventos', [PublicoEventosController::class, 'index'])
+    ->middleware('throttle:60,1')
+    ->name('api.publico.eventos');
+Route::get('publico/eventos/{slug}', [PublicoEventosController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->middleware('throttle:60,1')
+    ->name('api.publico.evento');
 
 // API PÚBLICA DOS CURSOS (#52): os cursos publicados e não fechados, em JSON,
 // para a página /cursos do site. Só leitura; só o site do IBTO lê pelo
