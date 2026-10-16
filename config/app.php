@@ -43,6 +43,11 @@ return [
 
     // Cidade de quem recebe o Pix (#83): vai dentro do código "copia e cola" (o padrão
     // do Banco Central exige). Ex.: IBTO_PIX_CIDADE=Recife. Sem acento é melhor.
+    // Carga da base do piloto (16/10/2026): com PILOTO_CARREGAR=true, o Cron roda
+    // "plataforma:carregar-piloto" UMA vez (marca em storage/app/piloto-carregado).
+    // Depois de carregar, volte para false. Mudou? Apague bootstrap/cache/config.php.
+    'piloto_carregar' => (bool) env('PILOTO_CARREGAR', false),
+
     'pix_cidade' => (string) env('IBTO_PIX_CIDADE', 'Recife'),
 
     'admin_emails' => array_values(array_filter(array_map(

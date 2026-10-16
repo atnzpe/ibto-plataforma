@@ -78,6 +78,21 @@ O `ADMIN_EMAILS` é só para começar (ou para recuperar o acesso se ninguém da
 
 **Cadastro público:** `CADASTRO_PUBLICO=fechado` (**padrão**: só convite; a tela "Pedir acesso" só aparece enquanto o `ADMIN_EMAILS` estiver preenchido, e só aceita aqueles e-mails) ou `CADASTRO_PUBLICO=aprovacao` ("Pedir acesso" para todos, com análise do admin da equipe ou do Comando Geral).
 
+## Base do piloto (cursos reais e turmas de teste)
+
+O comando `php artisan plataforma:carregar-piloto` cadastra os cursos reais dos cartazes do IBTO e o que o piloto precisa para ser testado de ponta a ponta:
+
+- **Cursos reais dos cartazes**, com a data real: Bastão Tático, Combate com Faca, Combate Corpo a Corpo, Operador de Arma de Fogo, Operação Avançada e as turmas de setembro e outubro do Treinamento de Combate Real (Piracicaba-SP) ficam **Encerrado** (histórico); Sobrevivência Urbana N1 (sem data) e a turma de 14 e 15/11 do Combate Real (sem valor no cartaz) ficam em **Rascunho**, para o Comando Geral completar e publicar. A capa é o cartaz.
+- **1 turma [TESTE] de cada um dos 5 cursos principais**, publicada, com data futura, para os stakeholders se inscreverem e pagarem pelo Pix.
+- **2 cursos online [TESTE]**: um gravado (certificado automático) e um encontro ao vivo.
+- **Trilha "Formação Operacional"**: corpo a corpo → faca → arma de fogo → sobrevivência urbana.
+
+Pode rodar mais de uma vez sem duplicar. Instrutores entram só como texto: nenhuma conta é criada.
+
+**No servidor (sem SSH):** coloque `PILOTO_CARREGAR=true` no `.env` e apague `bootstrap/cache/config.php`. Em até 5 minutos o Cron carrega a base **uma vez** e grava a marca `storage/app/piloto-carregado` (aparece no job "Diagnóstico homologação"). Depois, volte para `PILOTO_CARREGAR=false`.
+
+**Antes da produção:** as turmas com o título começando por `[TESTE]` são apagadas (com as matrículas de teste), e a trilha passa a apontar para as turmas reais.
+
 ## Comandos
 
 | Comando                | O que faz                                                |
