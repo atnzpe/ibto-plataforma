@@ -69,6 +69,11 @@ CADASTRO_PUBLICO=fechado
 # Cidade de quem recebe o Pix (#83): vai dentro do código "copia e cola". Sem acento.
 IBTO_PIX_CIDADE=Recife
 
+# Fotos dos eventos: false (PADRÃO) = privadas, só filiados e cargos acima, com login
+# (muitos alunos são operadores de segurança); true = abertas a todos no site.
+# Mudou? Apague bootstrap/cache/config.php.
+GALERIA_PUBLICA=false
+
 # Base do piloto: true = o Cron carrega os cursos reais e as turmas [TESTE] UMA vez
 # (marca em storage/app/piloto-carregado). Depois, volte para false.
 # Mudou? Apague bootstrap/cache/config.php.

@@ -46,6 +46,11 @@ return [
     // Carga da base do piloto (16/10/2026): com PILOTO_CARREGAR=true, o Cron roda
     // "plataforma:carregar-piloto" UMA vez (marca em storage/app/piloto-carregado).
     // Depois de carregar, volte para false. Mudou? Apague bootstrap/cache/config.php.
+    // Fotos dos eventos (16/10/2026): false (PADRÃO) = privadas, só filiados para cima e
+    // com login (muitos alunos são operadores de segurança); true = públicas, como no #61.
+    // Ex.: GALERIA_PUBLICA=true. Mudou? Apague bootstrap/cache/config.php.
+    'galeria_publica' => (bool) env('GALERIA_PUBLICA', false),
+
     'piloto_carregar' => (bool) env('PILOTO_CARREGAR', false),
 
     'pix_cidade' => (string) env('IBTO_PIX_CIDADE', 'Recife'),

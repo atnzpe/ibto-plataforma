@@ -18,6 +18,7 @@ use App\Enums\SituacaoAlbum;
 use App\Http\Controllers\Blog\GaleriaController;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
+use App\Support\Galeria;
 use Illuminate\Http\JsonResponse;
 
 class PublicoEventosController extends Controller
@@ -48,9 +49,11 @@ class PublicoEventosController extends Controller
             'local_evento' => $album->local_evento,
             // Quantas fotos o álbum tem (o cartão mostra "12 fotos").
             'fotos' => $album->fotos->count(),
-            // A capa: a primeira foto, na ordem escolhida no cadastro.
-            'capa_url' => $album->fotos->first()?->url(),
-            'capa_descricao' => $album->fotos->first()?->descricao,
+            // A capa: a primeira foto, só no modo público (no privado, o site mostra um cartão sem foto).
+            'capa_url' => Galeria::publica() ? $album->fotos->first()?->url() : null,
+            'capa_descricao' => Galeria::publica() ? $album->fotos->first()?->descricao : null,
+            // true = fotos só para filiados, com login na plataforma (modo privado, o padrão).
+            'fotos_restritas' => ! Galeria::publica(),
         ])->values();
 
         // Cache de 5 minutos, como o resto da API pública.
@@ -91,8 +94,12 @@ class PublicoEventosController extends Controller
                 'post' => $album->post?->visivelNoSite()
                     ? ['slug' => $album->post->slug, 'titulo' => $album->post->titulo]
                     : null,
-                // As fotos: endereço completo, descrição (texto alternativo) e crédito.
-                'fotos' => GaleriaController::fotosParaTela($album),
+                // As fotos: endereço completo, descrição (texto alternativo) e crédito. Só no modo
+                // público; no privado (padrão) a lista vai vazia e o site mostra o botão para entrar.
+                'fotos' => Galeria::publica() ? GaleriaController::fotosParaTela($album) : [],
+                'fotos_restritas' => ! Galeria::publica(),
+                // Onde ver as fotos com login (a página do álbum na plataforma).
+                'fotos_url' => route('galeria.album', $album->slug),
             ],
         ])->header('Cache-Control', 'public, max-age=300');
     }
