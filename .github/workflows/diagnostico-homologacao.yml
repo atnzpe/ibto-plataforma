@@ -35,6 +35,13 @@ jobs:
               grep -E 'POS_DEPLOY' log.txt | tail -5 | cut -c1-300
             fi
           done
+          # Pastas com data e hora de cada arquivo (só nomes, sem conteúdo): mostra quando
+          # a placa foi posta, quando a versão foi aplicada e os caches. Em 16/10/2026 foi
+          # o que mostrou que o Cron da HostGator atrasou 16 minutos.
+          for pasta in "" storage/framework/ storage/app/ bootstrap/cache/ storage/logs/; do
+            echo "=== /$pasta ==="
+            curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$pasta" | grep -v -E '\.env$' || true
+          done
           # Versão publicada e a última aplicada pelo Cron.
           curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/VERSAO_DEPLOY" && echo " <- publicada"
           curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/storage/app/versao-aplicada" && echo " <- aplicada"
