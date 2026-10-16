@@ -72,6 +72,7 @@ describe('conteúdo dos manuais', () => {
             '/comando-geral/blog': 'blog-admin/index',
             '/comando-geral/pagamento': '',
             '/admin/permissoes': '',
+            '/admin/solicitacoes': 'admin/solicitacoes/index',
         };
         for (const manual of MANUAIS) {
             for (const secao of manual.secoes) {

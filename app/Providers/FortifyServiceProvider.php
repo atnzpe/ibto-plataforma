@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Enums\StatusEquipe;
+use App\Models\Equipe;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,6 +59,8 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
+            // "Criar conta" só aparece com o cadastro público aberto (#84; CADASTRO_PUBLICO).
+            'canRegister' => config('app.cadastro_publico') !== 'fechado',
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
         ]));
@@ -75,9 +79,25 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
-        ]));
+        // Cadastro público com aprovação (#84): a pessoa escolhe a equipe e diz quem indicou.
+        // Com CADASTRO_PUBLICO=fechado, a tela não existe (404).
+        Fortify::registerView(function () {
+            abort_if(config('app.cadastro_publico') === 'fechado', 404);
+
+            return Inertia::render('auth/register', [
+                'passwordRules' => Password::defaults()->toPasswordRulesString(),
+                // As equipes que podem receber pedidos (todas, menos as inativas), em ordem de nome.
+                'equipes' => Equipe::query()
+                    ->where('status', '!=', StatusEquipe::Inativa->value)
+                    ->orderBy('nome')
+                    ->get(['id', 'nome', 'cidade', 'uf'])
+                    ->map(fn (Equipe $equipe) => [
+                        'id' => $equipe->id,
+                        // Ex.: 'IBTO Pernambuco (Recife - PE)'.
+                        'rotulo' => $equipe->cidade !== null ? "{$equipe->nome} ({$equipe->cidade} - {$equipe->uf})" : $equipe->nome,
+                    ])->values(),
+            ]);
+        });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 

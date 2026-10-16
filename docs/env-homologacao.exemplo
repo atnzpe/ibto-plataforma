@@ -60,3 +60,7 @@ SUPORTE_WHATSAPP=
 # Sites que podem ler a API pública (/api/publico/...) pelo navegador, separados por vírgula.
 # Vazio = o padrão: https://ib-to.org,https://www.ib-to.org,https://homolog.ib-to.org
 CORS_ORIGENS=
+
+# Cadastro público (#84; o IBTO é um grupo fechado): aprovacao = "Pedir acesso" com análise;
+# fechado = só convite. Mudou? Apague bootstrap/cache/config.php.
+CADASTRO_PUBLICO=aprovacao

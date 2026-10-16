@@ -23,14 +23,21 @@ type Props = {
     status?: string;
     // true = mostra o link "Esqueci minha senha".
     canResetPassword: boolean;
+    // true = mostra "Criar conta" (cadastro público com aprovação, #84). false = só por convite.
+    canRegister: boolean;
 };
 
 /**
  * @param status Aviso do servidor (aparece em verde embaixo), ou vazio.
  * @param canResetPassword true = mostra "Esqueci minha senha".
+ * @param canRegister true = mostra "Pedir acesso" (com o cadastro público fechado, some).
  * @returns A tela de entrar.
  */
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    canRegister,
+}: Props) {
     return (
         <>
             <Head title="Entrar" />
@@ -109,12 +116,16 @@ export default function Login({ status, canResetPassword }: Props) {
                             </Button>
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Ainda não tem conta?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Criar conta
-                            </TextLink>
-                        </div>
+                        {/* Grupo fechado (#84): quem foi indicado pede acesso e espera a aprovação.
+                            Com o cadastro público fechado, o link some (só convite). */}
+                        {canRegister && (
+                            <div className="text-center text-sm text-muted-foreground">
+                                Foi indicado ao IBTO?{' '}
+                                <TextLink href={register()} tabIndex={5}>
+                                    Pedir acesso
+                                </TextLink>
+                            </div>
+                        )}
                     </>
                 )}
             </Form>

@@ -69,6 +69,30 @@ class AppServiceProvider extends ServiceProvider
 
         // "filiados.acessar" (#37, F3b): abrir o cadastro de filiados. Passa quem
         // cuida de TODOS (filiados.gerenciar) ou só da PRÓPRIA equipe (filiados.equipe).
+        // "cadastros.aprovar" (#84): abrir a lista de solicitações de cadastro. Passa o
+        // Comando Geral/Tecnologia (usuarios.gerenciar) e o admin de equipe (filiados.equipe).
+        Gate::define('cadastros.aprovar', fn (User $usuario): bool => $usuario->temPermissao('usuarios.gerenciar')
+            || $usuario->temPermissao('filiados.equipe'));
+
+        // "cadastros.analisar" (#84): aprovar ou recusar UM pedido. Só pedido "em análise";
+        // o admin de equipe só analisa os pedidos da PRÓPRIA equipe.
+        Gate::define('cadastros.analisar', function (User $usuario, User $pedido): bool {
+            // Pedido que não está em análise (já aprovado ou recusado): ninguém mexe por aqui.
+            if ($pedido->situacao_cadastro !== 'em_analise') {
+                return false;
+            }
+            // Comando Geral / Tecnologia: qualquer pedido.
+            if ($usuario->temPermissao('usuarios.gerenciar')) {
+                return true;
+            }
+            // Admin de equipe: só se o pedido é para a equipe dele (pelo registro de filiado).
+            $minhaEquipe = $usuario->filiado?->equipe_id;
+
+            return $usuario->temPermissao('filiados.equipe')
+                && $minhaEquipe !== null
+                && $pedido->equipe_solicitada_id === $minhaEquipe;
+        });
+
         Gate::define('filiados.acessar', fn (User $usuario): bool => $usuario->temPermissao('filiados.gerenciar')
             || $usuario->temPermissao('filiados.equipe'));
 

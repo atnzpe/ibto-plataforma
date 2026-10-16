@@ -33,6 +33,8 @@ class HandleInertiaRequests extends Middleware
         'pagamentos.configurar',
         // Blog (#61): escrever, publicar e arquivar posts.
         'blog.publicar',
+        // Solicitações de cadastro (#84): Comando Geral, Tecnologia e admin de equipe.
+        'cadastros.aprovar',
     ];
 
     /**

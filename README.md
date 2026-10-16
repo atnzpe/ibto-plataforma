@@ -24,7 +24,7 @@ Situação em 16/10/2026. Tudo abaixo está no ar na homologação (`cursos-homo
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | Base e publicação     | Laravel 13 + React, publicação automática sem SSH, rota de saúde, nenhum erro em silêncio                                                                                                 | #35, #58      |
 | Idiomas               | Português, inglês e espanhol pelo Google Tradutor                                                                                                                                         | #53           |
-| Login e permissões    | Duas travas de tentativas, Aluno automático no cadastro, 5 papéis, uma permissão por tela, auditoria                                                                                      | #36           |
+| Login e permissões    | Duas travas de tentativas, cadastro com aprovação (grupo fechado: pedido de acesso analisado ou convite, #84), 5 papéis, uma permissão por tela, auditoria                                | #36           |
 | Usuários              | Desativar e reativar, nova senha, convite                                                                                                                                                 | #36           |
 | Cadastros             | Áreas de atuação, níveis, equipes (com logo), filiados com dados pessoais criptografados, convite, importação da planilha                                                                 | #37           |
 | Financeiro            | Livro-caixa a receber e a pagar, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, filtros por período                                                                 | #59           |
@@ -64,6 +64,19 @@ composer dev     # servidor em http://localhost:8000 + Vite
 ```
 
 A página inicial mostra a "Situação do sistema", lida de `/api/saude`.
+
+## Primeira instalação (banco zerado)
+
+A plataforma é de um **grupo fechado**: ninguém entra sem convite ou sem ter o pedido de acesso aprovado (#84). Por isso, numa instalação nova (banco vazio, sem ninguém da Tecnologia), é preciso uma **chave de partida**:
+
+1. No `.env`, coloque o e-mail de quem vai cuidar da plataforma: `ADMIN_EMAILS=tecnologia@sua-instituicao.org` (aceita vários, separados por vírgula).
+2. Abra a plataforma e use **Pedir acesso** com esse e-mail. Por estar na chave de partida, a conta **já nasce aprovada**.
+3. Confirme o e-mail e entre. Em **Usuários**, dê a você mesmo o papel **Tecnologia**.
+4. **Deixe o `ADMIN_EMAILS` vazio** (`ADMIN_EMAILS=`) e apague `bootstrap/cache/config.php`. A partir daqui, quem tem o papel Tecnologia dá os papéis, e as contas novas entram por convite ou por pedido aprovado.
+
+O `ADMIN_EMAILS` é só para começar (ou para recuperar o acesso se ninguém da Tecnologia conseguir entrar). Deixá-lo preenchido depois disso é uma porta a mais aberta.
+
+**Cadastro público:** `CADASTRO_PUBLICO=aprovacao` (padrão; existe "Pedir acesso", com análise do admin da equipe ou do Comando Geral) ou `CADASTRO_PUBLICO=fechado` (só convite; a tela some).
 
 ## Comandos
 

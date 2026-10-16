@@ -1,7 +1,8 @@
 /**
- * CRIAR CONTA: nome, e-mail, senha e a repetição da senha. A conta nasce com
- * o papel Aluno (#36) e precisa confirmar o e-mail. Textos em português
- * (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
+ * PEDIR ACESSO (cadastro com aprovação, #84): nome, e-mail, a EQUIPE, QUEM
+ * INDICOU e a senha. O IBTO é um grupo fechado, só de indicados: a conta nasce
+ * "em análise" e só entra depois que o admin da equipe ou o Comando Geral
+ * aprovar. Precisa confirmar o e-mail. Textos em português.
  */
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -14,14 +15,26 @@ import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
+// Uma equipe da lista. Ex.: { id: 3, rotulo: 'IBTO Pernambuco (Recife - PE)' }
+type EquipeDaLista = { id: number; rotulo: string };
+
 type Props = {
     passwordRules: string;
+    // As equipes que recebem pedidos de acesso (todas, menos as inativas).
+    equipes: EquipeDaLista[];
 };
 
-export default function Register({ passwordRules }: Props) {
+/**
+ * A tela "Pedir acesso".
+ *
+ * @param passwordRules As regras de senha forte (para o gerenciador de senhas do navegador).
+ * @param equipes As equipes para escolher.
+ * @returns O formulário de pedido de acesso.
+ */
+export default function Register({ passwordRules, equipes }: Props) {
     return (
         <>
-            <Head title="Criar conta" />
+            <Head title="Pedir acesso" />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -63,6 +76,50 @@ export default function Register({ passwordRules }: Props) {
                                 <InputError message={errors.email} />
                             </div>
 
+                            {/* A equipe define quem analisa o pedido (o admin daquela equipe). */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="equipe_id">Sua equipe</Label>
+                                <select
+                                    id="equipe_id"
+                                    name="equipe_id"
+                                    required
+                                    defaultValue=""
+                                    tabIndex={3}
+                                    className="h-11 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
+                                >
+                                    <option value="" disabled>
+                                        Escolha a sua equipe
+                                    </option>
+                                    {equipes.map((equipe) => (
+                                        <option
+                                            key={equipe.id}
+                                            value={equipe.id}
+                                        >
+                                            {equipe.rotulo}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.equipe_id} />
+                            </div>
+
+                            {/* Quem indicou: ajuda quem analisa a confirmar o pedido. */}
+                            <div className="grid gap-2">
+                                <Label htmlFor="indicado_por">
+                                    Quem indicou você ao IBTO?
+                                </Label>
+                                <Input
+                                    id="indicado_por"
+                                    type="text"
+                                    required
+                                    minLength={3}
+                                    maxLength={150}
+                                    tabIndex={3}
+                                    name="indicado_por"
+                                    placeholder="Ex.: Mestre Trinca"
+                                />
+                                <InputError message={errors.indicado_por} />
+                            </div>
+
                             <div className="grid gap-2">
                                 <Label htmlFor="password">Senha</Label>
                                 <PasswordInput
@@ -102,7 +159,7 @@ export default function Register({ passwordRules }: Props) {
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
-                                Criar conta
+                                Pedir acesso
                             </Button>
                         </div>
 
@@ -120,6 +177,7 @@ export default function Register({ passwordRules }: Props) {
 }
 
 Register.layout = {
-    title: 'Criar sua conta',
-    description: 'Preencha seus dados para criar a conta',
+    title: 'Pedir acesso',
+    description:
+        'O IBTO é um grupo fechado, só de indicados. Depois de enviar, o admin da sua equipe analisa o pedido.',
 };

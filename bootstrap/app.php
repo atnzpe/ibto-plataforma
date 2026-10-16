@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\BloquearCadastroNaoAprovado;
 use App\Http\Middleware\BloquearContaDesativada;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -33,6 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             // Conta desativada (#36): desloga e manda para a tela de entrar.
             BloquearContaDesativada::class,
+            // Cadastro com aprovação (#84): "em análise" só vê a tela de espera; recusado sai.
+            BloquearCadastroNaoAprovado::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

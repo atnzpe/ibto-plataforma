@@ -16,6 +16,7 @@ import {
     UserCog,
     Users,
     Wallet,
+    UserCheck,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -160,6 +161,13 @@ const cadastrosNavItems: (NavItem & {
         href: financeiro(),
         icon: Wallet,
         permissao: 'financeiro_ver',
+    },
+    // Solicitações de cadastro (#84; grupo fechado): aprovar ou recusar quem pediu acesso.
+    {
+        title: 'Solicitações de cadastro',
+        href: '/admin/solicitacoes',
+        icon: UserCheck,
+        permissao: 'cadastros_aprovar',
     },
     // Administração (#36): papéis de cada pessoa.
     {

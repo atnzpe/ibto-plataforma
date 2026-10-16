@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -31,6 +32,12 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $remember_token
  * @property bool $tour_ativo Tour guiado (#68) ligado na conta.
  * @property list<string>|null $tours_vistos Telas cujo tour a pessoa já viu (#68). Ex.: ['comando-geral'].
+ * @property string $situacao_cadastro Cadastro com aprovação (#84): 'aprovado', 'em_analise' ou 'recusado'.
+ * @property int|null $equipe_solicitada_id A equipe escolhida no cadastro (#84).
+ * @property string|null $indicado_por Quem indicou a pessoa (#84). Ex.: 'Mestre Trinca'.
+ * @property int|null $cadastro_analisado_por Quem aprovou ou recusou (#84).
+ * @property Carbon|null $cadastro_analisado_em Quando foi analisado (#84).
+ * @property string|null $cadastro_motivo Motivo da recusa (#84).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -58,6 +65,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      */
     protected $attributes = [
         'tour_ativo' => true,
+        // Conta criada por convite, importação ou pelo Comando Geral nasce aprovada (#84).
+        // Só o cadastro público ("Criar conta") troca para 'em_analise'.
+        'situacao_cadastro' => 'aprovado',
     ];
 
     /**
@@ -76,6 +86,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             // Tour guiado (#68): o interruptor liga/desliga e a lista de telas já vistas.
             'tour_ativo' => 'boolean',
             'tours_vistos' => 'array',
+            // Cadastro com aprovação (#84): quando foi analisado.
+            'cadastro_analisado_em' => 'datetime',
         ];
     }
 
@@ -105,6 +117,25 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function filiado(): HasOne
     {
         return $this->hasOne(Filiado::class, 'user_id');
+    }
+
+    /**
+     * A equipe escolhida no cadastro público (#84): define qual admin de equipe
+     * pode analisar a solicitação.
+     *
+     * @return BelongsTo<Equipe, $this>
+     */
+    public function equipeSolicitada(): BelongsTo
+    {
+        return $this->belongsTo(Equipe::class, 'equipe_solicitada_id');
+    }
+
+    /**
+     * O cadastro já foi aprovado? (#84) Conta "em análise" ou "recusada" não abre as telas.
+     */
+    public function cadastroAprovado(): bool
+    {
+        return $this->situacao_cadastro === 'aprovado';
     }
 
     /**

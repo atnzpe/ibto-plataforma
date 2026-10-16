@@ -160,6 +160,13 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'Notícias e eventos que aparecem no site do IBTO. Post com foto de pessoas precisa da autorização de imagem.',
         },
     ],
+    'admin/solicitacoes/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Solicitações de cadastro',
+            texto: 'Pedidos de acesso em análise. Confira quem indicou e aprove ou recuse com o motivo; a pessoa recebe um e-mail.',
+        },
+    ],
     'ajuda/index': [
         {
             elemento: 'main h1',

@@ -1,7 +1,15 @@
 <?php
 
+/*
+ * Testes da tela de CADASTRO PÚBLICO ("Pedir acesso"). Desde a #84 (grupo
+ * fechado), o pedido leva a equipe e quem indicou, e a conta nasce "em
+ * análise", sem papel; o papel Aluno só vem na aprovação (ver
+ * tests/Feature/CadastroComAprovacaoTest.php). Dados INVENTADOS.
+ */
+
 namespace Tests\Feature\Auth;
 
+use App\Models\Equipe;
 use App\Models\User;
 use App\Notifications\ConfirmarEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,44 +27,56 @@ class RegistrationTest extends TestCase
         parent::setUp();
 
         $this->skipUnlessFortifyHas(Features::registration());
+        // Cadastro público aberto (com aprovação), o padrão.
+        config(['app.cadastro_publico' => 'aprovacao']);
+    }
+
+    /**
+     * Os dados de um pedido de acesso válido (com uma equipe de teste).
+     *
+     * @return array<string, mixed>
+     */
+    private function pedido(): array
+    {
+        return [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'equipe_id' => Equipe::factory()->create(['nome' => 'Equipe Teste do Cadastro', 'status' => 'ativa'])->id,
+            'indicado_por' => 'Mestre Teste',
+        ];
     }
 
     public function test_registration_screen_can_be_rendered()
     {
         $response = $this->get(route('register'));
 
-        $response->assertOk();
+        // A tela abre e já traz a lista de equipes para escolher.
+        $response->assertOk()->assertInertia(fn ($tela) => $tela->component('auth/register')->has('equipes'));
     }
 
-    public function test_new_users_can_register()
+    /**
+     * O pedido entra, a pessoa fica logada e cai na tela de espera (em análise).
+     */
+    public function test_new_users_can_request_access()
     {
-        $response = $this->post(route('register.store'), [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $response = $this->post(route('register.store'), $this->pedido());
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     /**
-     * Quem se cadastra pelo site já nasce com o papel "aluno" (#36), e só ele:
-     * nenhum outro papel (filiado, instrutor...) é dado sozinho.
+     * Sem papel até a aprovação (#84): nem Aluno, nem nenhum outro.
      */
-    public function test_new_users_get_the_aluno_role(): void
+    public function test_new_users_start_without_roles_until_approved(): void
     {
-        $this->post(route('register.store'), [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $this->post(route('register.store'), $this->pedido());
 
-        // Busca a conta criada e confere a lista de papéis (só os slugs).
         $usuario = User::where('email', 'test@example.com')->firstOrFail();
-        $this->assertSame(['aluno'], $usuario->papeis()->pluck('slug')->all());
+        $this->assertSame('em_analise', $usuario->situacao_cadastro);
+        $this->assertSame([], $usuario->papeis()->pluck('slug')->all());
     }
 
     /**
@@ -68,25 +88,16 @@ class RegistrationTest extends TestCase
      */
     public function test_confirmation_email_goes_to_the_queue_on_registration(): void
     {
-        // Troca a fila de verdade por uma "falsa" que só anota o que entrou
-        // nela, sem executar nada; assim dá para conferir o que foi enfileirado.
+        // Troca a fila de verdade por uma "falsa" que só anota o que entrou nela.
         Queue::fake();
 
-        // Faz um cadastro como a pessoa faria pelo formulário.
-        $response = $this->post(route('register.store'), [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $response = $this->post(route('register.store'), $this->pedido());
 
-        // O cadastro terminou normalmente: entrou e foi para o painel.
+        // O pedido terminou normalmente.
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
 
-        // Na fila entrou um pedido de envio de notificação, e é a
-        // ConfirmarEmail. Se o e-mail tivesse saído na hora, a fila
-        // estaria vazia e este teste falharia.
+        // Na fila entrou a ConfirmarEmail (se tivesse saído na hora, a fila estaria vazia).
         Queue::assertPushed(
             SendQueuedNotifications::class,
             fn (SendQueuedNotifications $job) => $job->notification instanceof ConfirmarEmail,

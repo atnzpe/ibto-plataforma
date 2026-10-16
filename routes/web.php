@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PermissaoController;
+use App\Http\Controllers\Admin\SolicitacoesCadastroController;
 use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AjudaController;
@@ -404,5 +405,31 @@ Route::middleware(['auth', 'verified', 'can:usuarios.gerenciar'])
                 Route::post('convite', 'convite')->name('convite');
             });
     });
+
+// SOLICITAÇÕES DE CADASTRO (#84; grupo fechado): quem se cadastrou e está "em análise".
+// Comando Geral/Tecnologia veem todas; o admin de equipe, só as da própria equipe
+// (a regra fina de cada pedido fica no Gate "cadastros.analisar").
+Route::middleware(['auth', 'verified', 'can:cadastros.aprovar'])
+    ->prefix('admin/solicitacoes')
+    ->name('admin.solicitacoes.')
+    ->controller(SolicitacoesCadastroController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('{usuario}/aprovar', 'aprovar')->name('aprovar');
+        Route::post('{usuario}/recusar', 'recusar')->name('recusar');
+    });
+
+// TELA DE ESPERA do cadastro "em análise" (#84). Só com login; o porteiro
+// (BloquearCadastroNaoAprovado) manda para cá quem ainda não foi aprovado.
+Route::middleware('auth')->get('cadastro/em-analise', function (Request $request) {
+    // Já aprovado (ou chegou aqui sem precisar): vai para a página inicial dele.
+    if ($request->user()?->cadastroAprovado()) {
+        return redirect()->route('dashboard');
+    }
+
+    return Inertia\Inertia::render('auth/cadastro-em-analise', [
+        'equipe' => $request->user()?->equipeSolicitada?->nome,
+    ]);
+})->name('cadastro.em-analise');
 
 require __DIR__.'/settings.php';

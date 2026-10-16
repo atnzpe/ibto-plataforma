@@ -70,6 +70,19 @@ return [
     | normalmente (plano B: nada some se o site estiver fora do ar).
     */
 
+    /*
+    | CADASTRO PÚBLICO (#84; o IBTO é um grupo fechado, só de indicados):
+    | - 'aprovacao' (padrão): a tela "Criar conta" existe, mas a conta nasce
+    |   EM ANÁLISE e só entra depois que o admin da equipe ou o Comando Geral aprova;
+    | - 'fechado': a tela some; contas só por convite ou importação.
+    | Ex.: CADASTRO_PUBLICO=fechado. Valor desconhecido vira 'aprovacao' (o mais seguro
+    | que ainda deixa indicados pedirem acesso).
+    */
+
+    'cadastro_publico' => in_array(env('CADASTRO_PUBLICO', 'aprovacao'), ['aprovacao', 'fechado'], true)
+        ? (string) env('CADASTRO_PUBLICO', 'aprovacao')
+        : 'aprovacao',
+
     'site_url' => (static function (): string {
         // Endereço escrito no .env: vale ele (sem a barra do fim).
         $doEnv = rtrim((string) env('SITE_URL', ''), '/');
