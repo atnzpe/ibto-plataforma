@@ -18,6 +18,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 - Tour guiado nas telas principais (#68): abre sozinho na primeira visita de cada tela, botão "?" para rever, interruptor "Tour guiado" no menu da conta (salvo na conta), textos em português, teclado e leitor de tela.
 - Sala ao vivo nos encontros online (#71): campo "Link da sala ao vivo" na aula (só Google Meet, Zoom, Teams ou YouTube, por https); o aluno confirmado vê "Entrar na sala" de 30 minutos antes até o fim do encontro; quem organiza vê sempre; o link nunca sai no catálogo nem na API.
 - Página Ajuda com o manual de instruções de cada perfil (#68): aluno e filiado, instrutor, admin de equipe, Comando Geral e Tecnologia; cada seção com passos, regras e o porquê, busca, "Mostrar na tela" (abre a tela com o tour) e impressão ou PDF. Administrador e Tecnologia veem todos os manuais.
+- Certificado automático do curso gravado (#72): exige 100% das aulas gravadas assistidas e sai sozinho ao marcar a última (uma vez só, sem "emitido por", auditado); curso com encontros continua com 75% de presença e emissão pelo IBTO; curso misto exige as duas coisas.
 
 ### Corrigido
 

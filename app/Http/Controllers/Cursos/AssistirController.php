@@ -16,6 +16,7 @@
 
 namespace App\Http\Controllers\Cursos;
 
+use App\Actions\Cursos\Certificados;
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
 use App\Models\CursoAula;
@@ -146,7 +147,7 @@ class AssistirController extends Controller
      * @param  SalaDeAula  $sala  As regras da sala de aula.
      * @return RedirectResponse Volta para a mesma aula.
      */
-    public function marcar(Request $request, Curso $curso, CursoAula $aula, SalaDeAula $sala): RedirectResponse
+    public function marcar(Request $request, Curso $curso, CursoAula $aula, SalaDeAula $sala, Certificados $certificados): RedirectResponse
     {
         // Mesma porta da tela: sem acesso ao conteúdo, 403.
         Gate::authorize('curso.conteudo', $curso);
@@ -159,7 +160,14 @@ class AssistirController extends Controller
         abort_unless($sala->sequencia($curso, $usuario)->contains('id', $aula->id), 404);
 
         // "assistida" vem como true/false (ou 1/0); sem o campo, conta como marcar.
-        $sala->marcar($aula, $usuario, $request->boolean('assistida', true));
+        $assistida = $request->boolean('assistida', true);
+        $sala->marcar($aula, $usuario, $assistida);
+
+        // Certificado automático (#72): marcou uma aula de curso SÓ gravado e concluiu
+        // tudo? O certificado sai na hora, com o parabéns. Senão, segue normal.
+        if ($assistida && $certificados->emitirSeConcluiu($curso, $usuario) !== null) {
+            return back()->with('sucesso', 'Parabéns! Você concluiu o curso. O seu certificado está pronto no "Meu dossiê".');
+        }
 
         return back();
     }
