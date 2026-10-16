@@ -59,6 +59,41 @@ return [
     'suporte_whatsapp' => preg_replace('/\D/', '', (string) env('SUPORTE_WHATSAPP', '')),
 
     /*
+    | ENDEREÇO DO SITE PÚBLICO do mesmo ambiente (#61, bloco B4): o blog e os
+    | eventos passaram a ser mostrados no site; as páginas públicas da
+    | plataforma (/blog, /eventos) levam a pessoa para lá.
+    | Ex.: SITE_URL=https://homolog.ib-to.org
+    | Sem SITE_URL no .env, o endereço é DEDUZIDO do APP_URL, para não depender
+    | de configuração manual: cursos-homolog.ib-to.org → homolog.ib-to.org;
+    | cursos.ib-to.org → ib-to.org. Qualquer outro (ex.: o computador do
+    | desenvolvedor) fica vazio, e aí as páginas da plataforma continuam abrindo
+    | normalmente (plano B: nada some se o site estiver fora do ar).
+    */
+
+    'site_url' => (static function (): string {
+        // Endereço escrito no .env: vale ele (sem a barra do fim).
+        $doEnv = rtrim((string) env('SITE_URL', ''), '/');
+        if ($doEnv !== '') {
+            return $doEnv;
+        }
+
+        // O "host" da plataforma. Ex.: 'cursos-homolog.ib-to.org'.
+        $host = (string) parse_url((string) env('APP_URL', ''), PHP_URL_HOST);
+
+        // Plataforma de testes ou oficial: tira o "cursos-" ou o "cursos." da frente.
+        // Ex.: 'cursos-homolog.ib-to.org' → 'https://homolog.ib-to.org'.
+        if (preg_match('/^cursos[.-](.+\.ib-to\.org)$/', $host, $partes) === 1) {
+            return 'https://'.$partes[1];
+        }
+        if ($host === 'cursos.ib-to.org') {
+            return 'https://ib-to.org';
+        }
+
+        // Outro endereço (ex.: localhost): sem site, sem redirecionar.
+        return '';
+    })(),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------

@@ -14,9 +14,11 @@ use App\Enums\SituacaoAlbum;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
 use App\Models\GaleriaFoto;
+use App\Support\SitePublico;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as RespostaHttp;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GaleriaController extends Controller
@@ -24,10 +26,18 @@ class GaleriaController extends Controller
     /**
      * Os álbuns publicados, os eventos mais novos primeiro (12 por página).
      *
-     * @return Response A tela "galeria/index".
+     * Com o site configurado (#61, B4), leva a pessoa para /eventos no SITE.
+     *
+     * @return Response|RespostaHttp A tela "galeria/index", ou o redirecionamento para o site.
      */
-    public function index(): Response
+    public function index(): Response|RespostaHttp
     {
+        // Site configurado: a galeria pública mora lá. Sem site: mostra aqui (plano B).
+        $noSite = SitePublico::endereco('/eventos');
+        if ($noSite !== null) {
+            return Inertia::location($noSite);
+        }
+
         $pagina = GaleriaAlbum::query()
             ->where('situacao', SituacaoAlbum::Publicado)
             ->with('fotos')
@@ -55,11 +65,19 @@ class GaleriaController extends Controller
      * As fotos de um álbum. Álbum que não está no site: 404 ("não existe").
      *
      * @param  GaleriaAlbum  $album  O álbum do endereço, pelo slug. Ex.: /eventos/estande-de-tiro-pe
-     * @return Response A tela "galeria/album".
+     *                               Com o site configurado (#61, B4), leva a pessoa para o álbum no SITE.
+     * @return Response|RespostaHttp A tela "galeria/album", ou o redirecionamento para o site.
      */
-    public function show(GaleriaAlbum $album): Response
+    public function show(GaleriaAlbum $album): Response|RespostaHttp
     {
+        // Álbum que não está no site: para o público, não existe.
         abort_unless($album->visivelNoSite(), 404);
+
+        // Site configurado: o álbum mora lá. Sem site: mostra aqui (plano B).
+        $noSite = SitePublico::endereco('/eventos/'.$album->slug);
+        if ($noSite !== null) {
+            return Inertia::location($noSite);
+        }
 
         return Inertia::render('galeria/album', [
             'album' => [
