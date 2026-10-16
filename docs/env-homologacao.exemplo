@@ -65,3 +65,11 @@ CORS_ORIGENS=
 # "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails.
 # aprovacao = "Pedir acesso" para todos, com análise. Mudou? Apague bootstrap/cache/config.php.
 CADASTRO_PUBLICO=fechado
+
+# Cidade de quem recebe o Pix (#83): vai dentro do código "copia e cola". Sem acento.
+IBTO_PIX_CIDADE=Recife
+
+# Base do piloto: true = o Cron carrega os cursos reais e as turmas [TESTE] UMA vez
+# (marca em storage/app/piloto-carregado). Depois, volte para false.
+# Mudou? Apague bootstrap/cache/config.php.
+PILOTO_CARREGAR=false

@@ -442,7 +442,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'Senhas e chaves ficam no arquivo .env do servidor, nunca no GitHub.',
                 passos: [
                     'cPanel → Gerenciador de Arquivos → pasta da plataforma → .env (mostrar arquivos ocultos).',
-                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CIDADE (a cidade que vai dentro do código Pix; a chave e o favorecido ficam na tela "Dados para pagamento", com senha e auditoria), SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL e CADASTRO_PUBLICO.',
+                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CIDADE (a cidade que vai dentro do código Pix; a chave e o favorecido ficam na tela "Dados para pagamento", com senha e auditoria), SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL, CADASTRO_PUBLICO e PILOTO_CARREGAR (true carrega UMA vez os cursos reais e as turmas [TESTE] do piloto; depois, false).',
                     'CADASTRO_PUBLICO=fechado (padrão): só convite; "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails. CADASTRO_PUBLICO=aprovacao: "Pedir acesso" para todos, com análise.',
                     'Depois de editar, apague bootstrap/cache/config.php (o Cron recria).',
                 ],

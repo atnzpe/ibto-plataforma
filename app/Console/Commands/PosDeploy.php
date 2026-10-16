@@ -54,6 +54,7 @@ class PosDeploy extends Command
         // só tira a placa, se ela ficou do deploy.
         if ($publicada === '' || $publicada === $aplicada) {
             $this->tirarPlacaDoDeploy();
+            $this->carregarPilotoSeLigado();
 
             return self::SUCCESS;
         }
@@ -74,9 +75,36 @@ class PosDeploy extends Command
         // Banco e caches prontos: a plataforma volta ao ar.
         $this->tirarPlacaDoDeploy();
         Log::info('POS_DEPLOY_APLICADO', ['versao' => $publicada]);
+        $this->carregarPilotoSeLigado();
         $this->info("Versão {$publicada} aplicada.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Carga da base do piloto (16/10/2026): roda "plataforma:carregar-piloto" UMA vez,
+     * só com PILOTO_CARREGAR=true no .env. Sempre DEPOIS das migrations (as tabelas
+     * precisam existir). Se der erro, anota o código e tenta de novo na próxima rodada.
+     */
+    protected function carregarPilotoSeLigado(): void
+    {
+        // Marca de "já carregado": impede de rodar de novo a cada 5 minutos.
+        $marca = storage_path('app/piloto-carregado');
+
+        // Desligado no .env ou já carregado: não faz nada.
+        if (! config('app.piloto_carregar') || File::exists($marca)) {
+            return;
+        }
+
+        try {
+            Artisan::call('plataforma:carregar-piloto', [], $this->output);
+            File::put($marca, now()->toDateTimeString());
+            // A confirmação é a própria marca: o job "Diagnóstico homologação" lista
+            // storage/app/ com data e hora (o log do servidor só grava erros).
+            Log::info('PILOTO_CARREGADO');
+        } catch (Throwable $erro) {
+            Log::error('PILOTO_CARGA_FALHOU', ['excecao' => $erro::class]);
+        }
     }
 
     /**
