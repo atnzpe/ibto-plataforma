@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\PermissaoController;
 use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
@@ -95,6 +96,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Meu dossiê: o histórico da pessoa (graduação, certificados, cursos, presenças e
     // o que foi trabalhado). Sem número no endereço: cada um só vê o próprio.
     Route::get('meu-dossie', MeuDossieController::class)->name('meu-dossie');
+
+    // Ajuda (#68, parte 2): o manual de instruções de cada perfil. Cada pessoa vê o
+    // manual do seu papel; Administrador e Tecnologia veem todos.
+    Route::get('ajuda', AjudaController::class)->name('ajuda');
 });
 
 // Cadastros de apoio (#37). Cada tela pede a SUA permissão (#36): ex.

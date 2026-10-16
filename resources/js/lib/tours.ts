@@ -38,7 +38,7 @@ const PASSOS_DO_ESQUELETO: PassoDoTour[] = [
     {
         elemento: '[data-tour="menu-usuario"]',
         titulo: 'Sua conta',
-        texto: 'Configurações, senha, o interruptor do tour guiado e o botão Sair.',
+        texto: 'Configurações, o manual de instruções, o interruptor do tour guiado e o botão Sair.',
     },
 ];
 
@@ -158,6 +158,13 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             elemento: 'main h1',
             titulo: 'Blog',
             texto: 'Notícias e eventos que aparecem no site do IBTO. Post com foto de pessoas precisa da autorização de imagem.',
+        },
+    ],
+    'ajuda/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Manual de instruções',
+            texto: 'O passo a passo de cada tarefa, com o porquê das regras. "Mostrar na tela" abre a tela já com o tour.',
         },
     ],
     'galeria-admin/index': [
