@@ -24,6 +24,8 @@ type MatriculaLista = {
     curso_id: number;
     // LGPD: o registro do filiado (null = não filiado); o nome só na ficha.
     registro: string | null;
+    // Identificador do Pix (#83), para conferir no extrato. Ex.: 'IBTOMAT1234'.
+    txid: string;
     // Ex.: "Equipe Vulcan", "Sem equipe" ou "Não filiado".
     equipe: string;
     situacao: 'aguardando_pagamento' | 'confirmada' | 'cancelada';
@@ -269,6 +271,10 @@ export default function MatriculasPainel({
                                         className={`rounded px-1.5 py-0.5 text-xs font-medium ${SELO[matricula.situacao]}`}
                                     >
                                         {matricula.situacao_rotulo}
+                                    </span>
+                                    {/* Identificador do Pix (#83): o mesmo que aparece no extrato do banco. */}
+                                    <span className="font-mono text-xs text-muted-foreground">
+                                        Pix: {matricula.txid}
                                     </span>
                                 </span>
                                 <span className="text-muted-foreground">

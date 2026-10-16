@@ -102,3 +102,28 @@ test('desistir antes de pagar: cancela sem apagar e libera a vaga', function () 
     $this->actingAs($this->aluno)->get(route('catalogo.curso', $this->curso))
         ->assertInertia(fn ($tela) => $tela->where('vagas_restantes', 2)->where('matricula', null));
 });
+
+// Pix copia e cola com QR code (#83).
+test('aguardando pagamento: Pix copia e cola com o valor exato, o identificador e o QR; sem dado do aluno', function () {
+    $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
+    $matricula = CursoMatricula::where('user_id', $this->aluno->id)->firstOrFail();
+
+    $this->actingAs($this->aluno)->get(route('catalogo.curso', $this->curso))
+        ->assertInertia(fn ($tela) => $tela
+            ->where('matricula.pix.txid', 'IBTOMAT'.$matricula->id)
+            ->where('matricula.pix.copia_e_cola', fn ($codigo) => str_contains($codigo, 'financeiro@ibto.test')
+                && str_contains($codigo, '5406250.00')
+                && str_contains($codigo, 'IBTOMAT'.$matricula->id)
+                // Nenhum dado pessoal do aluno dentro do código.
+                && ! str_contains($codigo, $this->aluno->email)
+                && ! str_contains($codigo, $this->aluno->name))
+            ->where('matricula.pix.qr_svg', fn ($svg) => str_starts_with($svg, '<svg')));
+});
+
+test('sem chave Pix cadastrada, não há código (a tela orienta pelo suporte)', function () {
+    PagamentoConfig::atual()->update(['pix_chave' => '']);
+    $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
+
+    $this->actingAs($this->aluno)->get(route('catalogo.curso', $this->curso))
+        ->assertInertia(fn ($tela) => $tela->where('matricula.pix', null));
+});

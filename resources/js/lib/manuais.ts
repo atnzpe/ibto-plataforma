@@ -90,7 +90,8 @@ export const MANUAIS: Manual[] = [
                 resumo: 'A inscrição reserva a vaga; o pagamento por PIX a confirma.',
                 passos: [
                     'Na página do curso, clique em "Garantir minha vaga".',
-                    'Copie a chave PIX que aparece e faça o pagamento no app do seu banco.',
+                    'Aparece o quadro "Pague com Pix": aponte a câmera do app do banco para o QR code, ou toque em "Copiar código Pix" e cole em "Pix copia e cola" no app. O valor já vai preenchido.',
+                    'Antes de confirmar no app do banco, confira se quem recebe é o Instituto Brasileiro de Treinamento Operacional (ou o favorecido mostrado na tela). Outro nome? Não pague e avise o IBTO pelo suporte.',
                     'Envie o comprovante (foto ou PDF) na mesma tela.',
                     'Quando o IBTO confirmar o pagamento, a situação muda para "Confirmada" e chega um e-mail.',
                     'Curso gratuito: a matrícula é confirmada na hora.',
@@ -296,6 +297,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'O Comando Geral confere o comprovante e confirma o pagamento.',
                 passos: [
                     '"Matrículas" → filtre por "Aguardando confirmação".',
+                    'Cada matrícula mostra o identificador do Pix (ex.: "Pix: IBTOMAT1234"). Ele vem no código que o aluno pagou e aparece no extrato do banco: procure por ele para achar o pagamento certo.',
                     'Abra a ficha, confira o comprovante com o extrato e clique em "Confirmar pagamento".',
                     'Pagamento errado? "Cancelar" com o motivo.',
                 ],
@@ -440,7 +442,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'Senhas e chaves ficam no arquivo .env do servidor, nunca no GitHub.',
                 passos: [
                     'cPanel → Gerenciador de Arquivos → pasta da plataforma → .env (mostrar arquivos ocultos).',
-                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CHAVE, IBTO_PIX_FAVORECIDO, SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL e CADASTRO_PUBLICO.',
+                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CIDADE (a cidade que vai dentro do código Pix; a chave e o favorecido ficam na tela "Dados para pagamento", com senha e auditoria), SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL e CADASTRO_PUBLICO.',
                     'CADASTRO_PUBLICO=fechado (padrão): só convite; "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails. CADASTRO_PUBLICO=aprovacao: "Pedir acesso" para todos, com análise.',
                     'Depois de editar, apague bootstrap/cache/config.php (o Cron recria).',
                 ],

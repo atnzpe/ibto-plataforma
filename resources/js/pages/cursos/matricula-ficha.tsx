@@ -19,6 +19,8 @@ export default function FichaMatricula({
         nome: string;
         email: string | null;
         registro: string | null;
+        // Identificador do Pix (#83). Ex.: 'IBTOMAT1234'.
+        txid: string;
         equipe: string;
         curso: string;
         situacao: string;
@@ -38,6 +40,8 @@ export default function FichaMatricula({
         ['E-mail', matricula.email ?? 'Sem e-mail'],
         ['Registro', matricula.registro ?? 'Não filiado'],
         ['Equipe', matricula.equipe],
+        // Identificador do Pix (#83): procure por ele no extrato do banco.
+        ['Identificador do Pix', matricula.txid],
         ['Curso', matricula.curso],
         ['Situação', matricula.situacao_rotulo],
         [

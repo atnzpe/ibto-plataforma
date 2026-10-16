@@ -3,7 +3,7 @@
  * que a pessoa está:
  * - visitante: "Entrar para se inscrever";
  * - sem matrícula: "Garantir minha vaga" (ou "Vagas esgotadas");
- * - aguardando pagamento: os dados para pagar (PIX e/ou conta, do curso ou
+ * - aguardando pagamento: o Pix copia e cola com QR code (#83) e os dados para pagar (PIX e/ou conta, do curso ou
  *   do IBTO, conforme a chave liga/desliga do Comando Geral), o envio do
  *   comprovante e "Desistir";
  * - confirmada: o selo "Matrícula confirmada" (o botão de assistir fica na página).
@@ -13,6 +13,8 @@ import { Form, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import MatriculaController from '@/actions/App/Http/Controllers/MatriculaController';
 import InputError from '@/components/input-error';
+import PixCopiaECola from '@/components/cursos/pix-copia-e-cola';
+import type { PixDaMatricula } from '@/components/cursos/pix-copia-e-cola';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 import { login } from '@/routes';
@@ -28,6 +30,8 @@ export type MatriculaDaPessoa = {
     tem_comprovante: boolean;
     // Só quando aguardando pagamento (ver App\Support\DadosPagamento). Campos vazios = não cadastrados.
     pagamento: DadosParaPagar | null;
+    // Pix copia e cola + QR code (#83): só com chave Pix cadastrada e valor a pagar.
+    pix: PixDaMatricula | null;
 };
 
 /** Os dados para pagar: do curso ou do IBTO (chave liga/desliga no Comando Geral). */
@@ -171,6 +175,15 @@ export default function QuadroMatricula({
                     <p className="text-sm font-semibold">
                         Vaga reservada · aguardando pagamento
                     </p>
+
+                    {/* Pix copia e cola com QR code (#83): o jeito mais fácil, já com o valor exato. */}
+                    {matricula.pix && matricula.pagamento && (
+                        <PixCopiaECola
+                            pix={matricula.pix}
+                            favorecido={matricula.pagamento.favorecido}
+                            chave={matricula.pagamento.pix_chave}
+                        />
+                    )}
 
                     {/* Dados para pagar (do curso ou do IBTO). Sem PIX nem conta: orienta pelo WhatsApp. */}
                     {matricula.pagamento &&
