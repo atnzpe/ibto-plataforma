@@ -125,6 +125,17 @@ test('a galeria lista só os álbuns publicados; álbum fora do site é 404', fu
         ->assertJsonPath('codigo', 'EVENTO_NAO_ENCONTRADO');
 });
 
+test('as fotos públicas podem ser lidas pelo site (CORS), e não por um site de fora', function () {
+    $album = albumDoSite('Estande de tiro (PE)');
+    $foto = $album->fotos()->first();
+
+    $this->get(route('galeria.foto', $foto), ['Origin' => 'https://homolog.ib-to.org'])
+        ->assertOk()
+        ->assertHeader('Access-Control-Allow-Origin', 'https://homolog.ib-to.org');
+    $this->get(route('galeria.foto', $foto), ['Origin' => 'https://site-estranho.com'])
+        ->assertHeaderMissing('Access-Control-Allow-Origin');
+});
+
 test('com o site configurado, as páginas públicas levam ao site', function () {
     config(['app.site_url' => 'https://homolog.ib-to.org']);
     $post = postPublicado('Formação no estande', 'evento');

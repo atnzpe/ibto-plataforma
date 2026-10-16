@@ -1,2 +1,29 @@
+# ROBOTS.TXT DA PLATAFORMA DE CURSOS DO IBTO
+# Diz aos robôs de busca (Google, Bing, IAs) o que podem visitar.
+# - Podem: o catálogo de cursos, as trilhas e a validação pública de certificados.
+# - Não podem: as áreas com login (Comando Geral, painel do aluno, configurações),
+#   as telas de entrar/cadastrar e a API (os dados públicos da API são lidos pelo
+#   site ib-to.org, que é a vitrine para os buscadores).
+# Atenção: este arquivo é um PEDIDO aos robôs, não uma tranca. A proteção de
+# verdade das áreas privadas é o login e as permissões de cada tela.
+# Enquanto APP_INDEXAVEL=false, as páginas também levam a etiqueta "noindex".
+
 User-agent: *
-Disallow:
+Allow: /cursos
+Allow: /trilhas/
+Allow: /validar/
+Disallow: /comando-geral
+Disallow: /dashboard
+Disallow: /meus-cursos
+Disallow: /meu-dossie
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /convite
+Disallow: /api/
+Disallow: /imagens/
+
+# O blog e os eventos moram no site do IBTO; a lista de páginas dele fica aqui:
+Sitemap: https://ib-to.org/sitemap.xml

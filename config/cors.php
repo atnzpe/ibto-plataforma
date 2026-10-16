@@ -13,8 +13,12 @@
 
 return [
 
-    // Só os endereços públicos e de leitura (/api/publico/...) entram nesta regra.
-    'paths' => ['api/publico/*'],
+    // Só os endereços públicos e de leitura entram nesta regra:
+    // - /api/publico/...: os dados do blog, eventos, cursos e áreas;
+    // - /imagens/...: capas e fotos (#61, B4). Com a liberação, o site guarda as
+    //   fotos para ler sem internet SABENDO se a resposta foi boa (sem ela, o
+    //   navegador guardaria "às cegas", até uma foto com erro).
+    'paths' => ['api/publico/*', 'imagens/*'],
 
     // Só leitura.
     'allowed_methods' => ['GET'],
