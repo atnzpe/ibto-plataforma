@@ -1,7 +1,8 @@
 /**
- * EVENTOS (galeria pública, #61 bloco B2): os álbuns de fotos dos cursos e
- * eventos do IBTO, os mais novos primeiro. Cartões: 1 coluna no celular, 2 no
- * tablet e 3 na tela larga. Qualquer pessoa vê, sem login.
+ * EVENTOS (galeria, #61 bloco B2): os álbuns de fotos dos cursos e eventos do
+ * IBTO, os mais novos primeiro. Cartões: 1 coluna no celular, 2 no tablet e 3
+ * na tela larga. Modo privado (padrão desde 16/10/2026): só filiados e cargos
+ * acima veem; quem não pode ver recebe o aviso "exclusivo para filiados".
  */
 import { Head, Link } from '@inertiajs/react';
 import { dataBr } from '@/pages/catalogo/index';
@@ -24,11 +25,14 @@ type CartaoAlbum = {
  */
 export default function Eventos({
     albuns,
+    restrita = false,
 }: {
     albuns: {
         data: CartaoAlbum[];
         links: { url: string | null; label: string; active: boolean }[];
     };
+    // true = a pessoa está logada, mas não é filiada (modo privado): mostra o aviso.
+    restrita?: boolean;
 }) {
     return (
         <>
@@ -44,8 +48,21 @@ export default function Eventos({
                     </p>
                 </div>
 
+                {/* Modo privado e a pessoa não é filiada: o aviso, com o porquê. */}
+                {restrita && (
+                    <p
+                        role="note"
+                        className="rounded-xl border border-[#e4dccb] bg-white p-6 text-center text-[#4a4536]"
+                    >
+                        As fotos dos eventos são exclusivas para filiados do
+                        IBTO. Muitos dos nossos alunos e instrutores são
+                        operadores de segurança, e protegemos a imagem de quem
+                        treina conosco.
+                    </p>
+                )}
+
                 {/* Sem álbuns: frase em vez de uma lista vazia. */}
-                {albuns.data.length === 0 && (
+                {!restrita && albuns.data.length === 0 && (
                     <p className="rounded-xl border border-[#e4dccb] bg-white p-6 text-center text-[#4a4536]">
                         Nenhum álbum publicado ainda.
                     </p>

@@ -1,11 +1,14 @@
 <?php
 
 /*
- * GALERIA DE EVENTOS PÚBLICA (#61, bloco B2; o "departamento de eventos" que
- * o Mestre Eduardo pediu em 14/10/2026): qualquer pessoa, sem login, vê os
- * álbuns PUBLICADOS (/eventos) e as fotos de cada um (/eventos/{slug}).
- * Também entrega cada foto por rota própria (/imagens/galeria/{foto}), só de
- * álbum publicado e só foto descrita; o resto, só para quem cuida do blog.
+ * GALERIA DE EVENTOS (#61, bloco B2; o "departamento de eventos" que o Mestre
+ * Eduardo pediu em 14/10/2026): os álbuns PUBLICADOS (/eventos) e as fotos de
+ * cada um (/eventos/{slug}). Cada foto sai por rota própria (/imagens/galeria/{foto}).
+ *
+ * MODO PRIVADO (padrão desde 16/10/2026, App\Support\Galeria): só filiados e cargos
+ * acima, com login, veem as fotos (muitos alunos são operadores de segurança).
+ * Visitante vai para a tela de entrar; aluno sem filiação vê o aviso "exclusivo
+ * para filiados". Com GALERIA_PUBLICA=true, volta a ser aberta a todos (#61).
  */
 
 namespace App\Http\Controllers\Blog;
@@ -14,6 +17,7 @@ use App\Enums\SituacaoAlbum;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
 use App\Models\GaleriaFoto;
+use App\Support\Galeria;
 use App\Support\SitePublico;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -32,8 +36,18 @@ class GaleriaController extends Controller
      */
     public function index(): Response|RespostaHttp
     {
-        // Site configurado: a galeria pública mora lá. Sem site: mostra aqui (plano B).
-        $noSite = SitePublico::endereco('/eventos');
+        // Modo privado: visitante vai entrar (e volta aqui depois); sem permissão, vê o aviso.
+        if (! Galeria::publica()) {
+            if (request()->user() === null) {
+                return redirect()->guest(route('login'));
+            }
+            if (! Galeria::podeVer(request()->user())) {
+                return Inertia::render('galeria/index', ['albuns' => ['data' => [], 'links' => []], 'restrita' => true]);
+            }
+        }
+
+        // Modo público com o site configurado: a galeria mora lá. Sem site (ou modo privado): mostra aqui.
+        $noSite = Galeria::publica() ? SitePublico::endereco('/eventos') : null;
         if ($noSite !== null) {
             return Inertia::location($noSite);
         }
@@ -58,6 +72,7 @@ class GaleriaController extends Controller
                 ])->values(),
                 'links' => $pagina->linkCollection()->toArray(),
             ],
+            'restrita' => false,
         ]);
     }
 
@@ -73,8 +88,15 @@ class GaleriaController extends Controller
         // Álbum que não está no site: para o público, não existe.
         abort_unless($album->visivelNoSite(), 404);
 
-        // Site configurado: o álbum mora lá. Sem site: mostra aqui (plano B).
-        $noSite = SitePublico::endereco('/eventos/'.$album->slug);
+        // Modo privado: visitante vai entrar; sem permissão, volta para a lista (que mostra o aviso).
+        if (! Galeria::podeVer(request()->user())) {
+            return request()->user() === null
+                ? redirect()->guest(route('login'))
+                : redirect()->route('galeria.index');
+        }
+
+        // Modo público com o site configurado: o álbum mora lá. Senão: mostra aqui.
+        $noSite = Galeria::publica() ? SitePublico::endereco('/eventos/'.$album->slug) : null;
         if ($noSite !== null) {
             return Inertia::location($noSite);
         }
@@ -102,12 +124,17 @@ class GaleriaController extends Controller
     public function foto(GaleriaFoto $foto): StreamedResponse
     {
         $disco = Storage::disk('public');
-        $publica = $foto->album->visivelNoSite() && $foto->descrita();
+        // A foto pode sair: álbum publicado, foto descrita E quem pede pode ver (modo privado: filiado para cima).
+        $liberada = $foto->album->visivelNoSite() && $foto->descrita() && Galeria::podeVer(request()->user());
 
-        abort_if(! $publica && ! request()->user()?->can('blog.publicar'), 404);
+        // Quem cuida do blog vê sempre (a prévia na edição). Os outros, sem liberação: 404.
+        abort_if(! $liberada && ! request()->user()?->can('blog.publicar'), 404);
         abort_if(! $disco->exists($foto->caminho), 404);
 
-        return $disco->response($foto->caminho, null, ['Cache-Control' => 'public, max-age=86400']);
+        // Modo privado: "private" (só o navegador de quem pediu guarda; nenhum cache no caminho).
+        $cache = Galeria::publica() ? 'public, max-age=86400' : 'private, max-age=86400';
+
+        return $disco->response($foto->caminho, null, ['Cache-Control' => $cache]);
     }
 
     /**

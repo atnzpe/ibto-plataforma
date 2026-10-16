@@ -18,6 +18,7 @@ use App\Enums\SituacaoCurso;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
 use App\Models\Post;
+use App\Support\Galeria;
 use App\Support\SitePublico;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -99,10 +100,16 @@ class BlogController extends Controller
                 'video' => $post->video(),
                 // O curso ligado: id e título, ou null (sem curso, ou curso fechado).
                 'curso' => $cursoNoSite ? ['id' => $curso->id, 'titulo' => $curso->titulo] : null,
-                // As fotos dos álbuns PUBLICADOS ligados a este post (galeria, B2).
-                'fotos' => $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->get()
-                    ->flatMap(fn (GaleriaAlbum $album) => GaleriaController::fotosParaTela($album))
-                    ->values()->all(),
+                // As fotos dos álbuns PUBLICADOS ligados a este post (galeria, B2), só para quem
+                // pode ver (modo privado: filiado para cima); os outros recebem a lista vazia.
+                'fotos' => Galeria::podeVer(request()->user())
+                    ? $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->get()
+                        ->flatMap(fn (GaleriaAlbum $album) => GaleriaController::fotosParaTela($album))
+                        ->values()->all()
+                    : [],
+                // true = o post tem fotos, mas elas são só para filiados (a tela mostra o aviso).
+                'fotos_restritas' => ! Galeria::podeVer(request()->user())
+                    && $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->exists(),
             ],
         ]);
     }

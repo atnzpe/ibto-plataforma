@@ -27,6 +27,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Alterado
 
+- Fotos dos eventos privadas por padrão: só filiados e cargos acima as veem, com login (muitos alunos e instrutores são operadores de segurança); visitante vai para a tela de entrar, aluno sem filiação vê o aviso, e a API do site entrega o evento sem fotos, com o link para entrar. O blog continua público. `GALERIA_PUBLICA=true` volta ao modo aberto.
 - O cadastro público começa **fechado** (só convite) por padrão; a tela "Pedir acesso" só aparece enquanto a chave de partida (`ADMIN_EMAILS`) estiver preenchida, e só aceita aqueles e-mails, que entram já aprovados e sem precisar de equipe.
 
 ### Segurança

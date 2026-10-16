@@ -388,7 +388,7 @@ export const MANUAIS: Manual[] = [
             {
                 id: 'blog',
                 titulo: 'Blog e galeria de eventos',
-                resumo: 'O conteúdo que aparece no site do IBTO.',
+                resumo: 'O blog aparece no site para todos; as fotos dos eventos, só para filiados.',
                 passos: [
                     '"Blog" → "Novo post": título, categoria (Notícia ou Evento), resumo, texto, capa e vídeo.',
                     'Publique na hora ou agende uma data.',
@@ -397,6 +397,8 @@ export const MANUAIS: Manual[] = [
                 regras: [
                     'Post ou álbum com pessoas só publica com a autorização de imagem (LGPD); com menores, também a dos responsáveis.',
                     'Cada foto precisa de descrição: ela é lida pelos leitores de tela e ajuda o Google.',
+                    'As fotos dos eventos são PRIVADAS: só filiados e cargos acima as veem, com login. Muitos alunos e instrutores são operadores de segurança, e a foto com rosto ou distintivo na internet pode pôr essas pessoas em risco. No site público aparecem só o nome, a data e o local do evento.',
+                    'O blog é público: use fotos em que ninguém seja identificável (de costas, à distância ou desfocadas), ou com a autorização escrita.',
                 ],
                 tela: { endereco: '/comando-geral/blog', nome: 'Blog' },
             },
@@ -442,7 +444,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'Senhas e chaves ficam no arquivo .env do servidor, nunca no GitHub.',
                 passos: [
                     'cPanel → Gerenciador de Arquivos → pasta da plataforma → .env (mostrar arquivos ocultos).',
-                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CIDADE (a cidade que vai dentro do código Pix; a chave e o favorecido ficam na tela "Dados para pagamento", com senha e auditoria), SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL, CADASTRO_PUBLICO e PILOTO_CARREGAR (true carrega UMA vez os cursos reais e as turmas [TESTE] do piloto; depois, false).',
+                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CIDADE (a cidade que vai dentro do código Pix; a chave e o favorecido ficam na tela "Dados para pagamento", com senha e auditoria), SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL, CADASTRO_PUBLICO, GALERIA_PUBLICA (false, o padrão: fotos dos eventos só para filiados; true: abertas a todos) e PILOTO_CARREGAR (true carrega UMA vez os cursos reais e as turmas [TESTE] do piloto; depois, false).',
                     'CADASTRO_PUBLICO=fechado (padrão): só convite; "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails. CADASTRO_PUBLICO=aprovacao: "Pedir acesso" para todos, com análise.',
                     'Depois de editar, apague bootstrap/cache/config.php (o Cron recria).',
                 ],

@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('public');
+    // Estes testes conferem o MODO PÚBLICO da galeria (GALERIA_PUBLICA=true, #61).
+    // O modo privado (o padrão desde 16/10/2026) está em GaleriaPrivadaTest.
+    config(['app.galeria_publica' => true]);
 });
 
 /**

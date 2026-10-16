@@ -34,8 +34,10 @@ export default function PaginaPost({
         credito: string | null;
         video: Video | null;
         curso: { id: number; titulo: string } | null;
-        // As fotos dos álbuns publicados ligados a este post (galeria, B2).
+        // As fotos dos álbuns publicados ligados a este post (galeria, B2); vazia para quem não pode ver.
         fotos?: FotoGaleria[];
+        // true = há fotos, mas só para filiados (modo privado da galeria, 16/10/2026).
+        fotos_restritas?: boolean;
     };
 }) {
     return (
@@ -119,6 +121,14 @@ export default function PaginaPost({
                         </h2>
                         <GradeFotos fotos={post.fotos} />
                     </section>
+                )}
+
+                {/* Fotos só para filiados (modo privado): o aviso no lugar das fotos. */}
+                {post.fotos_restritas && (
+                    <p className="rounded-xl border border-[#e4dccb] bg-[#faf8f3] p-4 text-sm text-[#4a4536]">
+                        As fotos deste evento são exclusivas para filiados do
+                        IBTO, por segurança de quem treina conosco.
+                    </p>
                 )}
 
                 {/* O curso ligado (só curso publicado e aberto). */}

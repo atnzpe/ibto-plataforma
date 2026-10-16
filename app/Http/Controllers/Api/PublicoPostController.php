@@ -18,6 +18,7 @@ use App\Http\Controllers\Blog\GaleriaController;
 use App\Http\Controllers\Controller;
 use App\Models\GaleriaAlbum;
 use App\Models\Post;
+use App\Support\Galeria;
 use Illuminate\Http\JsonResponse;
 
 class PublicoPostController extends Controller
@@ -66,10 +67,16 @@ class PublicoPostController extends Controller
                     'titulo' => $curso->titulo,
                     'url' => route('catalogo.curso', $curso->id),
                 ] : null,
-                // As fotos dos álbuns PUBLICADOS ligados a este post (endereço completo, descrição e crédito).
-                'fotos' => $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->get()
-                    ->flatMap(fn (GaleriaAlbum $album) => GaleriaController::fotosParaTela($album))
-                    ->values()->all(),
+                // As fotos dos álbuns PUBLICADOS ligados a este post, só no modo público. No privado
+                // (padrão), a lista vai vazia e "fotos_restritas" avisa o site para mostrar
+                // "fotos exclusivas para filiados", com o link para entrar na plataforma.
+                'fotos' => Galeria::publica()
+                    ? $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->get()
+                        ->flatMap(fn (GaleriaAlbum $album) => GaleriaController::fotosParaTela($album))
+                        ->values()->all()
+                    : [],
+                'fotos_restritas' => ! Galeria::publica() && $post->albuns()->where('situacao', SituacaoAlbum::Publicado)->exists(),
+                'fotos_url' => route('galeria.index'),
             ],
         ])->header('Cache-Control', 'public, max-age=300');
     }
