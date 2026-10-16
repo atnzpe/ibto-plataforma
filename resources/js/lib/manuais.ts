@@ -52,17 +52,20 @@ export const MANUAIS: Manual[] = [
         secoes: [
             {
                 id: 'entrar',
-                titulo: 'Criar a conta e entrar',
-                resumo: 'A conta é o seu acesso à plataforma: cursos, certificados e o seu dossiê.',
+                titulo: 'Pedir acesso e entrar',
+                resumo: 'O IBTO é um grupo fechado, só de indicados: todo acesso novo passa por uma análise.',
                 passos: [
-                    'Na tela de entrar, clique em "Criar conta" e preencha nome, e-mail e senha.',
-                    'Abra o e-mail de confirmação e clique no link (veja também a caixa de spam).',
-                    'Entre com o e-mail e a senha. A primeira tela é "Meus cursos".',
+                    'Recebeu um convite por e-mail? Clique no link e crie a sua senha: a conta já está aprovada.',
+                    'Foi indicado e não tem convite? Na tela de entrar, clique em "Pedir acesso" e informe nome, e-mail, a sua equipe, quem indicou você e a senha.',
+                    'Confirme o e-mail pelo link que chega (veja também o spam).',
+                    'Aguarde a análise do admin da sua equipe ou do IBTO; você recebe um e-mail com a resposta.',
+                    'Aprovado, entre com o e-mail e a senha. A primeira tela é "Meus cursos".',
                     'Esqueceu a senha? Na tela de entrar, use "Esqueci a senha".',
                 ],
                 regras: [
+                    'Enquanto o pedido está em análise, a plataforma só mostra a tela "Cadastro em análise".',
+                    'Um e-mail só pode ter uma conta.',
                     'Depois de várias senhas erradas seguidas, o login espera alguns minutos: isso protege a sua conta contra quem tenta adivinhar a senha.',
-                    'Filiado que veio da planilha do IBTO recebe um convite por e-mail para criar a senha.',
                 ],
             },
             {
@@ -224,6 +227,24 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/cadastros/filiados', nome: 'Filiados' },
             },
             {
+                id: 'solicitacoes-equipe',
+                titulo: 'Aprovar pedidos de acesso da equipe',
+                resumo: 'Quem pede acesso escolhe a equipe; o admin daquela equipe confere a indicação e decide.',
+                passos: [
+                    'Menu "Solicitações de cadastro": aparecem só os pedidos para a sua equipe.',
+                    'Confira o nome, o e-mail (se já foi confirmado) e quem indicou.',
+                    'Clique em "Aprovar" (a pessoa vira Aluno e recebe um e-mail) ou em "Recusar" e escreva o motivo (vai no e-mail).',
+                ],
+                regras: [
+                    'O IBTO é um grupo fechado: só aprove quem foi mesmo indicado.',
+                    'Toda aprovação e recusa fica na auditoria (quem, quando e o motivo).',
+                ],
+                tela: {
+                    endereco: '/admin/solicitacoes',
+                    nome: 'Solicitações de cadastro',
+                },
+            },
+            {
                 id: 'chamada-equipe',
                 titulo: 'Chamada dos cursos da equipe',
                 resumo: 'O admin de equipe também pode fazer a chamada dos cursos da equipe.',
@@ -340,6 +361,24 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/admin/usuarios', nome: 'Usuários' },
             },
             {
+                id: 'solicitacoes',
+                titulo: 'Pedidos de acesso (grupo fechado)',
+                resumo: 'Contas novas entram por convite ou por pedido de acesso analisado.',
+                passos: [
+                    'Convite: em "Usuários" ou "Filiados", cadastre a pessoa e use "Convite"; a conta já nasce aprovada.',
+                    'Pedido de acesso: menu "Solicitações de cadastro" mostra todos os pedidos em análise, do mais antigo para o mais novo.',
+                    'Aprovar dá o papel Aluno e manda o e-mail; recusar pede o motivo, que vai no e-mail.',
+                ],
+                regras: [
+                    'O admin de cada equipe analisa os pedidos da própria equipe; o Comando Geral e a Tecnologia veem todos.',
+                    'A trava fica no servidor: quem está em análise não abre nenhuma outra tela, nem pelo endereço.',
+                ],
+                tela: {
+                    endereco: '/admin/solicitacoes',
+                    nome: 'Solicitações de cadastro',
+                },
+            },
+            {
                 id: 'blog',
                 titulo: 'Blog e galeria de eventos',
                 resumo: 'O conteúdo que aparece no site do IBTO.',
@@ -396,7 +435,8 @@ export const MANUAIS: Manual[] = [
                 resumo: 'Senhas e chaves ficam no arquivo .env do servidor, nunca no GitHub.',
                 passos: [
                     'cPanel → Gerenciador de Arquivos → pasta da plataforma → .env (mostrar arquivos ocultos).',
-                    'Chaves usadas: ADMIN_EMAILS, IBTO_PIX_CHAVE, IBTO_PIX_FAVORECIDO, SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS e APP_INDEXAVEL.',
+                    'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CHAVE, IBTO_PIX_FAVORECIDO, SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL e CADASTRO_PUBLICO.',
+                    'CADASTRO_PUBLICO=aprovacao (padrão): existe "Pedir acesso", com análise. CADASTRO_PUBLICO=fechado: só convite (a tela some).',
                     'Depois de editar, apague bootstrap/cache/config.php (o Cron recria).',
                 ],
                 regras: [

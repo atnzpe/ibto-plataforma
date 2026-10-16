@@ -19,6 +19,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 - Sala ao vivo nos encontros online (#71): campo "Link da sala ao vivo" na aula (só Google Meet, Zoom, Teams ou YouTube, por https); o aluno confirmado vê "Entrar na sala" de 30 minutos antes até o fim do encontro; quem organiza vê sempre; o link nunca sai no catálogo nem na API.
 - Página Ajuda com o manual de instruções de cada perfil (#68): aluno e filiado, instrutor, admin de equipe, Comando Geral e Tecnologia; cada seção com passos, regras e o porquê, busca, "Mostrar na tela" (abre a tela com o tour) e impressão ou PDF. Administrador e Tecnologia veem todos os manuais.
 - Certificado automático do curso gravado (#72): exige 100% das aulas gravadas assistidas e sai sozinho ao marcar a última (uma vez só, sem "emitido por", auditado); curso com encontros continua com 75% de presença e emissão pelo IBTO; curso misto exige as duas coisas.
+- Cadastro com aprovação (#84; grupo fechado): "Criar conta" virou "Pedir acesso", com equipe e quem indicou; a conta nasce em análise (trava no servidor) e o admin da equipe ou o Comando Geral aprova (vira Aluno, e-mail) ou recusa com motivo (e-mail); CADASTRO_PUBLICO=fechado deixa só o convite.
 
 ### Corrigido
 

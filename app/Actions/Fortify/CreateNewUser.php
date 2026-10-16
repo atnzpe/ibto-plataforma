@@ -1,19 +1,26 @@
 <?php
 
 /*
- * CADASTRO PÚBLICO (tela /register): cria a conta de quem se cadastra pelo site.
- * Desde a #36, a conta já nasce com o papel "Aluno", porque o cadastro público
- * é de quem vem fazer cursos abertos ao público (decisão do Gleyson, 08/10/2026).
+ * CADASTRO PÚBLICO (tela /register), com APROVAÇÃO (#84).
+ *
+ * O IBTO é um grupo fechado, só de indicados (Gleyson, 17/10/2026). Quem se
+ * cadastra sozinho informa a EQUIPE e QUEM INDICOU, e a conta nasce "em
+ * análise": entra, mas só vê a tela "Cadastro em análise" até o admin da
+ * equipe ou o Comando Geral aprovar (aí ganha o papel Aluno). Com
+ * CADASTRO_PUBLICO=fechado no .env, a tela some e o cadastro é recusado (404).
+ * (Antes da #84, a conta já nascia como Aluno; decisão de 08/10/2026, revista.)
  */
 
 namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Models\Papel;
+use App\Enums\StatusEquipe;
+use App\Models\Auditoria;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -21,40 +28,56 @@ class CreateNewUser implements CreatesNewUsers
     use PasswordValidationRules, ProfileValidationRules;
 
     /**
-     * Confere os dados do formulário, cria a conta e dá o papel "Aluno".
+     * Confere os dados do formulário e cria a conta EM ANÁLISE.
      *
-     * @param  array<string, string>  $input  O que a pessoa digitou. Ex.: ['name' => 'Ana', 'email' => 'ana@ibto.org', 'password' => '...']
-     * @return User A conta criada.
+     * @param  array<string, string>  $input  O que a pessoa digitou. Ex.: ['name' => 'Ana', 'email' => 'ana@ibto.org',
+     *                                        'password' => '...', 'equipe_id' => '3', 'indicado_por' => 'Mestre Trinca']
+     * @return User A conta criada (situação 'em_analise').
      */
     public function create(array $input): User
     {
-        // Confere nome, e-mail (sem repetir) e senha forte; se algo estiver
-        // errado, para aqui e a tela mostra o erro embaixo do campo.
+        // Porta fechada (só convite): para tudo com 404, como se o cadastro não existisse.
+        abort_if(config('app.cadastro_publico') === 'fechado', 404);
+
+        // Confere nome, e-mail (sem repetir), senha forte, a equipe (existente e não
+        // inativa) e quem indicou; se algo estiver errado, a tela mostra o erro no campo.
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
+            'equipe_id' => ['required', 'integer', Rule::exists('equipes', 'id')->whereNot('status', StatusEquipe::Inativa->value)],
+            'indicado_por' => ['required', 'string', 'min:3', 'max:150'],
+        ], [
+            'equipe_id.required' => 'Escolha a sua equipe.',
+            'equipe_id.exists' => 'Escolha uma equipe da lista.',
+            'indicado_por.required' => 'Informe quem indicou você ao IBTO.',
+            'indicado_por.min' => 'Informe o nome de quem indicou você.',
         ])->validate();
 
-        // Cria a conta (a senha é guardada embaralhada, pelo cast do User).
-        $usuario = User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => $input['password'],
-        ]);
+        // Conta + auditoria juntas: ou as duas são gravadas, ou nenhuma.
+        return DB::transaction(function () use ($input): User {
+            // A senha é guardada embaralhada (cast do User). Sem papel ainda:
+            // o papel Aluno só vem na aprovação.
+            $usuario = User::create([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'password' => $input['password'],
+            ]);
+            // E-mail da chave de emergência (ADMIN_EMAILS no .env): nasce APROVADO. Sem isso,
+            // numa instalação nova a primeira pessoa da Tecnologia ficaria trancada para fora
+            // (em análise, sem ninguém para aprovar).
+            $daChaveDeEmergencia = in_array(strtolower($usuario->email), config('app.admin_emails'), true);
 
-        // Busca o papel de aluno pelo slug 'aluno' (o apelido fixo do sistema; o nome
-        // "Aluno" da tela pode mudar, o slug não). first(): o papel, ou null se não existir.
-        $papelAluno = Papel::where('slug', 'aluno')->first();
+            // forceFill: estas colunas não estão no "Fillable" (proteção contra gravação em massa).
+            $usuario->forceFill([
+                'situacao_cadastro' => $daChaveDeEmergencia ? 'aprovado' : 'em_analise',
+                'equipe_solicitada_id' => (int) $input['equipe_id'],
+                'indicado_por' => trim($input['indicado_por']),
+            ])->save();
 
-        // Achou o papel: liga a conta a ele (a tabela papel_usuario ganha uma linha).
-        if ($papelAluno !== null) {
-            $usuario->papeis()->attach($papelAluno->id);
-        } else {
-            // Não achou (alguém apagou o papel?): a conta é criada mesmo assim,
-            // mas fica registrado no log, para não passar em silêncio (#58).
-            Log::error('PAPEL_ALUNO_AUSENTE', ['usuario_id' => $usuario->id]);
-        }
+            // Auditoria só com números (LGPD): quem pediu e para qual equipe.
+            Auditoria::registrar('CADASTRO_SOLICITADO', ['usuario_id' => $usuario->id, 'equipe_id' => $usuario->equipe_solicitada_id]);
 
-        return $usuario;
+            return $usuario;
+        });
     }
 }

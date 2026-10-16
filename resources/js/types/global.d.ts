@@ -31,7 +31,11 @@ declare module '@inertiajs/core' {
                 pagamentos_configurar: boolean;
                 // Blog (#61): escrever, publicar e arquivar posts.
                 blog_publicar: boolean;
+                // Solicitações de cadastro (#84): Comando Geral, Tecnologia e admin de equipe.
+                cadastros_aprovar: boolean;
             };
+            // Tour guiado (#68): o interruptor e as telas já vistas (null sem login).
+            tour: { ativo: boolean; vistos: string[] } | null;
             // Mensagem de sucesso da última ação (ex.: "Área cadastrada."), ou null.
             sucesso: string | null;
             [key: string]: unknown;
