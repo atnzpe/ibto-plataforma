@@ -370,3 +370,15 @@
         transition: none !important;
     }
 }
+
+/*
+ * IMPRESSÃO (manual de instruções, #68): no papel ou no PDF sai só o
+ * conteúdo da página, sem o menu lateral e sem a barra do topo.
+ */
+@media print {
+    [data-sidebar='sidebar'],
+    [data-slot='sidebar'],
+    header {
+        display: none !important;
+    }
+}

@@ -4,7 +4,7 @@
  * Textos em português (tradução das telas do kit do Laravel, 14/10/2026, antes do piloto).
  */
 import { Link, router, usePage } from '@inertiajs/react';
-import { CircleHelp, LogOut, Settings } from 'lucide-react';
+import { BookOpen, CircleHelp, LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -63,6 +63,17 @@ export function UserMenuContent({ user }: Props) {
                     >
                         <Settings className="mr-2" />
                         Configurações
+                    </Link>
+                </DropdownMenuItem>
+                {/* Manual de instruções (#68, parte 2): o passo a passo de cada perfil. */}
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full cursor-pointer"
+                        href="/ajuda"
+                        onClick={cleanup}
+                    >
+                        <BookOpen className="mr-2" />
+                        Manual de instruções
                     </Link>
                 </DropdownMenuItem>
                 {/* Interruptor do tour: role="menuitemcheckbox" + aria-checked dizem ao

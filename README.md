@@ -38,8 +38,9 @@ Situação em 16/10/2026. Tudo abaixo está no ar na homologação (`cursos-homo
 | API pública           | Blog, eventos, cursos e áreas em JSON, só leitura, CORS só para o site, 60 pedidos por minuto                                                    | #52, #57, #61 |
 | Suporte               | Botão "Suporte técnico" pelo WhatsApp, com mensagem padronizada                                                                                  | —             |
 | Tour guiado           | Balões que explicam cada tela principal; abre sozinho na primeira visita, "?" para rever, liga/desliga no menu da conta                          | #68           |
+| Manual de instruções  | Página Ajuda com um manual por perfil (Administrador e Tecnologia veem todos), busca, "Mostrar na tela" e PDF                                    | #68           |
 
-Próximos (ordem do piloto): certificado automático do curso gravado com 100% das aulas, manual por perfil e página Ajuda (#68), relatórios do Comando Geral, LGPD (#47), provas (#43) e gateway de pagamento (#42).
+Próximos (ordem do piloto): certificado automático do curso gravado com 100% das aulas, relatórios do Comando Geral, LGPD (#47), provas (#43) e gateway de pagamento (#42).
 
 Regras de dinheiro: valores em **centavos** (nada de vírgula no cálculo); lançamento pago **nunca** muda nem some (corrige-se com estorno); toda movimentação vai para a auditoria na mesma transação.
 

@@ -91,6 +91,19 @@ export function TourGuiado() {
         tour.drive();
     }, [dados, tela]);
 
+    // Veio do manual com "Mostrar na tela" (?tour=1): abre o tour desta tela,
+    // mesmo com o tour desligado ou a tela já vista.
+    useEffect(() => {
+        // Sem o ?tour=1 no endereço: nada a fazer aqui.
+        if (new URLSearchParams(window.location.search).get('tour') !== '1') {
+            return;
+        }
+        const relogio = window.setTimeout(abrir, ESPERA_PARA_ABRIR_MS);
+
+        // Saiu da tela antes do tempo: cancela a abertura.
+        return () => window.clearTimeout(relogio);
+    }, [abrir]);
+
     // Ao chegar numa tela: abre sozinho se o tour está ligado e a tela ainda não foi vista.
     useEffect(() => {
         // Sem login, tour desligado, tela sem tour, já vista ou já aberta nesta visita: não abre.
