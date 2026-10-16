@@ -115,10 +115,11 @@ export const MANUAIS: Manual[] = [
             {
                 id: 'certificado',
                 titulo: 'Presença e certificado',
-                resumo: 'Nos cursos com encontros, a presença de cada encontro vai para o seu dossiê e libera o certificado.',
+                resumo: 'O certificado depende da presença nos encontros e das aulas gravadas assistidas.',
                 passos: [
-                    'Em cada encontro, o instrutor (ou o admin da equipe) faz a chamada.',
-                    'Com pelo menos 75% de presença, o IBTO emite o certificado.',
+                    'Curso com encontros: em cada encontro, o instrutor (ou o admin da equipe) faz a chamada; com pelo menos 75% de presença, o IBTO emite o certificado.',
+                    'Curso gravado (só aulas online): marque cada aula como assistida; ao marcar a última, o certificado sai na hora, sozinho.',
+                    'Curso com encontros e aulas gravadas: precisa dos 75% de presença e de todas as gravadas assistidas.',
                     'O certificado aparece no "Meu dossiê", com o botão "Ver".',
                 ],
                 regras: [
@@ -193,7 +194,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'No curso, abra "Inscritos" → "Encontros e chamada" → "Fazer a chamada".',
                     'Marque quem veio e escreva "O que foi trabalhado no encontro" → "Salvar chamada".',
-                    'Em "Certificados", veja quem está apto (75% de presença) e emita.',
+                    'Em "Certificados", veja quem está apto (75% de presença e, se houver, todas as aulas gravadas assistidas) e emita.',
+                    'Curso só gravado: o certificado sai sozinho quando o aluno marca a última aula; não precisa emitir.',
                 ],
                 regras: [
                     'Quem não for marcado leva falta: a chamada sempre registra todos os confirmados.',

@@ -58,13 +58,15 @@ test('página do curso: visitante não vê situação nenhuma', function () {
 });
 
 test('Meus cursos: o resumo do dossiê traz o certificado e as presenças, sem o cancelado', function () {
-    // Presente nos 2 encontros: apto ao certificado.
+    // Presente nos 2 encontros e com a aula gravada assistida: apto ao certificado
+    // (curso misto exige as duas coisas desde a #72).
     foreach ([$this->encontro1, $this->encontro2] as $encontro) {
         $this->actingAs($this->admin)->put(
             route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $encontro->id]),
             ['presentes' => [$this->matricula->id]],
         );
     }
+    app(SalaDeAula::class)->marcar($this->online, $this->aluno, true);
     $certificado = app(Certificados::class)->emitir($this->matricula);
 
     $this->actingAs($this->aluno)->get(route('meus-cursos'))

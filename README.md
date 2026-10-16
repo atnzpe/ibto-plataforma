@@ -20,27 +20,27 @@ O IBTO tem três partes, cada uma com o seu público (Gleyson, 10/10/2026):
 
 Situação em 16/10/2026. Tudo abaixo está no ar na homologação (`cursos-homolog.ib-to.org`); a produção é um clone, depois do piloto (#56).
 
-| Módulo                | O que faz                                                                                                                                        | Issue         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| Base e publicação     | Laravel 13 + React, publicação automática sem SSH, rota de saúde, nenhum erro em silêncio                                                        | #35, #58      |
-| Idiomas               | Português, inglês e espanhol pelo Google Tradutor                                                                                                | #53           |
-| Login e permissões    | Duas travas de tentativas, Aluno automático no cadastro, 5 papéis, uma permissão por tela, auditoria                                             | #36           |
-| Usuários              | Desativar e reativar, nova senha, convite                                                                                                        | #36           |
-| Cadastros             | Áreas de atuação, níveis, equipes (com logo), filiados com dados pessoais criptografados, convite, importação da planilha                        | #37           |
-| Financeiro            | Livro-caixa a receber e a pagar, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, filtros por período                        | #59           |
-| Anuidade              | Valor por ano (2026 isento; R$ 90,00 em 2027); o pagamento gera a receita no livro-caixa                                                         | #37, #59      |
-| Cursos e trilhas      | Cadastro completo, presencial ou online, 3 tipos de acesso, curso fechado, chancela do IBTO, conteúdo em módulos e aulas, trilhas                | #38, #39, #40 |
-| Matrícula e pagamento | Inscrição, PIX com comprovante, confirmação, trava de vagas, divisão do valor (20% IBTO, 80% instrutor)                                          | #41           |
-| Sala ao vivo          | Link da sala (Meet, Zoom, Teams ou YouTube) nos encontros online; botão "Entrar na sala" só na janela do encontro e só para matrícula confirmada | #71           |
-| Chamada e certificado | Chamada por encontro com "o que foi trabalhado", certificado com 75% de presença, modelo institucional, QR code e validação pública              | #44, #46      |
-| Área do aluno         | Meus cursos com progresso, aula online com "marcar como assistida", Meu dossiê                                                                   | #43, #44      |
-| Blog e galeria        | Notícias e eventos com regras de publicação e autorização de imagem; mostrados no site (`ib-to.org/blog` e `/eventos`)                           | #61           |
-| API pública           | Blog, eventos, cursos e áreas em JSON, só leitura, CORS só para o site, 60 pedidos por minuto                                                    | #52, #57, #61 |
-| Suporte               | Botão "Suporte técnico" pelo WhatsApp, com mensagem padronizada                                                                                  | —             |
-| Tour guiado           | Balões que explicam cada tela principal; abre sozinho na primeira visita, "?" para rever, liga/desliga no menu da conta                          | #68           |
-| Manual de instruções  | Página Ajuda com um manual por perfil (Administrador e Tecnologia veem todos), busca, "Mostrar na tela" e PDF                                    | #68           |
+| Módulo                | O que faz                                                                                                                                                                                 | Issue         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Base e publicação     | Laravel 13 + React, publicação automática sem SSH, rota de saúde, nenhum erro em silêncio                                                                                                 | #35, #58      |
+| Idiomas               | Português, inglês e espanhol pelo Google Tradutor                                                                                                                                         | #53           |
+| Login e permissões    | Duas travas de tentativas, Aluno automático no cadastro, 5 papéis, uma permissão por tela, auditoria                                                                                      | #36           |
+| Usuários              | Desativar e reativar, nova senha, convite                                                                                                                                                 | #36           |
+| Cadastros             | Áreas de atuação, níveis, equipes (com logo), filiados com dados pessoais criptografados, convite, importação da planilha                                                                 | #37           |
+| Financeiro            | Livro-caixa a receber e a pagar, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, filtros por período                                                                 | #59           |
+| Anuidade              | Valor por ano (2026 isento; R$ 90,00 em 2027); o pagamento gera a receita no livro-caixa                                                                                                  | #37, #59      |
+| Cursos e trilhas      | Cadastro completo, presencial ou online, 3 tipos de acesso, curso fechado, chancela do IBTO, conteúdo em módulos e aulas, trilhas                                                         | #38, #39, #40 |
+| Matrícula e pagamento | Inscrição, PIX com comprovante, confirmação, trava de vagas, divisão do valor (20% IBTO, 80% instrutor)                                                                                   | #41           |
+| Sala ao vivo          | Link da sala (Meet, Zoom, Teams ou YouTube) nos encontros online; botão "Entrar na sala" só na janela do encontro e só para matrícula confirmada                                          | #71           |
+| Chamada e certificado | Chamada por encontro com "o que foi trabalhado", certificado com 75% de presença (curso gravado: 100% das aulas, emitido sozinho, #72), modelo institucional, QR code e validação pública | #44, #46      |
+| Área do aluno         | Meus cursos com progresso, aula online com "marcar como assistida", Meu dossiê                                                                                                            | #43, #44      |
+| Blog e galeria        | Notícias e eventos com regras de publicação e autorização de imagem; mostrados no site (`ib-to.org/blog` e `/eventos`)                                                                    | #61           |
+| API pública           | Blog, eventos, cursos e áreas em JSON, só leitura, CORS só para o site, 60 pedidos por minuto                                                                                             | #52, #57, #61 |
+| Suporte               | Botão "Suporte técnico" pelo WhatsApp, com mensagem padronizada                                                                                                                           | —             |
+| Tour guiado           | Balões que explicam cada tela principal; abre sozinho na primeira visita, "?" para rever, liga/desliga no menu da conta                                                                   | #68           |
+| Manual de instruções  | Página Ajuda com um manual por perfil (Administrador e Tecnologia veem todos), busca, "Mostrar na tela" e PDF                                                                             | #68           |
 
-Próximos (ordem do piloto): certificado automático do curso gravado com 100% das aulas, relatórios do Comando Geral, LGPD (#47), provas (#43) e gateway de pagamento (#42).
+Próximos (ordem do piloto): relatórios do Comando Geral, LGPD (#47), provas (#43) e gateway de pagamento (#42).
 
 Regras de dinheiro: valores em **centavos** (nada de vírgula no cálculo); lançamento pago **nunca** muda nem some (corrige-se com estorno); toda movimentação vai para a auditoria na mesma transação.
 
