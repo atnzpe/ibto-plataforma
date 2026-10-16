@@ -72,16 +72,17 @@ return [
 
     /*
     | CADASTRO PÚBLICO (#84; o IBTO é um grupo fechado, só de indicados):
-    | - 'aprovacao' (padrão): a tela "Criar conta" existe, mas a conta nasce
-    |   EM ANÁLISE e só entra depois que o admin da equipe ou o Comando Geral aprova;
-    | - 'fechado': a tela some; contas só por convite ou importação.
-    | Ex.: CADASTRO_PUBLICO=fechado. Valor desconhecido vira 'aprovacao' (o mais seguro
-    | que ainda deixa indicados pedirem acesso).
+    | - 'fechado' (PADRÃO, decisão do Gleyson em 17/10/2026): contas só por convite
+    |   ou importação. A tela "Pedir acesso" só existe enquanto a chave de partida
+    |   (ADMIN_EMAILS) estiver preenchida, e só aceita aqueles e-mails;
+    | - 'aprovacao': a tela "Pedir acesso" existe para todos, mas a conta nasce
+    |   EM ANÁLISE e só entra depois que o admin da equipe ou o Comando Geral aprova.
+    | Ex.: CADASTRO_PUBLICO=aprovacao. Valor desconhecido vira 'fechado' (o mais seguro).
     */
 
-    'cadastro_publico' => in_array(env('CADASTRO_PUBLICO', 'aprovacao'), ['aprovacao', 'fechado'], true)
-        ? (string) env('CADASTRO_PUBLICO', 'aprovacao')
-        : 'aprovacao',
+    'cadastro_publico' => in_array(env('CADASTRO_PUBLICO', 'fechado'), ['aprovacao', 'fechado'], true)
+        ? (string) env('CADASTRO_PUBLICO', 'fechado')
+        : 'fechado',
 
     'site_url' => (static function (): string {
         // Endereço escrito no .env: vale ele (sem a barra do fim).

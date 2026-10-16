@@ -436,7 +436,7 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'cPanel → Gerenciador de Arquivos → pasta da plataforma → .env (mostrar arquivos ocultos).',
                     'Chaves usadas: ADMIN_EMAILS (chave de partida: só numa instalação nova ou para recuperar o acesso; depois, deixe vazio), IBTO_PIX_CHAVE, IBTO_PIX_FAVORECIDO, SUPORTE_WHATSAPP, SITE_URL, CORS_ORIGENS, APP_INDEXAVEL e CADASTRO_PUBLICO.',
-                    'CADASTRO_PUBLICO=aprovacao (padrão): existe "Pedir acesso", com análise. CADASTRO_PUBLICO=fechado: só convite (a tela some).',
+                    'CADASTRO_PUBLICO=fechado (padrão): só convite; "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails. CADASTRO_PUBLICO=aprovacao: "Pedir acesso" para todos, com análise.',
                     'Depois de editar, apague bootstrap/cache/config.php (o Cron recria).',
                 ],
                 regras: [

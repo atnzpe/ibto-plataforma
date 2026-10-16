@@ -1,0 +1,40 @@
+# Diagnóstico da homologação (16/10/2026): o servidor não tem SSH, então este
+# job baixa o log do Laravel por FTPS e mostra só as linhas de ERRO, cortadas e
+# com e-mails escondidos (LGPD: nada de dado pessoal no log do GitHub).
+# Como usar: Actions → "Diagnóstico homologação" → Run workflow.
+# Ele foi o que achou a causa do erro 500 de 16/10/2026 (corrida do deploy).
+name: Diagnóstico homologação
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    # Os segredos do FTP ficam no ambiente "homologacao" do GitHub.
+    environment: homologacao
+    steps:
+      - name: Baixar o log e mostrar só os erros
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          # Lista os logs que existem (só os nomes dos arquivos).
+          curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" --list-only "ftp://$FTP_SERVER/storage/logs/" || true
+          # Tenta o log do dia (canal daily) e o log único (canal single).
+          for nome in "laravel-$(date -u +%F).log" laravel.log; do
+            if curl --silent --fail --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" -o log.txt "ftp://$FTP_SERVER/storage/logs/$nome"; then
+              echo "=== $nome: últimos erros (cortados, e-mails escondidos) ==="
+              grep -E '\.(ERROR|CRITICAL|EMERGENCY|ALERT):' log.txt | tail -12 \
+                | sed -E 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+/[e-mail]/g' | cut -c1-600
+              echo "=== Linhas do pos-deploy ==="
+              grep -E 'POS_DEPLOY' log.txt | tail -5 | cut -c1-300
+            fi
+          done
+          # Versão publicada e a última aplicada pelo Cron.
+          curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/VERSAO_DEPLOY" && echo " <- publicada"
+          curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/storage/app/versao-aplicada" && echo " <- aplicada"

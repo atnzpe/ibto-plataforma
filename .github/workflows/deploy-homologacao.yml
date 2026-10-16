@@ -152,6 +152,25 @@ jobs:
       # o deploy/atualizar-vendor.php. A lista "exclude" também vale para o que
       # já está no servidor (conferido no código da action v4.4.0), então o
       # FTP nunca apaga a pasta vendor de lá, mesmo ela não estando no pacote.
+      # Placa "em atualização" (16/10/2026): entre a chegada do código novo e o Cron
+      # rodar as migrations (até 5 minutos), o código novo podia procurar uma coluna
+      # que ainda não existe e dar erro 500 (aconteceu às 15:48 de 16/10). Com a
+      # placa (o mesmo arquivo do "php artisan down"), quem abre a página nesse
+      # intervalo vê "em atualização" (503). O plataforma:pos-deploy tira a placa
+      # quando termina; a palavra deploy-homologacao marca que foi o deploy que pôs.
+      - name: Pôr a placa "em atualização"
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          printf '%s' '{"except":[],"redirect":null,"retry":60,"refresh":60,"secret":null,"status":503,"template":null,"motivo":"deploy-homologacao"}' > placa-down
+          curl --fail --silent --show-error --ssl-reqd \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            -T placa-down \
+            "ftp://$FTP_SERVER/storage/framework/down"
+          echo "Placa posta: a plataforma mostra 'em atualização' até o Cron aplicar a versão."
+
       - name: Enviar por FTPS
         uses: SamKirkland/FTP-Deploy-Action@110f9186c050f71550953127052e77650219c287 # v4.4.0
         with:
@@ -171,6 +190,8 @@ jobs:
             # Arquivos enviados pelas pessoas na plataforma (ex.: imagem de cada
             # área de atuação, #37): só existem no servidor, o deploy nunca mexe.
             storage/app/public/**
+            # A placa "em atualização" (posta no passo anterior; quem tira é o Cron).
+            storage/framework/down
             # VERSAO_DEPLOY vai no passo seguinte, POR ÚLTIMO (ver o comentário lá).
             VERSAO_DEPLOY
 

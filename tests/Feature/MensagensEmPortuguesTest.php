@@ -18,7 +18,8 @@ test('senha errada no login: a mensagem sai em português', function () {
 });
 
 test('campo obrigatório: mensagem e nome do campo em português', function () {
-    // Cadastro sem nada preenchido.
+    // Cadastro sem nada preenchido, com o "Pedir acesso" aberto (o padrão agora é fechado).
+    config(['app.cadastro_publico' => 'aprovacao']);
     $this->post(route('register.store'), [])
         ->assertSessionHasErrors([
             'name' => 'O campo nome é obrigatório.',

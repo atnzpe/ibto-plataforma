@@ -59,8 +59,9 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            // "Criar conta" só aparece com o cadastro público aberto (#84; CADASTRO_PUBLICO).
-            'canRegister' => config('app.cadastro_publico') !== 'fechado',
+            // "Pedir acesso" aparece com o cadastro público aberto, ou, com ele fechado, só
+            // enquanto a chave de partida (ADMIN_EMAILS) estiver preenchida (#84).
+            'canRegister' => config('app.cadastro_publico') !== 'fechado' || config('app.admin_emails') !== [],
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
         ]));
@@ -80,9 +81,10 @@ class FortifyServiceProvider extends ServiceProvider
         ]));
 
         // Cadastro público com aprovação (#84): a pessoa escolhe a equipe e diz quem indicou.
-        // Com CADASTRO_PUBLICO=fechado, a tela não existe (404).
+        // Com CADASTRO_PUBLICO=fechado (o padrão), a tela só existe enquanto a chave de
+        // partida (ADMIN_EMAILS) estiver preenchida; vazia, 404.
         Fortify::registerView(function () {
-            abort_if(config('app.cadastro_publico') === 'fechado', 404);
+            abort_if(config('app.cadastro_publico') === 'fechado' && config('app.admin_emails') === [], 404);
 
             return Inertia::render('auth/register', [
                 'passwordRules' => Password::defaults()->toPasswordRulesString(),

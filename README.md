@@ -76,7 +76,7 @@ A plataforma é de um **grupo fechado**: ninguém entra sem convite ou sem ter o
 
 O `ADMIN_EMAILS` é só para começar (ou para recuperar o acesso se ninguém da Tecnologia conseguir entrar). Deixá-lo preenchido depois disso é uma porta a mais aberta.
 
-**Cadastro público:** `CADASTRO_PUBLICO=aprovacao` (padrão; existe "Pedir acesso", com análise do admin da equipe ou do Comando Geral) ou `CADASTRO_PUBLICO=fechado` (só convite; a tela some).
+**Cadastro público:** `CADASTRO_PUBLICO=fechado` (**padrão**: só convite; a tela "Pedir acesso" só aparece enquanto o `ADMIN_EMAILS` estiver preenchido, e só aceita aqueles e-mails) ou `CADASTRO_PUBLICO=aprovacao` ("Pedir acesso" para todos, com análise do admin da equipe ou do Comando Geral).
 
 ## Comandos
 
