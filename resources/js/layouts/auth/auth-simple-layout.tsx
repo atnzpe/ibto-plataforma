@@ -16,14 +16,19 @@ export default function AuthSimpleLayout({
     description,
 }: AuthLayoutProps) {
     return (
-        <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+        // overflow-x-clip: a página nunca rola para o lado, mesmo num celular estreito
+        // (regra da casa: nenhuma tela com rolagem lateral). Conserto de 17/10/2026.
+        <div className="relative flex min-h-svh w-full flex-col items-center justify-center gap-6 overflow-x-clip bg-background p-6 md:p-10">
             {/* Idiomas (#53) no canto de cima. Entrar e cadastrar enviam
                 formulário, que precisa sair do nosso domínio: por isso a dica
                 do tradutor do navegador, e não o link do Google. */}
             <div className="absolute top-4 right-4">
                 <MenuIdiomas modo="navegador" />
             </div>
-            <div className="w-full max-w-sm">
+            {/* min-w-0 deixa a coluna encolher; os botões (que no kit não quebram linha)
+                passam a quebrar o texto, com altura mínima de 44 px para o toque.
+                Sem isso, "Enviar o e-mail de confirmação de novo" alargava a página no celular. */}
+            <div className="w-full max-w-sm min-w-0 [&_button]:h-auto [&_button]:min-h-11 [&_button]:whitespace-normal">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
                         {/* Logo largo do IBTO (o mesmo do site), sobre a faixa escura da marca. */}
