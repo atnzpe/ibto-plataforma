@@ -12,23 +12,32 @@ O IBTO tem três partes, cada uma com o seu público (Gleyson, 10/10/2026):
 
 | Parte                                         | Endereço           | Para quem                     | O que tem                                                                                                                                                                                                               |
 | --------------------------------------------- | ------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Landpage** (outro repositório)              | `ib-to.org`        | Público, sem login            | Site institucional; a página `/cursos` mostra os cursos abertos ao público vindos desta plataforma                                                                                                                      |
+| **Landpage** (outro repositório)              | `ib-to.org`        | Público, sem login            | Site institucional, blog e eventos (vindos desta plataforma); o endereço `/cursos` leva ao catálogo desta plataforma                                                                                                    |
 | **Plataforma de cursos** (este repositório)   | `cursos.ib-to.org` | Com login, em três visões     | **Aluno:** catálogo, cursos e trilhas, aulas, provas, certificado e dossiê. **Instrutor:** cria cursos na sua área, com revisão do IBTO, e cuida das turmas. **Admin de equipe:** filiados e anuidade da própria equipe |
 | **Painel "Comando Geral"** (este repositório) | `cursos.ib-to.org` | Equipe do IBTO, por permissão | Cadastros, usuários e permissões, financeiro, anuidade, histórico de tudo e o painel de indicadores                                                                                                                     |
 
 ## O que já existe
 
-| Módulo                                                                                                                                                                                                | Situação               | Issue     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- |
-| Base, publicação sem SSH e saúde do sistema                                                                                                                                                           | ✅ no ar (homologação) | #35       |
-| Três idiomas pelo Google Tradutor                                                                                                                                                                     | ✅ no ar               | #53       |
-| Login com duas travas de tentativas, Aluno automático no cadastro, papéis e uma permissão por tela, com auditoria                                                                                     | ✅ no ar               | #36       |
-| Nenhum erro em silêncio (403, 500 e erros das telas no log, com código)                                                                                                                               | ✅ no ar               | #58       |
-| Cadastros: áreas de atuação, níveis, equipes, filiados (dados pessoais criptografados), convite, importação da planilha                                                                               | ✅ no ar               | #37       |
-| **Financeiro:** livro-caixa (a receber e a pagar), edição só do pendente, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, histórico só leitura, categorias e formas de pagamento | 🚧 PR #11 (rascunho)   | #59       |
-| **Anuidade:** valor por ano (2026 isento, R$ 90,00 em 2027); o pagamento gera a receita no livro-caixa; estorno desfaz o "em dia"                                                                     | 🚧 PR #11 (rascunho)   | #37 e #59 |
-| Painel "Comando Geral" com indicadores (desenho aprovado em 09/10/2026)                                                                                                                               | ⏳ próximo             | #59 e #45 |
-| Visões do aluno e do instrutor (catálogo, cursos, trilhas, matrícula, provas, certificado)                                                                                                            | ⏳ depois              | #38 a #44 |
+Situação em 16/10/2026. Tudo abaixo está no ar na homologação (`cursos-homolog.ib-to.org`); a produção é um clone, depois do piloto (#56).
+
+| Módulo                | O que faz                                                                                                                           | Issue         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Base e publicação     | Laravel 13 + React, publicação automática sem SSH, rota de saúde, nenhum erro em silêncio                                           | #35, #58      |
+| Idiomas               | Português, inglês e espanhol pelo Google Tradutor                                                                                   | #53           |
+| Login e permissões    | Duas travas de tentativas, Aluno automático no cadastro, 5 papéis, uma permissão por tela, auditoria                                | #36           |
+| Usuários              | Desativar e reativar, nova senha, convite                                                                                           | #36           |
+| Cadastros             | Áreas de atuação, níveis, equipes (com logo), filiados com dados pessoais criptografados, convite, importação da planilha           | #37           |
+| Financeiro            | Livro-caixa a receber e a pagar, baixa total ou parcial, parcelas, cancelamento e estorno com motivo, filtros por período           | #59           |
+| Anuidade              | Valor por ano (2026 isento; R$ 90,00 em 2027); o pagamento gera a receita no livro-caixa                                            | #37, #59      |
+| Cursos e trilhas      | Cadastro completo, presencial ou online, 3 tipos de acesso, curso fechado, chancela do IBTO, conteúdo em módulos e aulas, trilhas   | #38, #39, #40 |
+| Matrícula e pagamento | Inscrição, PIX com comprovante, confirmação, trava de vagas, divisão do valor (20% IBTO, 80% instrutor)                             | #41           |
+| Chamada e certificado | Chamada por encontro com "o que foi trabalhado", certificado com 75% de presença, modelo institucional, QR code e validação pública | #44, #46      |
+| Área do aluno         | Meus cursos com progresso, aula online com "marcar como assistida", Meu dossiê                                                      | #43, #44      |
+| Blog e galeria        | Notícias e eventos com regras de publicação e autorização de imagem; mostrados no site (`ib-to.org/blog` e `/eventos`)              | #61           |
+| API pública           | Blog, eventos, cursos e áreas em JSON, só leitura, CORS só para o site, 60 pedidos por minuto                                       | #52, #57, #61 |
+| Suporte               | Botão "Suporte técnico" pelo WhatsApp, com mensagem padronizada                                                                     | —             |
+
+Próximos (ordem do piloto): link da sala ao vivo nos encontros online, certificado automático do curso gravado com 100% das aulas, manual por perfil e tour guiado (#68), relatórios do Comando Geral, LGPD (#47), provas (#43) e gateway de pagamento (#42).
 
 Regras de dinheiro: valores em **centavos** (nada de vírgula no cálculo); lançamento pago **nunca** muda nem some (corrige-se com estorno); toda movimentação vai para a auditoria na mesma transação.
 
@@ -67,6 +76,25 @@ A página inicial mostra a "Situação do sistema", lida de `/api/saude`.
 | `composer types:check` | Análise do PHP (PHPStan)                                 |
 
 A CI (`.github/workflows/ci.yml`) roda tudo isso a cada push, em PHP 8.3 e com um Percona Server 5.7.44, o mesmo banco da HostGator.
+
+## API pública (somente leitura)
+
+Usada pelo site `ib-to.org`. Sem login, só `GET`, 60 pedidos por minuto por IP, e o navegador só deixa o site do IBTO ler (`config/cors.php`, chave `CORS_ORIGENS`). Nenhum dado pessoal sai por aqui.
+
+| Endereço                                        | O que devolve                                                |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| `/api/publico/blog?pagina=&categoria=&quantos=` | Posts no site, 12 por página no máximo                       |
+| `/api/publico/blog/{slug}`                      | Um post inteiro; fora do site, 404 `POST_NAO_ENCONTRADO`     |
+| `/api/publico/eventos` e `/{slug}`              | Álbuns publicados; fora do site, 404 `EVENTO_NAO_ENCONTRADO` |
+| `/api/publico/cursos`                           | Cursos publicados e abertos                                  |
+| `/api/publico/areas-atuacao`                    | Áreas de atuação ativas                                      |
+
+As páginas públicas `/blog` e `/eventos` da plataforma levam ao site do mesmo ambiente. O endereço do site vem de `SITE_URL` ou é deduzido do `APP_URL` (`cursos-homolog.ib-to.org` → `homolog.ib-to.org`).
+
+## SEO e agentes de IA
+
+- `public/robots.txt`: libera catálogo, trilhas e validação; afasta os robôs das áreas com login e da API.
+- `public/llms.txt`: explica a plataforma e a API pública para agentes de IA.
 
 ## Rota de saúde
 
