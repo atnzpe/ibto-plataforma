@@ -22,6 +22,13 @@ class ProfileController extends Controller
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            // Foto 3x4 e autorização de imagem (#78), só para quem é filiado; senão null.
+            'filiado' => ($filiado = $request->user()->filiado) !== null ? [
+                'id' => $filiado->id,
+                'foto_url' => $filiado->fotoUrl(),
+                'autoriza_imagem_rede' => $filiado->autoriza_imagem_rede,
+                'autoriza_imagem_em' => $filiado->autoriza_imagem_em?->format('d/m/Y H:i'),
+            ] : null,
         ]);
     }
 

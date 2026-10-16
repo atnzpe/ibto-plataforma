@@ -38,6 +38,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $abrangencia
  * @property bool $documentacao_emitida
  * @property string $status
+ * @property string|null $foto Foto 3x4 na pasta PRIVADA (#78). Ex.: 'fotos/filiados/9f1c...webp'.
+ * @property bool $autoriza_imagem_rede Autorizou a foto na Rede Nacional do site (#78)? Começa false.
+ * @property Carbon|null $autoriza_imagem_em Quando a autorização foi marcada (#78).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -59,6 +62,9 @@ class Filiado extends Model
             'categoria' => CategoriaFiliado::class,
             // 0/1 do banco vira false/true.
             'documentacao_emitida' => 'boolean',
+            // Autorização de imagem (#78): 0/1 vira false/true; a data vira Carbon.
+            'autoriza_imagem_rede' => 'boolean',
+            'autoriza_imagem_em' => 'datetime',
         ];
     }
 
@@ -208,5 +214,21 @@ class Filiado extends Model
     public function areas(): BelongsToMany
     {
         return $this->belongsToMany(AreaAtuacao::class, 'area_atuacao_filiado', 'filiado_id', 'area_atuacao_id');
+    }
+
+    /**
+     * Endereço PROTEGIDO da foto 3x4 (#78), ou null sem foto.
+     * O "?v=" muda quando o cadastro muda, para o navegador não mostrar a antiga.
+     *
+     * @return string|null Ex.: 'https://cursos.ib-to.org/fotos/filiados/7?v=1760630400'.
+     */
+    public function fotoUrl(): ?string
+    {
+        // Sem foto: null (a tela mostra um ícone).
+        if ($this->foto === null) {
+            return null;
+        }
+
+        return route('filiados.foto', ['filiado' => $this->id, 'v' => $this->updated_at?->getTimestamp()]);
     }
 }

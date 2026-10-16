@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Enums\SituacaoCurso;
 use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
+use App\Models\CursoMatricula;
 use App\Models\Filiado;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -102,6 +103,32 @@ class AppServiceProvider extends ServiceProvider
                 && $pedido->equipe_solicitada_id === $minhaEquipe;
         });
 
+        // "usuario.foto" (#78): ver a foto de perfil de uma pessoa. A foto é dado pessoal
+        // (LGPD): só vê quem precisa reconhecer a pessoa.
+        Gate::define('usuario.foto', function (User $usuario, User $pessoa): bool {
+            // A própria pessoa, o Comando Geral/Tecnologia e quem cuida dos cursos: sempre.
+            if ($usuario->id === $pessoa->id
+                || $usuario->temPermissao('usuarios.gerenciar')
+                || $usuario->temPermissao('cursos.gerenciar')
+                || $usuario->temPermissao('cursos.chancelar')) {
+                return true;
+            }
+
+            // Admin de equipe: só as pessoas da PRÓPRIA equipe (filiadas ou que pediram acesso a ela).
+            $minhaEquipe = $usuario->filiado?->equipe_id;
+            if ($usuario->temPermissao('filiados.equipe') && $minhaEquipe !== null
+                && ($pessoa->filiado?->equipe_id === $minhaEquipe || $pessoa->equipe_solicitada_id === $minhaEquipe)) {
+                return true;
+            }
+
+            // Instrutor: só os alunos matriculados em um curso DELE (para reconhecer na chamada).
+            return $usuario->temPermissao('cursos.propor')
+                && CursoMatricula::query()
+                    ->where('user_id', $pessoa->id)
+                    ->whereHas('curso', fn ($curso) => $curso->where('responsavel_id', $usuario->id))
+                    ->exists();
+        });
+
         Gate::define('filiados.acessar', fn (User $usuario): bool => $usuario->temPermissao('filiados.gerenciar')
             || $usuario->temPermissao('filiados.equipe'));
 
@@ -127,6 +154,12 @@ class AppServiceProvider extends ServiceProvider
             // unidade que só abre a ficha dos alunos da própria unidade).
             return $filiado->equipe_id === $minhaEquipe;
         });
+
+        // "filiado.foto" (#78): ver, trocar ou tirar a foto 3x4 e marcar a autorização de
+        // imagem. Passa a PRÓPRIA pessoa e quem já pode editar aquele filiado (Comando Geral
+        // ou o admin da equipe dele, pela regra "filiados.editar" acima).
+        Gate::define('filiado.foto', fn (User $usuario, Filiado $filiado): bool => $filiado->user_id === $usuario->id
+            || Gate::forUser($usuario)->allows('filiados.editar', $filiado));
 
         // "cursos.acessar" (#40): abrir a lista de cursos. Passa quem cuida de TODOS
         // (cursos.gerenciar) ou quem PROPÕE os próprios (cursos.propor: instrutor,

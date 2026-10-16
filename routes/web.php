@@ -15,6 +15,7 @@ use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
 use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
+use App\Http\Controllers\Cadastros\FiliadoFotoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\CatalogoController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\Financeiro\CategoriaController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
+use App\Http\Controllers\FotoUsuarioController;
 use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeusCursosController;
@@ -334,6 +336,31 @@ Route::get('imagens/blog/{post}', PostCapaController::class)
 Route::get('imagens/cursos/{curso}', CursoImagemController::class)
     ->middleware('throttle:120,1')
     ->name('cursos.imagem');
+
+// Foto de perfil de uma pessoa (#78): PRIVADA. Só com login e só para quem o
+// portão "usuario.foto" libera; os outros recebem 404.
+Route::get('fotos/usuarios/{usuario}', FotoUsuarioController::class)
+    ->middleware(['auth', 'throttle:240,1'])
+    ->whereNumber('usuario')
+    ->name('usuarios.foto');
+
+// Foto 3x4 do filiado e autorização de imagem (#78): a própria pessoa e quem pode
+// editar aquele filiado (portão "filiado.foto"; os outros recebem 404 ou 403).
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('fotos/filiados/{filiado}', [FiliadoFotoController::class, 'show'])
+        ->middleware('throttle:240,1')
+        ->whereNumber('filiado')
+        ->name('filiados.foto');
+    Route::post('filiados/{filiado}/foto', [FiliadoFotoController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('filiados.foto.update');
+    Route::delete('filiados/{filiado}/foto', [FiliadoFotoController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('filiados.foto.destroy');
+    Route::put('filiados/{filiado}/autorizacao-imagem', [FiliadoFotoController::class, 'autorizacao'])
+        ->middleware('throttle:10,1')
+        ->name('filiados.autorizacao-imagem');
+});
 
 // Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
 // "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.

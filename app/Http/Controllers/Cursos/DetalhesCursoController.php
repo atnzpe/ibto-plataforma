@@ -103,6 +103,8 @@ class DetalhesCursoController extends Controller
                 'id' => $matricula->id,
                 // LGPD: registro do filiado; não filiado = só o nº da matrícula (o nome fica na ficha).
                 'registro' => $matricula->usuario->filiado?->registro,
+                // Foto de perfil (#78), só se quem está vendo pode ver a foto desta pessoa; senão null.
+                'foto' => Gate::allows('usuario.foto', $matricula->usuario) ? $matricula->usuario->avatar : null,
                 'equipe' => $matricula->usuario->filiado !== null ? ($matricula->usuario->filiado->equipe->nome ?? 'Sem equipe') : 'Não filiado',
                 'situacao' => $matricula->situacao->value,
                 'situacao_rotulo' => $matricula->situacao->rotulo(),

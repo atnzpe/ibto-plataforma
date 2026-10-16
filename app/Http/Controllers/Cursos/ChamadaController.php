@@ -55,6 +55,8 @@ class ChamadaController extends Controller
             'inscritos' => $this->confirmadas($curso)->map(fn (CursoMatricula $matricula) => [
                 'matricula_id' => $matricula->id,
                 'registro' => $matricula->usuario->filiado?->registro,
+                // Foto de perfil (#78), só se quem está vendo pode ver a foto desta pessoa; senão null.
+                'foto' => Gate::allows('usuario.foto', $matricula->usuario) ? $matricula->usuario->avatar : null,
                 'equipe' => $matricula->usuario->filiado !== null ? ($matricula->usuario->filiado->equipe->nome ?? 'Sem equipe') : 'Não filiado',
                 // Já marcado antes (refazer a chamada abre como estava). null = ainda não chamado.
                 'presente' => $marcadas->has($matricula->id) ? (bool) $marcadas[$matricula->id] : null,

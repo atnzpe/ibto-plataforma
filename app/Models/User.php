@@ -38,11 +38,13 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int|null $cadastro_analisado_por Quem aprovou ou recusou (#84).
  * @property Carbon|null $cadastro_analisado_em Quando foi analisado (#84).
  * @property string|null $cadastro_motivo Motivo da recusa (#84).
+ * @property string|null $foto Foto de perfil na pasta PRIVADA (#78). Ex.: 'fotos/usuarios/9f1c...webp'.
+ * @property-read string|null $avatar Endereço PROTEGIDO da foto (#78), ou null sem foto (aparecem as iniciais).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'foto'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -55,6 +57,15 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      * @var array<int, string>|null
      */
     private ?array $slugsDasPermissoes = null;
+
+    /**
+     * Campos calculados que vão junto quando a conta é enviada para a tela (#78):
+     * "avatar" é o endereço protegido da foto, que o menu da conta já sabe mostrar.
+     * O caminho interno do arquivo ("foto") fica escondido (#[Hidden] acima).
+     *
+     * @var list<string>
+     */
+    protected $appends = ['avatar'];
 
     /**
      * Valores padrão de uma conta nova, iguais aos do banco: o tour guiado
@@ -107,6 +118,22 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         // Entrega a notificação a este usuário; como ConfirmarEmail é
         // "ShouldQueue", o Laravel só guarda o pedido na tabela `jobs`.
         $this->notify(new ConfirmarEmail);
+    }
+
+    /**
+     * Endereço protegido da foto de perfil (#78), lido como $usuario->avatar.
+     * O "?v=" muda quando a foto muda, para o navegador não mostrar a antiga.
+     *
+     * @return string|null Ex.: 'https://cursos.ib-to.org/fotos/usuarios/12?v=1760630400', ou null sem foto.
+     */
+    public function getAvatarAttribute(): ?string
+    {
+        // Sem foto: null, e a tela mostra as iniciais do nome.
+        if ($this->foto === null) {
+            return null;
+        }
+
+        return route('usuarios.foto', ['usuario' => $this->id, 'v' => $this->updated_at?->getTimestamp()]);
     }
 
     /**

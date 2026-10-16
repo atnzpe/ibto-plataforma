@@ -7,6 +7,7 @@
  * inscrito. O certificado chega com a #44 ("em breve").
  * Sem rolagem lateral: resumo em grade e inscritos em cartões.
  */
+import FotoPessoa from '@/components/foto-pessoa';
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,8 @@ type Inscrito = {
     id: number;
     // null = não filiado (aparece o nº da matrícula).
     registro: string | null;
+    // Foto de perfil (#78), ou null sem foto (aparece um ícone).
+    foto: string | null;
     equipe: string;
     situacao: 'aguardando_pagamento' | 'confirmada' | 'cancelada';
     situacao_rotulo: string;
@@ -392,6 +395,11 @@ export default function DetalhesCurso({
                                 className="flex flex-col gap-2 rounded-md border border-border p-4 text-sm"
                             >
                                 <span className="flex flex-wrap items-center gap-2">
+                                    {/* Foto (#78), quando quem vê tem permissão. */}
+                                    <FotoPessoa
+                                        foto={inscrito.foto}
+                                        rotulo={`Foto de ${inscrito.registro ?? `matrícula nº ${inscrito.id}`}`}
+                                    />
                                     <strong className="font-mono">
                                         {inscrito.registro ??
                                             `Matrícula nº ${inscrito.id}`}

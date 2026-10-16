@@ -3,6 +3,7 @@
  * (só pelo REGISTRO, LGPD) e escrever o que foi trabalhado. Pode ser refeita;
  * abre como estava. Botões grandes (44 px) para usar no celular, no tatame.
  */
+import FotoPessoa from '@/components/foto-pessoa';
 import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import ChamadaController from '@/actions/App/Http/Controllers/Cursos/ChamadaController';
@@ -19,6 +20,8 @@ type Chamado = {
     matricula_id: number;
     // null = não filiado (aparece o nº da matrícula).
     registro: string | null;
+    // Foto de perfil (#78), ou null sem foto (aparece um ícone).
+    foto: string | null;
     equipe: string;
     // true/false = já marcado numa chamada anterior; null = primeira chamada.
     presente: boolean | null;
@@ -161,6 +164,11 @@ export default function Chamada({
                                                         )
                                                     }
                                                     className="size-5"
+                                                />
+                                                {/* Foto (#78): ajuda a reconhecer o aluno na hora da chamada. */}
+                                                <FotoPessoa
+                                                    foto={inscrito.foto}
+                                                    rotulo={`Foto de ${inscrito.registro ?? `matrícula nº ${inscrito.matricula_id}`}`}
                                                 />
                                                 <span className="flex flex-col">
                                                     <strong className="font-mono">

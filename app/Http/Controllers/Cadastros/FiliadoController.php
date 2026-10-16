@@ -156,6 +156,10 @@ class FiliadoController extends Controller
                 'status' => $filiado->status,
                 // true quando a pessoa já criou a senha pelo convite (e-mail confirmado).
                 'conta_ativada' => (bool) $filiado->usuario?->hasVerifiedEmail(),
+                // Foto 3x4 e autorização de imagem (#78).
+                'foto_url' => $filiado->fotoUrl(),
+                'autoriza_imagem_rede' => $filiado->autoriza_imagem_rede,
+                'autoriza_imagem_em' => $filiado->autoriza_imagem_em?->format('d/m/Y H:i'),
             ],
             ...$this->opcoes($this->equipeLimitada($request)),
             // Quadro da anuidade (#37 + #59), ou null para quem não vê o financeiro.
