@@ -21,6 +21,7 @@ use App\Http\Requests\Cursos\CursoRequest;
 use App\Models\AreaAtuacao;
 use App\Models\Auditoria;
 use App\Models\Curso;
+use App\Models\Nivel;
 use App\Models\PagamentoConfig;
 use App\Models\User;
 use App\Services\FluxoCurso;
@@ -109,7 +110,7 @@ class CursoController extends Controller
      */
     public function create(Request $request): Response
     {
-        return Inertia::render('cursos/formulario', ['curso' => null, 'campos_ibto' => $this->camposDoIbto($request->user()), ...$this->opcoesDoFormulario()]);
+        return Inertia::render('cursos/formulario', ['curso' => null, 'campos_ibto' => $this->camposDoIbto($request->user()), ...$this->opcoesDoFormulario(null)]);
     }
 
     /**
@@ -136,6 +137,10 @@ class CursoController extends Controller
                     ? $request->integer('percentual_ibto')
                     : Curso::PERCENTUAL_IBTO_PADRAO,
             ])->save();
+            // Pré-requisitos (#88): só o IBTO grava.
+            if ($this->camposDoIbto($request->user())) {
+                $this->gravarRequisitos($request, $curso);
+            }
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_CRIADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
 
@@ -170,6 +175,10 @@ class CursoController extends Controller
                 'fechado' => $curso->fechado,
                 // Parte do IBTO em %. Ex.: 20 (o instrutor fica com 80).
                 'percentual_ibto' => $curso->percentual_ibto,
+                // Pré-requisitos (#88): nível mínimo, meses de filiação e os cursos anteriores (ids).
+                'nivel_minimo_id' => $curso->nivel_minimo_id,
+                'meses_filiacao_minimo' => $curso->meses_filiacao_minimo,
+                'requisitos' => $curso->requisitosCursos()->pluck('cursos.id'),
                 // Valor no formato do campo; gratuito = vazio. Ex.: 9000 → '90,00'.
                 'valor' => $curso->gratuito() ? '' : Dinheiro::paraCampo($curso->valor_centavos),
                 'vagas' => $curso->vagas,
@@ -210,7 +219,7 @@ class CursoController extends Controller
             ] : null,
             // Mostra os campos só do IBTO ("Curso fechado" e "Parte do IBTO")? Só para quem gerencia ou chancela.
             'campos_ibto' => $this->camposDoIbto($request->user()),
-            ...$this->opcoesDoFormulario(),
+            ...$this->opcoesDoFormulario($curso),
         ]);
     }
 
@@ -233,6 +242,8 @@ class CursoController extends Controller
                     'fechado' => $request->boolean('fechado'),
                     'percentual_ibto' => $request->filled('percentual_ibto') ? $request->integer('percentual_ibto') : $curso->percentual_ibto,
                 ])->save();
+                // Pré-requisitos (#88): também só pelas mãos do IBTO.
+                $this->gravarRequisitos($request, $curso);
             }
             ImagemPublica::trocar($curso, 'imagem', self::PASTA_IMAGENS, $request->file('imagem'));
             Auditoria::registrar('CURSO_EDITADO', ['curso_id' => $curso->id, 'situacao' => $curso->situacao->value]);
@@ -292,13 +303,47 @@ class CursoController extends Controller
     }
 
     /**
+     * Grava os pré-requisitos do curso (#88): nível mínimo, meses de filiação e os cursos anteriores.
+     * Vazio = sem aquela exigência. Mudança vai para a auditoria (só números).
+     *
+     * @param  CursoRequest  $request  O formulário já conferido.
+     * @param  Curso  $curso  O curso que está sendo gravado.
+     */
+    private function gravarRequisitos(CursoRequest $request, Curso $curso): void
+    {
+        $curso->forceFill([
+            'nivel_minimo_id' => $request->filled('nivel_minimo_id') ? $request->integer('nivel_minimo_id') : null,
+            'meses_filiacao_minimo' => $request->filled('meses_filiacao_minimo') ? $request->integer('meses_filiacao_minimo') : null,
+        ])->save();
+
+        // A lista só muda quando o formulário a enviou (o campo escondido "requisitos_enviados" vai junto).
+        if ($request->has('requisitos_enviados')) {
+            $curso->requisitosCursos()->sync(array_map('intval', (array) $request->input('requisitos', [])));
+        }
+
+        Auditoria::registrar('CURSO_REQUISITOS_GRAVADOS', [
+            'curso_id' => $curso->id,
+            'nivel_minimo_id' => $curso->nivel_minimo_id,
+            'meses_filiacao_minimo' => $curso->meses_filiacao_minimo,
+            'cursos_anteriores' => $curso->requisitosCursos()->count(),
+        ]);
+    }
+
+    /**
      * As listas de escolha do formulário.
      *
+     * @param  Curso|null  $curso  O curso em edição (fica fora da lista de requisitos), ou null no novo.
      * @return array<string, mixed>
      */
-    private function opcoesDoFormulario(): array
+    private function opcoesDoFormulario(?Curso $curso): array
     {
         return [
+            // Pré-requisitos (#88): os níveis na ordem das graduações e os outros cursos (não cancelados).
+            'niveis' => Nivel::emOrdem(Nivel::ativos()->get())->map(fn (Nivel $nivel) => ['id' => $nivel->id, 'nome' => $nivel->nome()])->values(),
+            'cursos_requisito' => Curso::query()
+                ->where('situacao', '!=', SituacaoCurso::Cancelado->value)
+                ->when($curso !== null, fn ($consulta) => $consulta->whereKeyNot($curso->id))
+                ->orderBy('titulo')->get(['id', 'titulo']),
             'areas' => AreaAtuacao::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
             // Instrutores: contas com o papel "instrutor".
             'instrutores' => User::query()

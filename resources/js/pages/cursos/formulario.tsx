@@ -6,6 +6,7 @@
  * As regras de verdade são conferidas no servidor (CursoRequest e FluxoCurso).
  * Responsivo: campos em grade que vira uma coluna no celular.
  */
+import PreRequisitosCampos from '@/components/cursos/pre-requisitos-campos';
 import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import CursoController from '@/actions/App/Http/Controllers/Cursos/CursoController';
@@ -35,6 +36,10 @@ type CursoEdicao = {
     fechado: boolean;
     // Parte do IBTO em %, de 0 a 100. Ex.: 20 (o instrutor fica com 80).
     percentual_ibto: number;
+    // Pré-requisitos (#88): nível mínimo, meses de filiação e os cursos anteriores (ids).
+    nivel_minimo_id: number | null;
+    meses_filiacao_minimo: number | null;
+    requisitos: number[];
     valor: string;
     vagas: number | null;
     data_inicio: string | null;
@@ -64,7 +69,9 @@ const classeSelect =
  * @param modalidades Presencial e online.
  * @param acessos Aberto ao público e só filiados.
  * @param pagamento_curso Dados para pagamento próprios do curso (só para quem tem "pagamentos.configurar"; null ou ausente = sem painel).
- * @param campos_ibto true = mostra os campos só do IBTO ("Curso fechado" e "Parte do IBTO"); false ou ausente = nem aparecem.
+ * @param campos_ibto true = mostra os campos só do IBTO ("Curso fechado", "Parte do IBTO" e os pré-requisitos); false ou ausente = nem aparecem.
+ * @param niveis Os níveis em ordem, para o pré-requisito de nível (#88).
+ * @param cursos_requisito Os outros cursos, para o pré-requisito de curso anterior (#88).
  * @returns A tela do formulário.
  */
 export default function CursoFormulario({
@@ -75,6 +82,8 @@ export default function CursoFormulario({
     acessos,
     pagamento_curso = null,
     campos_ibto = false,
+    niveis = [],
+    cursos_requisito = [],
 }: {
     curso: CursoEdicao | null;
     areas: { id: number; nome: string }[];
@@ -83,6 +92,8 @@ export default function CursoFormulario({
     acessos: Opcao[];
     pagamento_curso?: PagamentoDoCurso | null;
     campos_ibto?: boolean;
+    niveis?: { id: number; nome: string }[];
+    cursos_requisito?: { id: number; titulo: string }[];
 }) {
     const editando = curso !== null;
     const titulo = editando ? `Editar "${curso.titulo}"` : 'Novo curso';
@@ -446,6 +457,25 @@ export default function CursoFormulario({
                                                 instrutor.
                                             </p>
                                         </div>
+                                    )}
+                                    {/* Pré-requisitos (#88): só o IBTO define. */}
+                                    {campos_ibto && (
+                                        <PreRequisitosCampos
+                                            valores={{
+                                                nivel_minimo_id:
+                                                    curso?.nivel_minimo_id ??
+                                                    null,
+                                                meses_filiacao_minimo:
+                                                    curso?.meses_filiacao_minimo ??
+                                                    null,
+                                                requisitos:
+                                                    curso?.requisitos ?? [],
+                                            }}
+                                            niveis={niveis}
+                                            cursos={cursos_requisito}
+                                            erros={errors}
+                                            desativado={somenteLeitura}
+                                        />
                                     )}
                                     <div className="grid gap-4 sm:grid-cols-3">
                                         <div className="grid gap-2">

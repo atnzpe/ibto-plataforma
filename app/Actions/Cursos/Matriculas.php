@@ -32,6 +32,7 @@ use App\Models\FinCategoria;
 use App\Models\User;
 use App\Notifications\MatriculaConfirmada;
 use App\Services\LivroCaixa;
+use App\Support\Requisitos;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -74,6 +75,13 @@ class Matriculas
         // "Exclusivo para filiados": só quem é filiado com situação ativa.
         if ($curso->acesso === AcessoCurso::Restrito && $usuario->filiado?->status !== 'ativo') {
             throw new RegraCurso('MATRICULA_SO_FILIADOS', 'Este curso é exclusivo para filiados ativos do IBTO.');
+        }
+
+        // Pré-requisitos (#88): curso anterior, nível e tempo de filiado. Quem se inscreve sozinho
+        // precisa cumprir todos; o IBTO pode matricular por exceção (com motivo, no
+        // MatricularPeloIbtoController). Cumpre ou é o IBTO: segue para as outras regras.
+        if (! $peloIbto && ! Requisitos::cumpre($curso, $usuario)) {
+            throw new RegraCurso('MATRICULA_REQUISITO_PENDENTE', 'Você ainda não cumpre os pré-requisitos deste curso. Falta: '.implode('; ', Requisitos::pendentes($curso, $usuario)).'.');
         }
 
         return DB::transaction(function () use ($curso, $usuario): CursoMatricula {

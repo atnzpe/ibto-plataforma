@@ -293,7 +293,8 @@ class CarregarPiloto extends Command
             'descricao' => $dados['descricao'],
             'area_atuacao_id' => $this->area($dados['area']),
             'modalidade' => $dados['modalidade'] ?? 'presencial',
-            'acesso' => 'aberto',
+            // Regra do IBTO: curso gratuito é só para filiados; pago é aberto ao público.
+            'acesso' => $dados['valor_centavos'] > 0 ? 'aberto' : 'restrito',
             'valor_centavos' => $dados['valor_centavos'],
             'vagas' => $dados['vagas'] ?? null,
             'data_inicio' => $dados['data_inicio'] ?? null,

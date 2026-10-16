@@ -35,6 +35,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $hora_inicio
  * @property string|null $hora_fim
  * @property string|null $local
+ * @property int|null $nivel_minimo_id Pré-requisito (#88): nível mínimo para se inscrever. Vazio = qualquer.
+ * @property int|null $meses_filiacao_minimo Pré-requisito (#88): meses mínimos de filiação. Ex.: 12.
  * @property int|null $carga_horaria
  * @property int|null $instrutor_id
  * @property string|null $imagem
@@ -86,6 +88,8 @@ class Curso extends Model
             'carga_horaria' => 'integer',
             'data_inicio' => 'date',
             'data_fim' => 'date',
+            // Pré-requisito de tempo de filiado (#88), em meses.
+            'meses_filiacao_minimo' => 'integer',
             // Dia e hora da chancela (texto do banco vira data e hora no PHP).
             'chancelado_em' => 'datetime',
         ];
@@ -208,6 +212,26 @@ class Curso extends Model
     public function modulos(): HasMany
     {
         return $this->hasMany(CursoModulo::class)->orderBy('ordem')->orderBy('id');
+    }
+
+    /**
+     * Pré-requisito (#88): os cursos ANTERIORES; basta ter concluído um deles.
+     *
+     * @return BelongsToMany<Curso, $this>
+     */
+    public function requisitosCursos(): BelongsToMany
+    {
+        return $this->belongsToMany(Curso::class, 'curso_requisitos', 'curso_id', 'requisito_curso_id')->withTimestamps();
+    }
+
+    /**
+     * Pré-requisito (#88): o nível mínimo para se inscrever.
+     *
+     * @return BelongsTo<Nivel, $this>
+     */
+    public function nivelMinimo(): BelongsTo
+    {
+        return $this->belongsTo(Nivel::class, 'nivel_minimo_id');
     }
 
     /**

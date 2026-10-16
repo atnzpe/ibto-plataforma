@@ -27,6 +27,7 @@ use App\Support\Calendario;
 use App\Support\DadosPagamento;
 use App\Support\PixCopiaECola;
 use App\Support\QrCode;
+use App\Support\Requisitos;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -167,6 +168,8 @@ class CatalogoController extends Controller
                 : null,
             // A matrícula da pessoa logada que ainda vale (aguardando ou confirmada), ou null.
             'matricula' => $this->matriculaDe($request, $curso),
+            // Pré-requisitos (#88): cada item com cumprido true/false (visitante: null, só a lista).
+            'requisitos' => Requisitos::avaliar($curso, $request->user()),
             // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.
             // Visitante sem login: false (o Gate recusa quem não está logado).
             'pode_assistir' => Gate::allows('curso.conteudo', $curso),

@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Pré-requisitos dos cursos (#88): curso anterior (basta um concluído, com certificado válido), nível mínimo e tempo mínimo de filiado; a página do curso mostra cada item com ✅ ou ❌ e bloqueia a inscrição de quem não cumpre (o servidor também recusa, `MATRICULA_REQUISITO_PENDENTE`); o Comando Geral matricula por exceção só com motivo, gravado na matrícula e auditado; campo "Data de filiação ao IBTO" na ficha do filiado.
 - Base do piloto (`plataforma:carregar-piloto`): os cursos reais dos cartazes com a data real (Encerrado ou Rascunho), incluindo Operação Avançada e as três turmas do Treinamento de Combate Real em Piracicaba-SP, e o cartaz como capa, uma turma [TESTE] publicada de cada, 2 cursos online [TESTE] (gravado e ao vivo) e a trilha "Formação Operacional"; roda no servidor uma vez com `PILOTO_CARREGAR=true`, sem duplicar e sem criar contas.
 - Pix copia e cola com QR code (#83): na inscrição, o aluno vê o QR code e o botão "Copiar código Pix", com o valor exato e o identificador da matrícula (ex.: `IBTOMAT1234`) já dentro do código, gerado na própria plataforma pelo padrão BR Code do Banco Central (sem banco nem contrato); aviso para conferir o nome de quem recebe no app do banco; o identificador aparece na lista e na ficha de matrículas do Comando Geral para conferir no extrato.
 - Foto de perfil e foto 3x4 do filiado (#78): enviadas em Configurações → Perfil ou na ficha do filiado; recortadas em quadrado, reduzidas para 400 px e gravadas em WebP numa pasta privada; aparecem no menu da conta, nos inscritos e na chamada só para quem pode ver; autorização de imagem para a Rede Nacional, desmarcada por padrão, com data e auditoria.
@@ -36,6 +37,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Corrigido
 
+- Carga do piloto: curso gratuito entra como "só filiados" (regra do IBTO); antes entrava aberto ao público.
 - Curso cancelado some do site em até 1 minuto (a lista de cursos da API pública ficava 5 minutos guardada e o link levava a 404).
 - Deploy da homologação sem erro 500 no meio da troca de versão: o deploy põe a placa "em atualização" (503) antes de enviar o código e o Cron a tira depois das migrations e dos caches; novo job "Diagnóstico homologação" mostra os erros do log do servidor, sem dados pessoais.
 - Página Ajuda com o menu lateral e o topo duplicados: a tela desenhava o layout de novo; agora usa o layout do app, e um teste barra telas que importem o layout principal.

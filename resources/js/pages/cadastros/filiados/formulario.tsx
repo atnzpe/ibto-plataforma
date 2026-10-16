@@ -38,6 +38,8 @@ type FiliadoFormulario = {
     abrangencia: string | null;
     // true = já recebeu carteirinha/certificado do IBTO.
     documentacao_emitida: boolean;
+    // Data real de filiação ao IBTO (#88). Ex.: '2024-03-15'; null = não cadastrada.
+    data_filiacao: string | null;
     areas: number[];
     status: string;
     // true quando a pessoa já criou a senha pelo convite.
@@ -410,6 +412,34 @@ export default function FiliadoFormularioTela({
                                         <option value="inativo">Inativo</option>
                                     </select>
                                     <InputError message={errors.status} />
+                                </div>
+
+                                {/* Data de filiação (#88): conta o tempo de filiado nos pré-requisitos dos cursos. */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="data_filiacao">
+                                        Data de filiação ao IBTO
+                                    </Label>
+                                    <Input
+                                        id="data_filiacao"
+                                        name="data_filiacao"
+                                        type="date"
+                                        defaultValue={
+                                            filiado?.data_filiacao ?? ''
+                                        }
+                                        aria-describedby="data_filiacao-dica"
+                                    />
+                                    <p
+                                        id="data_filiacao-dica"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        A data real em que a pessoa se filiou
+                                        (não a do cadastro aqui). Usada nos
+                                        cursos que exigem tempo mínimo de
+                                        filiado.
+                                    </p>
+                                    <InputError
+                                        message={errors.data_filiacao}
+                                    />
                                 </div>
 
                                 <div className="grid gap-2">
