@@ -39,3 +39,13 @@ test('o site do IBTO lê pelo navegador (CORS)', function () {
     $this->getJson(route('api.publico.cursos'), ['Origin' => 'https://ib-to.org'])
         ->assertHeader('Access-Control-Allow-Origin', 'https://ib-to.org');
 });
+
+test('curso cancelado some da lista na hora, e o site guarda a lista só por 1 minuto', function () {
+    $curso = cursoDaApi(SituacaoCurso::Publicado);
+    $curso->update(['situacao' => SituacaoCurso::Cancelado]);
+
+    $this->getJson(route('api.publico.cursos'))
+        ->assertOk()
+        ->assertJsonMissing(['id' => $curso->id])
+        ->assertHeader('Cache-Control', 'max-age=60, public');
+});
