@@ -91,12 +91,23 @@ test('o pedido exige equipe válida e quem indicou; e-mail repetido é recusado'
     $this->post(route('register.store'), pedidoDeAcesso())->assertSessionHasErrors('email');
 });
 
-test('com o cadastro público fechado, a tela e o envio não existem (404)', function () {
-    config(['app.cadastro_publico' => 'fechado']);
+test('fechado (o padrão) e sem chave de partida: a tela e o envio não existem (404)', function () {
+    config(['app.cadastro_publico' => 'fechado', 'app.admin_emails' => []]);
 
     $this->get(route('register'))->assertNotFound();
     $this->post(route('register.store'), pedidoDeAcesso())->assertNotFound();
     $this->get(route('login'))->assertInertia(fn ($tela) => $tela->where('canRegister', false));
+});
+
+test('fechado com chave de partida: só aquele e-mail entra, aprovado e sem precisar de equipe', function () {
+    config(['app.cadastro_publico' => 'fechado', 'app.admin_emails' => ['tecnologia@ib-to.test']]);
+
+    // Outro e-mail: 404 (o cadastro continua fechado para todos os outros).
+    $this->post(route('register.store'), pedidoDeAcesso())->assertNotFound();
+
+    // A chave de partida: entra sem equipe nem indicação (banco novo) e já nasce aprovada.
+    $this->post(route('register.store'), pedidoDeAcesso(['email' => 'tecnologia@ib-to.test', 'equipe_id' => '', 'indicado_por' => '']))->assertRedirect();
+    expect(User::where('email', 'tecnologia@ib-to.test')->firstOrFail()->situacao_cadastro)->toBe('aprovado');
 });
 
 test('o Comando Geral aprova: vira Aluno, recebe o e-mail e entra', function () {

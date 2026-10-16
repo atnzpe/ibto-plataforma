@@ -6,8 +6,9 @@
  * O IBTO é um grupo fechado, só de indicados (Gleyson, 17/10/2026). Quem se
  * cadastra sozinho informa a EQUIPE e QUEM INDICOU, e a conta nasce "em
  * análise": entra, mas só vê a tela "Cadastro em análise" até o admin da
- * equipe ou o Comando Geral aprovar (aí ganha o papel Aluno). Com
- * CADASTRO_PUBLICO=fechado no .env, a tela some e o cadastro é recusado (404).
+ * equipe ou o Comando Geral aprovar (aí ganha o papel Aluno).
+ * Com CADASTRO_PUBLICO=fechado (o PADRÃO), só os e-mails da chave de partida
+ * (ADMIN_EMAILS) passam, e já nascem aprovados; os outros recebem 404.
  * (Antes da #84, a conta já nascia como Aluno; decisão de 08/10/2026, revista.)
  */
 
@@ -36,16 +37,22 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        // Porta fechada (só convite): para tudo com 404, como se o cadastro não existisse.
-        abort_if(config('app.cadastro_publico') === 'fechado', 404);
+        // E-mail da chave de partida (ADMIN_EMAILS no .env)? Ex.: a primeira pessoa da Tecnologia.
+        $daChaveDePartida = in_array(strtolower(trim((string) ($input['email'] ?? ''))), config('app.admin_emails'), true);
 
-        // Confere nome, e-mail (sem repetir), senha forte, a equipe (existente e não
-        // inativa) e quem indicou; se algo estiver errado, a tela mostra o erro no campo.
+        // Porta fechada (o padrão): só a chave de partida passa (para a primeira instalação);
+        // qualquer outro e-mail recebe 404, como se o cadastro não existisse.
+        abort_if(config('app.cadastro_publico') === 'fechado' && ! $daChaveDePartida, 404);
+
+        // Confere nome, e-mail (sem repetir), senha forte e, para quem pede acesso, a equipe
+        // (existente e não inativa) e quem indicou. A chave de partida não precisa de equipe
+        // (num banco novo ainda nem existem equipes).
+        $exigeIndicacao = $daChaveDePartida ? 'nullable' : 'required';
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
-            'equipe_id' => ['required', 'integer', Rule::exists('equipes', 'id')->whereNot('status', StatusEquipe::Inativa->value)],
-            'indicado_por' => ['required', 'string', 'min:3', 'max:150'],
+            'equipe_id' => [$exigeIndicacao, 'integer', Rule::exists('equipes', 'id')->whereNot('status', StatusEquipe::Inativa->value)],
+            'indicado_por' => [$exigeIndicacao, 'string', 'min:3', 'max:150'],
         ], [
             'equipe_id.required' => 'Escolha a sua equipe.',
             'equipe_id.exists' => 'Escolha uma equipe da lista.',
@@ -54,7 +61,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         // Conta + auditoria juntas: ou as duas são gravadas, ou nenhuma.
-        return DB::transaction(function () use ($input): User {
+        return DB::transaction(function () use ($input, $daChaveDePartida): User {
             // A senha é guardada embaralhada (cast do User). Sem papel ainda:
             // o papel Aluno só vem na aprovação.
             $usuario = User::create([
@@ -62,16 +69,13 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'password' => $input['password'],
             ]);
-            // E-mail da chave de emergência (ADMIN_EMAILS no .env): nasce APROVADO. Sem isso,
-            // numa instalação nova a primeira pessoa da Tecnologia ficaria trancada para fora
-            // (em análise, sem ninguém para aprovar).
-            $daChaveDeEmergencia = in_array(strtolower($usuario->email), config('app.admin_emails'), true);
-
+            // A chave de partida nasce APROVADA. Sem isso, numa instalação nova a primeira
+            // pessoa da Tecnologia ficaria trancada para fora (sem ninguém para aprovar).
             // forceFill: estas colunas não estão no "Fillable" (proteção contra gravação em massa).
             $usuario->forceFill([
-                'situacao_cadastro' => $daChaveDeEmergencia ? 'aprovado' : 'em_analise',
-                'equipe_solicitada_id' => (int) $input['equipe_id'],
-                'indicado_por' => trim($input['indicado_por']),
+                'situacao_cadastro' => $daChaveDePartida ? 'aprovado' : 'em_analise',
+                'equipe_solicitada_id' => isset($input['equipe_id']) && $input['equipe_id'] !== '' ? (int) $input['equipe_id'] : null,
+                'indicado_por' => isset($input['indicado_por']) && trim($input['indicado_por']) !== '' ? trim($input['indicado_por']) : null,
             ])->save();
 
             // Auditoria só com números (LGPD): quem pediu e para qual equipe.

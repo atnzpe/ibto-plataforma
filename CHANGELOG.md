@@ -20,9 +20,19 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 - Página Ajuda com o manual de instruções de cada perfil (#68): aluno e filiado, instrutor, admin de equipe, Comando Geral e Tecnologia; cada seção com passos, regras e o porquê, busca, "Mostrar na tela" (abre a tela com o tour) e impressão ou PDF. Administrador e Tecnologia veem todos os manuais.
 - Certificado automático do curso gravado (#72): exige 100% das aulas gravadas assistidas e sai sozinho ao marcar a última (uma vez só, sem "emitido por", auditado); curso com encontros continua com 75% de presença e emissão pelo IBTO; curso misto exige as duas coisas.
 - Cadastro com aprovação (#84; grupo fechado): "Criar conta" virou "Pedir acesso", com equipe e quem indicou; a conta nasce em análise (trava no servidor) e o admin da equipe ou o Comando Geral aprova (vira Aluno, e-mail) ou recusa com motivo (e-mail); CADASTRO_PUBLICO=fechado deixa só o convite.
+- E-mails com a marca do IBTO: emblema e nome no topo, cores da plataforma, texto próprio na confirmação (endereço oficial e prazo do link) e, no rodapé de todos, o aviso de segurança contra golpes ("o IBTO nunca pede senha, códigos ou dados bancários"; confira o endereço antes de clicar).
+
+### Alterado
+
+- O cadastro público começa **fechado** (só convite) por padrão; a tela "Pedir acesso" só aparece enquanto a chave de partida (`ADMIN_EMAILS`) estiver preenchida, e só aceita aqueles e-mails, que entram já aprovados e sem precisar de equipe.
+
+### Segurança
+
+- Com o endereço oficial em https, todo link gerado pela plataforma (e-mails, botões, QR codes) sai com https.
 
 ### Corrigido
 
+- Deploy da homologação sem erro 500 no meio da troca de versão: o deploy põe a placa "em atualização" (503) antes de enviar o código e o Cron a tira depois das migrations e dos caches; novo job "Diagnóstico homologação" mostra os erros do log do servidor, sem dados pessoais.
 - Página Ajuda com o menu lateral e o topo duplicados: a tela desenhava o layout de novo; agora usa o layout do app, e um teste barra telas que importem o layout principal.
 
 ## [0.1.0] — 2026-10-15 (homologação)

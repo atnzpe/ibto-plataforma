@@ -61,6 +61,7 @@ SUPORTE_WHATSAPP=
 # Vazio = o padrão: https://ib-to.org,https://www.ib-to.org,https://homolog.ib-to.org
 CORS_ORIGENS=
 
-# Cadastro público (#84; o IBTO é um grupo fechado): aprovacao = "Pedir acesso" com análise;
-# fechado = só convite. Mudou? Apague bootstrap/cache/config.php.
-CADASTRO_PUBLICO=aprovacao
+# Cadastro público (#84; o IBTO é um grupo fechado): fechado (PADRÃO) = só convite; a tela
+# "Pedir acesso" só aparece enquanto ADMIN_EMAILS estiver preenchido, e só para aqueles e-mails.
+# aprovacao = "Pedir acesso" para todos, com análise. Mudou? Apague bootstrap/cache/config.php.
+CADASTRO_PUBLICO=fechado

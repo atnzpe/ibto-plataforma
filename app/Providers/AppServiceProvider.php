@@ -12,6 +12,7 @@ use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -40,6 +41,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Endereço oficial em https (homologação e produção): TODO link gerado pela
+        // plataforma (e-mails, botões, QR codes) sai com https, nunca http. Protege
+        // contra golpe e contra o navegador avisar "site não seguro". No computador do
+        // desenvolvedor (http://localhost), nada muda.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         $this->configureDefaults();
         $this->configurarPermissoes();
     }

@@ -66,3 +66,38 @@ test('falha na migration registra o código e tenta de novo na próxima rodada',
             && $contexto === ['versao' => 'def456', 'excecao' => RuntimeException::class])
         ->once();
 });
+
+// Placa "em atualização" (16/10/2026): o deploy põe, o pos-deploy tira.
+test('versão nova aplicada tira a placa posta pelo deploy', function () {
+    $placa = storage_path('framework/down');
+    File::put($placa, '{"status":503,"motivo":"'.PosDeploy::MARCA_DO_DEPLOY.'"}');
+    File::put($this->publicada, 'ghi789');
+    Artisan::shouldReceive('call')->times(3);
+
+    expect(rodarPosDeploy())->toBe(0)
+        ->and(File::exists($placa))->toBeFalse();
+});
+
+test('falha na migration deixa a placa (melhor "em atualização" do que erro 500)', function () {
+    $placa = storage_path('framework/down');
+    File::put($placa, '{"status":503,"motivo":"'.PosDeploy::MARCA_DO_DEPLOY.'"}');
+    File::put($this->publicada, 'ghi789');
+    Artisan::shouldReceive('call')->once()->andThrow(new RuntimeException('falhou'));
+
+    expect(rodarPosDeploy())->toBe(1)
+        ->and(File::exists($placa))->toBeTrue();
+
+    File::delete($placa);
+});
+
+test('placa posta por uma pessoa (php artisan down) nunca é tirada pelo pos-deploy', function () {
+    $placa = storage_path('framework/down');
+    File::put($placa, '{"status":503}');
+    File::put($this->publicada, 'abc123');
+    File::put($this->aplicada, 'abc123');
+
+    expect(rodarPosDeploy())->toBe(0)
+        ->and(File::exists($placa))->toBeTrue();
+
+    File::delete($placa);
+});

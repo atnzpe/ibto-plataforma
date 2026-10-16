@@ -16,10 +16,21 @@ use Throwable;
  * comando: se a versão publicada for diferente da última aplicada, roda as
  * migrations e refaz os caches; senão, não faz nada. Se algo falhar, a versão
  * não é marcada como aplicada e a próxima rodada tenta de novo.
+ *
+ * Placa de manutenção (16/10/2026): o deploy põe a plataforma "em atualização"
+ * (arquivo storage/framework/down, o mesmo do "php artisan down") ANTES de
+ * enviar o código. Assim, entre a chegada do código novo e as migrations,
+ * quem abre a página vê "em atualização" (503), e não um erro 500 por falta
+ * de coluna no banco. Este comando tira a placa quando termina tudo; se der
+ * erro, a placa fica (melhor "em atualização" do que tela quebrada).
  */
 class PosDeploy extends Command
 {
     public const CODIGO_FALHA = 'POS_DEPLOY_FALHOU';
+
+    // Palavra que o deploy grava dentro da placa, para este comando só tirar a
+    // placa que o DEPLOY pôs (nunca um "php artisan down" feito de propósito).
+    public const MARCA_DO_DEPLOY = 'deploy-homologacao';
 
     protected $signature = 'plataforma:pos-deploy';
 
@@ -39,7 +50,11 @@ class PosDeploy extends Command
         $publicada = trim(File::get($arquivoPublicado));
         $aplicada = File::exists($arquivoAplicado) ? trim(File::get($arquivoAplicado)) : '';
 
+        // Nada novo para aplicar (ex.: o deploy rodou de novo com o mesmo commit):
+        // só tira a placa, se ela ficou do deploy.
         if ($publicada === '' || $publicada === $aplicada) {
+            $this->tirarPlacaDoDeploy();
+
             return self::SUCCESS;
         }
 
@@ -56,9 +71,27 @@ class PosDeploy extends Command
         }
 
         File::put($arquivoAplicado, $publicada);
+        // Banco e caches prontos: a plataforma volta ao ar.
+        $this->tirarPlacaDoDeploy();
         Log::info('POS_DEPLOY_APLICADO', ['versao' => $publicada]);
         $this->info("Versão {$publicada} aplicada.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Tira a placa "em atualização" que o deploy pôs. Não faz nada se não há placa,
+     * ou se a placa foi posta por uma pessoa (sem a marca do deploy).
+     */
+    protected function tirarPlacaDoDeploy(): void
+    {
+        // O mesmo arquivo que o "php artisan down" cria.
+        $placa = storage_path('framework/down');
+
+        // Só apaga se existe E foi o deploy que pôs; senão, deixa como está.
+        if (File::exists($placa) && str_contains(File::get($placa), self::MARCA_DO_DEPLOY)) {
+            File::delete($placa);
+            Log::info('POS_DEPLOY_PLACA_RETIRADA');
+        }
     }
 }
