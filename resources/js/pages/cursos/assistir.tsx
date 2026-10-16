@@ -14,6 +14,56 @@ import { dataBr } from '@/pages/catalogo/index';
 import { curso as paginaDoCurso } from '@/routes/catalogo';
 import { assistida as marcarAssistida, assistir } from '@/routes/cursos';
 
+// A sala ao vivo do encontro, como o servidor manda (#71).
+type SalaAoVivo = {
+    // 'antes' | 'aberta' | 'encerrada' | 'sem_horario'
+    situacao: string;
+    // Hora em que a sala abre. Ex.: '18:30'.
+    abre_as: string | null;
+    // O link da sala (só com a sala aberta, ou para quem organiza o curso).
+    link: string | null;
+};
+
+/**
+ * O bloco "Sala ao vivo" do encontro online (#71).
+ *
+ * @param sala A situação da sala e o link (quando liberado).
+ * @returns O botão "Entrar na sala" (link liberado) ou um aviso calmo do horário.
+ */
+function BlocoSalaAoVivo({ sala }: { sala: SalaAoVivo }) {
+    return (
+        <section
+            aria-labelledby="t-sala"
+            className="rounded-md border border-border px-4 py-3 text-sm"
+        >
+            <h2 id="t-sala" className="font-semibold">
+                Sala ao vivo
+            </h2>
+            {/* Link liberado: botão grande (44 px), abre a reunião numa nova aba. */}
+            {sala.link ? (
+                <a
+                    href={sala.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex min-h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-2 focus-visible:outline-ring"
+                >
+                    Entrar na sala
+                    <span className="sr-only"> (abre numa nova aba)</span>
+                </a>
+            ) : (
+                // Sem link: explica quando a sala abre (ou que o encontro acabou).
+                <p className="mt-1 text-muted-foreground" role="status">
+                    {sala.situacao === 'encerrada'
+                        ? 'Este encontro já terminou.'
+                        : sala.abre_as
+                          ? `A sala abre às ${sala.abre_as}, 30 minutos antes do início.`
+                          : 'O horário da sala ainda não foi definido.'}
+                </p>
+            )}
+        </section>
+    );
+}
+
 /** Como tocar o vídeo (vem de CursoAula::video() no servidor). */
 type Video =
     | { tipo: 'youtube'; id: string; embed: string }
@@ -90,6 +140,8 @@ export default function Assistir({
         hora_inicio: string | null;
         hora_fim: string | null;
         quem_aplica: string | null;
+        // Sala do encontro online ao vivo (#71), ou null. O link só vem com a sala aberta.
+        sala_ao_vivo: SalaAoVivo | null;
         // true = a pessoa já marcou esta aula como assistida.
         assistida: boolean;
     };
@@ -179,6 +231,11 @@ export default function Assistir({
                                 `, das ${aula.hora_inicio}${aula.hora_fim ? ` às ${aula.hora_fim}` : ''}`}
                             {aula.quem_aplica && ` · com ${aula.quem_aplica}`}
                         </p>
+                    )}
+
+                    {/* Sala ao vivo (#71): botão grande com a sala aberta; antes, o horário de abertura. */}
+                    {aula.sala_ao_vivo && (
+                        <BlocoSalaAoVivo sala={aula.sala_ao_vivo} />
                     )}
 
                     {/* Texto da aula: as quebras de linha digitadas são mantidas. */}

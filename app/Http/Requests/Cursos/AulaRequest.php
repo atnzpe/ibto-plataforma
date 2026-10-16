@@ -9,6 +9,7 @@
 namespace App\Http\Requests\Cursos;
 
 use App\Models\CursoAula;
+use App\Support\SalaAoVivo;
 use App\Support\Video;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -42,6 +43,8 @@ class AulaRequest extends FormRequest
             'hora_inicio' => ['nullable', 'date_format:H:i'],
             'hora_fim' => ['nullable', 'date_format:H:i', 'after:hora_inicio'],
             'quem_aplica' => ['nullable', 'string', 'max:100'],
+            // Sala do encontro online ao vivo (#71): Meet, Zoom, Teams ou YouTube, por https (conferido no after()).
+            'link_ao_vivo' => ['nullable', 'string', 'max:500'],
             // Introdução PÚBLICA do encontro (janela do cronograma, C4d): curta, até 500 letras.
             'introducao' => ['nullable', 'string', 'max:500'],
             'ativa' => ['required', 'boolean'],
@@ -63,6 +66,15 @@ class AulaRequest extends FormRequest
                 // (só quando a fonte escolhida é o link).
                 if ($this->input('fonte_video') === 'link' && $this->filled('video_url') && Video::paraTocar((string) $this->input('video_url')) === null) {
                     $validator->errors()->add('video_url', 'Use um link do YouTube ou de um arquivo .mp4/.webm (https). (VIDEO_INVALIDO)');
+                }
+                // Link da sala ao vivo (#71) que não é de um serviço aceito: recusa (um link
+                // qualquer poderia levar o aluno a um site falso).
+                if ($this->filled('link_ao_vivo') && ! SalaAoVivo::linkValido((string) $this->input('link_ao_vivo'))) {
+                    $validator->errors()->add('link_ao_vivo', 'Use o link de uma sala do Google Meet, Zoom, Microsoft Teams ou YouTube (https). (SALA_INVALIDA)');
+                }
+                // Sala ao vivo sem dia e horário: o aluno não saberia quando entrar.
+                if ($this->filled('link_ao_vivo') && (! $this->filled('data') || ! $this->filled('hora_inicio'))) {
+                    $validator->errors()->add('link_ao_vivo', 'Informe o dia e o horário de início do encontro para usar a sala ao vivo. (SALA_SEM_HORARIO)');
                 }
             },
         ];

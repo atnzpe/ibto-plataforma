@@ -78,6 +78,8 @@ class ConteudoController extends Controller
                     'hora_inicio' => $aula->hora_inicio !== null ? substr($aula->hora_inicio, 0, 5) : null,
                     'hora_fim' => $aula->hora_fim !== null ? substr($aula->hora_fim, 0, 5) : null,
                     'quem_aplica' => $aula->quem_aplica,
+                    // Sala do encontro online ao vivo (#71), para o formulário abrir preenchido.
+                    'link_ao_vivo' => $aula->link_ao_vivo,
                     // Introdução pública (aparece na janela do cronograma, C4d).
                     'introducao' => $aula->introducao,
                     'tem_apostila' => $aula->apostila !== null,

@@ -21,6 +21,7 @@ use App\Models\Curso;
 use App\Models\CursoAula;
 use App\Models\User;
 use App\Services\SalaDeAula;
+use App\Support\SalaAoVivo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -75,6 +76,8 @@ class AssistirController extends Controller
                 'hora_inicio' => $aula->hora_inicio !== null ? substr($aula->hora_inicio, 0, 5) : null,
                 'hora_fim' => $aula->hora_fim !== null ? substr($aula->hora_fim, 0, 5) : null,
                 'quem_aplica' => $aula->quem_aplica,
+                // Sala do encontro online ao vivo (#71), ou null sem sala. Ver salaAoVivo().
+                'sala_ao_vivo' => $this->salaAoVivo($aula, $curso, $usuario),
                 // Esta aula já foi marcada como assistida? (o botão muda de texto)
                 'assistida' => in_array($aula->id, $assistidas, true),
             ],
@@ -98,6 +101,40 @@ class AssistirController extends Controller
                 'assistida' => in_array($daLista->id, $assistidas, true),
             ])->values(),
         ]);
+    }
+
+    /**
+     * A sala ao vivo do encontro (#71), do jeito que a tela mostra.
+     *
+     * O LINK só vai para a tela quando a sala está aberta (30 minutos antes do
+     * início até o fim). Quem organiza o curso (pode editá-lo) recebe o link
+     * sempre, porque é quem abre a reunião. Assim o link não circula antes da
+     * hora nem fica guardado na tela de quem só vai assistir.
+     *
+     * @param  CursoAula  $aula  O encontro.
+     * @param  Curso  $curso  O curso dele.
+     * @param  User  $usuario  Quem está na tela.
+     * @return array{situacao: string, abre_as: string|null, link: string|null}|null null = encontro sem sala ao vivo.
+     */
+    private function salaAoVivo(CursoAula $aula, Curso $curso, User $usuario): ?array
+    {
+        // Sem link cadastrado: não é encontro ao vivo.
+        if ($aula->link_ao_vivo === null || $aula->link_ao_vivo === '') {
+            return null;
+        }
+
+        $situacao = SalaAoVivo::situacao($aula);
+        // Organizador (pode editar o curso) vê sempre; o aluno, só com a sala aberta.
+        $organizador = Gate::forUser($usuario)->allows('curso.editar', $curso);
+        $mostraLink = $organizador || $situacao === 'aberta';
+
+        return [
+            // 'antes', 'aberta', 'encerrada' ou 'sem_horario'.
+            'situacao' => $situacao,
+            // Hora em que a sala abre (HH:MM), para a mensagem "a sala abre às 18:30".
+            'abre_as' => $situacao === 'sem_horario' ? null : SalaAoVivo::janela($aula)[0]->format('H:i'),
+            'link' => $mostraLink ? $aula->link_ao_vivo : null,
+        ];
     }
 
     /**

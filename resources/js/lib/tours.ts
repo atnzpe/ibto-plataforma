@@ -94,7 +94,7 @@ export const TOURS: Record<string, PassoDoTour[]> = {
         {
             elemento: 'main h1',
             titulo: 'Sala de aula',
-            texto: 'Assista à aula e clique em "Marcar como assistida": a barra de progresso anda e o próximo passo aparece.',
+            texto: 'Assista e clique em "Marcar como assistida". Encontro ao vivo: o botão "Entrar na sala" aparece 30 minutos antes do início.',
         },
     ],
     'cursos/index': [

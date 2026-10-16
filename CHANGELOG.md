@@ -16,6 +16,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 - Blog e eventos mostrados no site `ib-to.org`: API pública do post inteiro e da galeria, paginação e filtro por categoria; as páginas `/blog` e `/eventos` da plataforma levam ao site (#61, PR #33).
 - CORS das imagens para o modo offline do site; `robots.txt` e `llms.txt` da plataforma (#61, PR #33).
 - Tour guiado nas telas principais (#68): abre sozinho na primeira visita de cada tela, botão "?" para rever, interruptor "Tour guiado" no menu da conta (salvo na conta), textos em português, teclado e leitor de tela.
+- Sala ao vivo nos encontros online (#71): campo "Link da sala ao vivo" na aula (só Google Meet, Zoom, Teams ou YouTube, por https); o aluno confirmado vê "Entrar na sala" de 30 minutos antes até o fim do encontro; quem organiza vê sempre; o link nunca sai no catálogo nem na API.
 
 ## [0.1.0] — 2026-10-15 (homologação)
 

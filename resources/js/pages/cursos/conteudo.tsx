@@ -39,6 +39,8 @@ type Aula = {
     hora_inicio: string | null;
     hora_fim: string | null;
     quem_aplica: string | null;
+    // Sala do encontro online ao vivo (#71): Meet, Zoom, Teams ou YouTube.
+    link_ao_vivo: string | null;
     // Introdução pública do encontro (janela do cronograma).
     introducao: string | null;
     tem_apostila: boolean;
@@ -424,6 +426,18 @@ function JanelaAula({
                                     aria-label="Quem aplica o encontro"
                                 />
                                 <InputError message={errors.quem_aplica} />
+                                {/* Sala ao vivo (#71): só para encontro ONLINE ao vivo. O aluno confirmado
+                                    vê o botão "Entrar na sala" de 30 minutos antes até o fim do encontro. */}
+                                <Input
+                                    name="link_ao_vivo"
+                                    type="url"
+                                    inputMode="url"
+                                    maxLength={500}
+                                    defaultValue={aula?.link_ao_vivo ?? ''}
+                                    placeholder="Link da sala ao vivo (encontro online). Ex.: https://meet.google.com/abc-defg-hij"
+                                    aria-label="Link da sala ao vivo (Google Meet, Zoom, Teams ou YouTube)"
+                                />
+                                <InputError message={errors.link_ao_vivo} />
                                 {/* Introdução PÚBLICA: aparece na janela do cronograma para quem ainda não se inscreveu. */}
                                 <textarea
                                     name="introducao"
