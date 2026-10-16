@@ -72,6 +72,12 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // Tour guiado (#68): o interruptor e as telas já vistas da pessoa logada.
+            // Sem login: null (as telas públicas não abrem o tour sozinhas).
+            'tour' => $request->user() ? [
+                'ativo' => (bool) $request->user()->tour_ativo,
+                'vistos' => $request->user()->tours_vistos ?? [],
+            ] : null,
             // O que o usuário logado pode fazer (#36), para a tela mostrar ou
             // esconder itens do menu. Ex.: { cadastros_equipes: true, ... }.
             // Só esconde o menu: quem garante a permissão de verdade são as rotas.

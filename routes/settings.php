@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\TourController;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+
+    // TOUR GUIADO (#68): ligar/desligar e marcar a tela como vista. Limite de
+    // 30 pedidos por minuto: o tour chama no máximo um por tela visitada.
+    Route::put('settings/tour', [TourController::class, 'atualizar'])
+        ->middleware('throttle:30,1')
+        ->name('tour.atualizar');
+    Route::post('settings/tour/vistos', [TourController::class, 'visto'])
+        ->middleware('throttle:30,1')
+        ->name('tour.visto');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {
