@@ -1,6 +1,8 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 // Menu de idiomas (#53), no modo "dica do tradutor do navegador".
 import MenuIdiomas from '@/components/menu-idiomas';
+// Tour guiado (#68): o botão "?" e a abertura automática na primeira visita.
+import { TourGuiado } from '@/components/tour-guiado';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -17,8 +19,13 @@ export function AppSidebarHeader({
             </div>
             {/* Idiomas (#53), encostado à direita (ml-auto). Tela com login:
                 dica do tradutor do navegador, que não tira o login. */}
-            <div className="ml-auto">
-                <MenuIdiomas modo="navegador" />
+            {/* data-tour="idiomas": marca para o balão "Idioma" do tour (#68).
+                Ao lado, o "?" do tour guiado da tela. */}
+            <div className="ml-auto flex items-center gap-1">
+                <div data-tour="idiomas">
+                    <MenuIdiomas modo="navegador" />
+                </div>
+                <TourGuiado />
             </div>
         </header>
     );

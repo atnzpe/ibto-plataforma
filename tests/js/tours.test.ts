@@ -1,0 +1,79 @@
+/**
+ * Testes do TOUR GUIADO (resources/js/lib/tours.ts, #68): quais passos
+ * aparecem, quando o tour abre sozinho e se todo texto cabe num balão.
+ * Rodam sem navegador: `bun test tests/js`.
+ */
+import { describe, expect, test } from 'bun:test';
+import {
+    abreSozinho,
+    passosDaTela,
+    TOURS,
+    temTour,
+} from '../../resources/js/lib/tours';
+
+// Finge uma tela onde TODOS os elementos existem.
+const tudoExiste = () => true;
+// Finge uma tela onde nenhum elemento apontado existe.
+const nadaExiste = () => false;
+
+describe('passosDaTela', () => {
+    test('primeiro tour: passos da tela + apresentação do menu, idioma e conta + ajuda', () => {
+        const passos = passosDaTela('comando-geral', true, tudoExiste);
+        const titulos = passos.map((passo) => passo.titulo);
+
+        expect(titulos[0]).toBe('Bem-vindo ao Comando Geral');
+        expect(titulos).toContain('Menu');
+        expect(titulos).toContain('Sua conta');
+        expect(titulos.at(-1)).toBe('Ajuda');
+    });
+
+    test('a partir do segundo tour: sem a apresentação do esqueleto', () => {
+        const titulos = passosDaTela('comando-geral', false, tudoExiste).map(
+            (passo) => passo.titulo,
+        );
+
+        expect(titulos).not.toContain('Menu');
+        expect(titulos.at(-1)).toBe('Ajuda');
+    });
+
+    test('passo cujo elemento não está na tela é pulado (o tour não quebra)', () => {
+        const passos = passosDaTela('comando-geral', true, nadaExiste);
+
+        // Sobra só o passo sem elemento (o balão no meio da tela).
+        expect(passos).toHaveLength(1);
+        expect(passos[0].elemento).toBeUndefined();
+    });
+
+    test('tela sem tour: nenhum passo', () => {
+        expect(passosDaTela('settings/profile', true, tudoExiste)).toEqual([]);
+    });
+});
+
+describe('abreSozinho', () => {
+    test('só com o tour ligado, numa tela com tour e ainda não vista', () => {
+        expect(abreSozinho('meus-cursos', true, [])).toBe(true);
+        expect(abreSozinho('meus-cursos', true, ['meus-cursos'])).toBe(false);
+        expect(abreSozinho('meus-cursos', false, [])).toBe(false);
+        expect(abreSozinho('settings/profile', true, [])).toBe(false);
+    });
+});
+
+describe('textos dos tours', () => {
+    test('toda tela com tour tem texto curto (cabe no balão do celular)', () => {
+        for (const [tela, passos] of Object.entries(TOURS)) {
+            expect(temTour(tela)).toBe(true);
+            for (const passo of passos) {
+                expect(passo.titulo.length).toBeLessThanOrEqual(40);
+                expect(passo.texto.length).toBeLessThanOrEqual(200);
+            }
+        }
+    });
+
+    test('nenhum texto tem HTML (o balão desenha texto como HTML)', () => {
+        for (const passos of Object.values(TOURS)) {
+            for (const passo of passos) {
+                expect(passo.titulo + passo.texto).not.toMatch(/[<>]/);
+            }
+        }
+    });
+});

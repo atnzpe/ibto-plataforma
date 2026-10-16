@@ -29,6 +29,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property bool $tour_ativo Tour guiado (#68) ligado na conta.
+ * @property list<string>|null $tours_vistos Telas cujo tour a pessoa já viu (#68). Ex.: ['comando-geral'].
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -48,6 +50,17 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     private ?array $slugsDasPermissoes = null;
 
     /**
+     * Valores padrão de uma conta nova, iguais aos do banco: o tour guiado
+     * (#68) nasce LIGADO também no objeto em memória (antes de recarregar do
+     * banco), para a primeira tela já saber que deve mostrar o tour.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'tour_ativo' => true,
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -60,6 +73,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'desativada_em' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            // Tour guiado (#68): o interruptor liga/desliga e a lista de telas já vistas.
+            'tour_ativo' => 'boolean',
+            'tours_vistos' => 'array',
         ];
     }
 

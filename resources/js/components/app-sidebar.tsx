@@ -194,7 +194,8 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        // data-tour: marca para o tour guiado (#68) apontar o balão "Menu".
+        <Sidebar collapsible="icon" variant="inset" data-tour="menu-lateral">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

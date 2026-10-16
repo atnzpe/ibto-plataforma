@@ -85,3 +85,9 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 - Regra usada por duas telas mora num SERVIÇO (`SalaDeAula`): a sala de aula e "Meus cursos" fazem a mesma conta, sem copiar código.
 - `flatMap` devolve uma lista comum, sem os atalhos de lista de modelos (`modelKeys`); `pluck('id')` funciona nas duas.
 - Página "só minha" não leva número de pessoa no endereço: o servidor usa quem está logado, então não dá para trocar o número e ver o dossiê de outro.
+
+## 16/10/2026 — blog no site e tour guiado
+
+- A vitrine pública mora no site e o cadastro na plataforma: a API entrega os dados e o site desenha; um redirecionamento com "plano B" (sem site configurado, a página continua abrindo) evita que algo some se o site cair.
+- Preferência da pessoa (tour ligado ou desligado, telas vistas) fica na CONTA, não no navegador: assim vale no computador e no celular. O valor padrão vai no banco E no modelo (`$attributes`), senão um usuário recém-criado chega "desligado" na primeira tela.
+- Balão de tour que aponta para um elemento que pode não existir precisa ser pulado (filtro antes de abrir), senão o tour quebra quando a tela muda.

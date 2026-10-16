@@ -299,3 +299,74 @@
         }
     }
 }
+
+/*
+ * TOUR GUIADO (#68): o balão do driver.js com as cores do IBTO.
+ * - Usa as cores do tema (claro e escuro), com contraste WCAG AA.
+ * - Botões com 44 px de altura (alvo de toque confortável no celular).
+ * - Largura limitada pela área segura: o balão nunca passa do entalhe nem
+ *   das bordas arredondadas do celular.
+ */
+@layer components {
+    .driver-popover.tour-ibto {
+        background-color: var(--card);
+        color: var(--card-foreground);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        max-width: min(
+            22rem,
+            calc(
+                100vw - 2rem - env(safe-area-inset-left) -
+                    env(safe-area-inset-right)
+            )
+        );
+    }
+
+    .driver-popover.tour-ibto .driver-popover-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .driver-popover.tour-ibto .driver-popover-description {
+        color: var(--muted-foreground);
+        line-height: 1.5;
+    }
+
+    .driver-popover.tour-ibto .driver-popover-footer button {
+        min-height: 2.75rem;
+        padding: 0 1rem;
+        border-radius: 9999px;
+        text-shadow: none;
+        font-size: 0.875rem;
+        background-color: var(--secondary);
+        color: var(--secondary-foreground);
+        border: 1px solid var(--border);
+    }
+
+    /* "Próximo" e "Concluir": o botão principal, na cor da marca. */
+    .driver-popover.tour-ibto .driver-popover-next-btn {
+        background-color: var(--primary);
+        color: var(--primary-foreground);
+    }
+
+    .driver-popover.tour-ibto .driver-popover-footer button:focus-visible,
+    .driver-popover.tour-ibto .driver-popover-close-btn:focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+
+    /* Sem a seta: o elemento apontado já fica destacado (recorte claro na tela
+       escurecida), e a seta padrão da biblioteca não segue as cores do tema. */
+    .driver-popover.tour-ibto .driver-popover-arrow {
+        display: none;
+    }
+}
+
+/* Movimento reduzido (configuração de acessibilidade do aparelho): sem animação no tour. */
+@media (prefers-reduced-motion: reduce) {
+    .driver-popover,
+    .driver-overlay {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -33,6 +33,8 @@ export function NavUser() {
                             size="lg"
                             className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
                             data-test="sidebar-menu-button"
+                            // Marca para o tour guiado (#68) apontar o balão "Sua conta".
+                            data-tour="menu-usuario"
                         >
                             <UserInfo user={auth.user} />
                             <ChevronsUpDown className="ml-auto size-4" />

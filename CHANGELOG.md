@@ -15,6 +15,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 - Blog e eventos mostrados no site `ib-to.org`: API pública do post inteiro e da galeria, paginação e filtro por categoria; as páginas `/blog` e `/eventos` da plataforma levam ao site (#61, PR #33).
 - CORS das imagens para o modo offline do site; `robots.txt` e `llms.txt` da plataforma (#61, PR #33).
+- Tour guiado nas telas principais (#68): abre sozinho na primeira visita de cada tela, botão "?" para rever, interruptor "Tour guiado" no menu da conta (salvo na conta), textos em português, teclado e leitor de tela.
 
 ## [0.1.0] — 2026-10-15 (homologação)
 
