@@ -12,6 +12,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 ## [Não lançado]
 
 ### Adicionado
+
 - Blog e eventos mostrados no site `ib-to.org`: API pública do post inteiro e da galeria, paginação e filtro por categoria; as páginas `/blog` e `/eventos` da plataforma levam ao site (#61, PR #33).
 - CORS das imagens para o modo offline do site; `robots.txt` e `llms.txt` da plataforma (#61, PR #33).
 
@@ -20,6 +21,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 Primeira versão completa para o piloto, no ar em `cursos-homolog.ib-to.org`.
 
 ### Adicionado
+
 - API pública das áreas de atuação (#57, PR #32) e dos cursos (#52, PR #31) para o site.
 - API pública do blog com CORS só para o site do IBTO (#61, PR #29).
 - Galeria de eventos: álbuns com descrição, crédito e autorização de imagem (#61, PR #28).
@@ -42,6 +44,7 @@ Primeira versão completa para o piloto, no ar em `cursos-homolog.ib-to.org`.
 - Base da plataforma: Laravel 13, React, rota de saúde e CI (#35, PR #1).
 
 ### Corrigido
+
 - `/api/publico` e `/imagens` sem a senha da homologação, para o site de testes ler o blog (PR #30).
 - Janelas que abrem por cima da tela não passam da área segura (PR #26); área segura em todas as telas (PR #14).
 - Lista de cursos troca tabela por cartões em 1024 px (PR #24).
