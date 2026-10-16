@@ -25,6 +25,8 @@ use App\Models\CursoPresenca;
 use App\Models\Trilha;
 use App\Support\Calendario;
 use App\Support\DadosPagamento;
+use App\Support\PixCopiaECola;
+use App\Support\QrCode;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -391,6 +393,9 @@ class CatalogoController extends Controller
         }
 
         $aguardando = $matricula->situacao === SituacaoMatricula::AguardandoPagamento;
+        // Dados para pagamento (do curso ou do IBTO, conforme a chave liga/desliga),
+        // só para quem precisa pagar. Ver App\Support\DadosPagamento.
+        $pagamento = $aguardando ? DadosPagamento::doCurso($curso) : null;
 
         return [
             'id' => $matricula->id,
@@ -398,9 +403,36 @@ class CatalogoController extends Controller
             'situacao_rotulo' => $matricula->situacao->rotulo(),
             'valor_centavos' => $matricula->valor_centavos,
             'tem_comprovante' => $matricula->comprovante !== null,
-            // Dados para pagamento (do curso ou do IBTO, conforme a chave liga/desliga),
-            // só para quem precisa pagar. Ver App\Support\DadosPagamento.
-            'pagamento' => $aguardando ? DadosPagamento::doCurso($curso) : null,
+            'pagamento' => $pagamento,
+            // Pix copia e cola + QR code (#83), com o valor exato e o identificador da
+            // matrícula; só quando há chave Pix cadastrada e algo a pagar.
+            'pix' => $pagamento !== null && $pagamento['pix_chave'] !== '' && $matricula->valor_centavos > 0
+                ? $this->pixDaMatricula($pagamento, $matricula->id, $matricula->valor_centavos)
+                : null,
+        ];
+    }
+
+    /**
+     * Monta o Pix copia e cola e o QR code de uma matrícula (#83).
+     *
+     * @param  array{pix_chave: string, favorecido: string}  $pagamento  Chave e favorecido (do curso ou do IBTO).
+     * @param  int  $matriculaId  O número da matrícula (vira o identificador). Ex.: 1234.
+     * @param  int  $valorCentavos  O valor exato. Ex.: 15000 (R$ 150,00).
+     * @return array{copia_e_cola: string, qr_svg: string, txid: string}
+     */
+    private function pixDaMatricula(array $pagamento, int $matriculaId, int $valorCentavos): array
+    {
+        // Identificador que aparece no extrato e na tela de matrículas. Ex.: 'IBTOMAT1234'.
+        $txid = PixCopiaECola::txidDaMatricula($matriculaId);
+        // Sem favorecido cadastrado: usa a sigla (o padrão exige um nome).
+        $favorecido = $pagamento['favorecido'] !== '' ? $pagamento['favorecido'] : 'IBTO';
+        $codigo = PixCopiaECola::gerar($pagamento['pix_chave'], $favorecido, (string) config('app.pix_cidade'), $valorCentavos, $txid);
+
+        return [
+            'copia_e_cola' => $codigo,
+            // 220 px: acima do mínimo de 200 px para a câmera do celular ler com folga.
+            'qr_svg' => QrCode::svg($codigo, 220),
+            'txid' => $txid,
         ];
     }
 

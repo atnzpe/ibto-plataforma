@@ -90,6 +90,20 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'Use os filtros por área, modalidade e a busca. Clique num curso para ver datas, valor e se inscrever.',
         },
     ],
+    // Página do curso (#83): o balão do Pix só aparece para quem está aguardando pagamento
+    // (sem o elemento na tela, o passo é pulado sozinho).
+    'catalogo/curso': [
+        {
+            elemento: 'main h1',
+            titulo: 'Página do curso',
+            texto: 'Datas, valor, conteúdo e o botão "Garantir minha vaga". Depois da inscrição, os dados para pagar aparecem aqui.',
+        },
+        {
+            elemento: '#titulo-pix',
+            titulo: 'Pague com Pix',
+            texto: 'Aponte a câmera do app do banco para o QR code ou use "Copiar código Pix": o valor já vai preenchido. Antes de confirmar, confira o nome de quem recebe.',
+        },
+    ],
     'cursos/assistir': [
         {
             elemento: 'main h1',
@@ -115,7 +129,7 @@ export const TOURS: Record<string, PassoDoTour[]> = {
         {
             elemento: 'main h1',
             titulo: 'Inscritos',
-            texto: 'Aqui você confirma o pagamento do PIX, vê as vagas e faz a chamada de cada encontro.',
+            texto: 'Aqui você confirma o pagamento do PIX (procure no extrato o identificador "Pix: IBTOMAT…" de cada matrícula), vê as vagas e faz a chamada de cada encontro.',
         },
     ],
     'cursos/chamada': [

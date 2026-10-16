@@ -41,6 +41,10 @@ return [
     |
     */
 
+    // Cidade de quem recebe o Pix (#83): vai dentro do código "copia e cola" (o padrão
+    // do Banco Central exige). Ex.: IBTO_PIX_CIDADE=Recife. Sem acento é melhor.
+    'pix_cidade' => (string) env('IBTO_PIX_CIDADE', 'Recife'),
+
     'admin_emails' => array_values(array_filter(array_map(
         // Para cada e-mail: tira espaços e passa para minúsculas
         // (ex.: " Gleyson@Exemplo.com" vira "gleyson@exemplo.com").

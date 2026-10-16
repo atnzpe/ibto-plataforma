@@ -22,6 +22,7 @@ use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\FinFormaPagamento;
 use App\Support\Periodo;
+use App\Support\PixCopiaECola;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -69,6 +70,8 @@ class MatriculaPainelController extends Controller
             'id' => $matricula->id,
             'curso' => $matricula->curso->titulo,
             'curso_id' => $matricula->curso_id,
+            // Identificador do Pix (#83), o mesmo que vai no código e aparece no extrato. Ex.: 'IBTOMAT1234'.
+            'txid' => PixCopiaECola::txidDaMatricula($matricula->id),
             // Quem é, SEM o nome (LGPD): o registro do filiado; não filiado = só o nº da matrícula.
             'registro' => $matricula->usuario->filiado?->registro,
             'equipe' => $matricula->usuario->filiado !== null ? ($matricula->usuario->filiado->equipe->nome ?? 'Sem equipe') : 'Não filiado',
@@ -119,6 +122,8 @@ class MatriculaPainelController extends Controller
         return Inertia::render('cursos/matricula-ficha', [
             'matricula' => [
                 'id' => $matricula->id,
+                // Identificador do Pix (#83), o mesmo que vai no código e aparece no extrato. Ex.: 'IBTOMAT1234'.
+                'txid' => PixCopiaECola::txidDaMatricula($matricula->id),
                 'nome' => $matricula->usuario->name,
                 'email' => $matricula->usuario->email,
                 'registro' => $filiado?->registro,

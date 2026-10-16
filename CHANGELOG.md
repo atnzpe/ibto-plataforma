@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Pix copia e cola com QR code (#83): na inscrição, o aluno vê o QR code e o botão "Copiar código Pix", com o valor exato e o identificador da matrícula (ex.: `IBTOMAT1234`) já dentro do código, gerado na própria plataforma pelo padrão BR Code do Banco Central (sem banco nem contrato); aviso para conferir o nome de quem recebe no app do banco; o identificador aparece na lista e na ficha de matrículas do Comando Geral para conferir no extrato.
 - Foto de perfil e foto 3x4 do filiado (#78): enviadas em Configurações → Perfil ou na ficha do filiado; recortadas em quadrado, reduzidas para 400 px e gravadas em WebP numa pasta privada; aparecem no menu da conta, nos inscritos e na chamada só para quem pode ver; autorização de imagem para a Rede Nacional, desmarcada por padrão, com data e auditoria.
 - Blog e eventos mostrados no site `ib-to.org`: API pública do post inteiro e da galeria, paginação e filtro por categoria; as páginas `/blog` e `/eventos` da plataforma levam ao site (#61, PR #33).
 - CORS das imagens para o modo offline do site; `robots.txt` e `llms.txt` da plataforma (#61, PR #33).
