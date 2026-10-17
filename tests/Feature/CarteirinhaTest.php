@@ -57,6 +57,34 @@ test('situação: ativa no ano isento; anuidade pendente quando há valor e não
     expect(Filiado::find($this->filiado->id)->situacaoCarteirinha()['situacao'])->toBe('inativa');
 });
 
+test('passaporte (#81): verde em dia, amarelo com anuidade pendente, vermelho inativo — igual na página pública', function () {
+    expect($this->filiado->semaforo())->toBe(['sinal' => 'verde', 'rotulo' => 'Liberado', 'motivo' => null]);
+
+    Anuidade::updateOrCreate(['ano' => today()->year], ['valor_centavos' => 9000, 'isenta' => false]);
+    expect(Filiado::find($this->filiado->id)->semaforo()['sinal'])->toBe('amarelo');
+    $this->get(route('carteirinha.validar', $this->filiado->codigo_validacao))
+        ->assertInertia(fn ($tela) => $tela->where('carteirinha.sinal', 'amarelo')->where('carteirinha.sinal_motivo', 'Anuidade pendente'));
+
+    $this->filiado->update(['status' => 'inativo']);
+    expect(Filiado::find($this->filiado->id)->semaforo())->toBe(['sinal' => 'vermelho', 'rotulo' => 'Acesso negado', 'motivo' => 'Registro inativo']);
+});
+
+test('passaporte (#81): trocar o código invalida o QR antigo e vai para a auditoria', function () {
+    $usuario = $this->filiado->usuario;
+    $usuario->markEmailAsVerified();
+    $antigo = $this->filiado->codigo_validacao;
+
+    $this->actingAs($usuario)->post(route('carteirinha.trocar-codigo'))->assertRedirect(route('carteirinha.minha'));
+
+    $novo = Filiado::find($this->filiado->id)->codigo_validacao;
+    expect($novo)->not->toBe($antigo)->toMatch('/^IBTO-[A-Z2-9]{4}-[A-Z2-9]{4}$/');
+    $this->get(route('carteirinha.validar', $antigo))->assertInertia(fn ($tela) => $tela->where('carteirinha', null));
+    $this->assertDatabaseHas('auditoria', ['acao' => 'PASSAPORTE_CODIGO_TROCADO']);
+
+    // Quem não é filiado não tem código para trocar.
+    $this->actingAs(User::factory()->create())->post(route('carteirinha.trocar-codigo'))->assertNotFound();
+});
+
 test('Minha carteirinha: o filiado vê a dele com o QR; quem não é filiado recebe 404', function () {
     $usuario = $this->filiado->usuario;
     $usuario->markEmailAsVerified();

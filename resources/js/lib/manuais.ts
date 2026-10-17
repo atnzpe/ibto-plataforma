@@ -153,12 +153,14 @@ export const MANUAIS: Manual[] = [
                     'Abra "Minha carteirinha" no menu.',
                     'Confira a foto 3x4, o nome, o registro, o nível, a equipe e a validade (31/12 do ano).',
                     'Clique em "Imprimir ou salvar em PDF": sai no tamanho de cartão (85,6 × 54 mm).',
-                    'Quem ler o QR code abre a página de validação do IBTO e vê se a carteirinha está ativa.',
+                    'Quem ler o QR code abre a página de validação do IBTO e vê o semáforo do passaporte: 🟢 Liberado, 🟡 Liberado com ressalva ou 🔴 Acesso negado.',
+                    'Se a foto da carteirinha vazou, "Trocar código do QR": o QR antigo para de valer na hora e você imprime de novo.',
                 ],
                 regras: [
                     'Sem foto 3x4, a carteirinha mostra um aviso: envie a foto em Configurações → Perfil.',
                     'A validação pública mostra só o nome abreviado, a situação, a categoria, o nível e a equipe. Nome completo, cidade e foto só se você autorizou o uso da imagem.',
-                    'Anuidade em aberto aparece como "Anuidade pendente" na validação.',
+                    'Semáforo: verde = ativo e em dia; amarelo = anuidade pendente; vermelho = registro inativo ou suspenso.',
+                    'Trocar o código fica registrado na auditoria (no máximo 3 trocas por hora).',
                 ],
                 tela: {
                     endereco: '/minha-carteirinha',

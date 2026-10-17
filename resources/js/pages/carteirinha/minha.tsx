@@ -5,12 +5,18 @@
  * banco): foto 3x4, nome, registro, nível, equipe, validade e o QR code que abre
  * a validação pública. Página limpa (sem menu): o botão "Imprimir" some na
  * impressão. Sem foto: um aviso para enviar a 3x4 em Configurações.
+ * PASSAPORTE (#81): mostra o sinal atual do semáforo e o botão para trocar o
+ * código do QR, caso a foto da carteirinha tenha vazado.
  */
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 /** Os dados da carteirinha da própria pessoa. */
 type MinhaCarteirinha = {
     nome: string;
+    // O semáforo do passaporte (#81). Ex.: 'Liberado com ressalva' e 'Anuidade pendente'.
+    sinal: 'verde' | 'amarelo' | 'vermelho';
+    sinal_rotulo: string;
+    sinal_motivo: string | null;
     registro: string;
     situacao: 'ativa' | 'pendente' | 'inativa';
     situacao_rotulo: string;
@@ -33,6 +39,28 @@ export default function MinhaCarteirinha({
 }: {
     carteirinha: MinhaCarteirinha;
 }) {
+    // O aviso de sucesso que o servidor mandou (ou null).
+    const { sucesso } = usePage<{ sucesso?: string | null }>().props;
+
+    /**
+     * Troca o código do QR (#81), depois de confirmar: o QR impresso antes deixa de valer.
+     */
+    function trocarCodigo() {
+        // Sem confirmação, não troca nada.
+        if (
+            !window.confirm(
+                'Trocar o código do QR? A carteirinha impressa antes deixa de valer e você precisa imprimir de novo.',
+            )
+        ) {
+            return;
+        }
+        router.post(
+            '/minha-carteirinha/trocar-codigo',
+            {},
+            { preserveScroll: true },
+        );
+    }
+
     return (
         <>
             <Head title="Minha carteirinha" />
@@ -52,6 +80,29 @@ export default function MinhaCarteirinha({
                         Imprimir ou salvar em PDF
                     </button>
                 </div>
+
+                {/* Aviso de sucesso (ex.: depois de trocar o código do QR). */}
+                {sucesso && (
+                    <p
+                        role="status"
+                        className="w-full rounded-md border border-green-700 bg-green-50 p-3 text-sm text-green-900 print:hidden"
+                    >
+                        {sucesso}
+                    </p>
+                )}
+
+                {/* PASSAPORTE (#81): o sinal que o instrutor vai ver ao ler o QR (some na impressão). */}
+                <p
+                    role="note"
+                    className="w-full rounded-md border border-black/20 p-3 text-sm print:hidden"
+                >
+                    Sinal do passaporte agora:{' '}
+                    <strong>{carteirinha.sinal_rotulo}</strong>
+                    {carteirinha.sinal_motivo
+                        ? ` (${carteirinha.sinal_motivo})`
+                        : ''}
+                    .
+                </p>
 
                 {/* Sem foto 3x4: aviso (some na impressão). */}
                 {!carteirinha.foto_url && (
@@ -137,6 +188,15 @@ export default function MinhaCarteirinha({
                     {carteirinha.endereco_validacao}, só com o necessário para
                     conferir.
                 </p>
+
+                {/* Passaporte (#81): se a foto do QR vazou, sorteia um código novo (o antigo para de valer). */}
+                <button
+                    type="button"
+                    onClick={trocarCodigo}
+                    className="min-h-11 rounded-md border border-red-800/40 px-4 text-sm font-medium text-red-900 print:hidden"
+                >
+                    Trocar código do QR (se ele vazou)
+                </button>
             </main>
         </>
     );

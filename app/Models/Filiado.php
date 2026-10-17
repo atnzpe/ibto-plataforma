@@ -289,4 +289,26 @@ class Filiado extends Model
             ? ['situacao' => 'ativa', 'rotulo' => 'Ativa', 'validade' => "31/12/{$ano}"]
             : ['situacao' => 'pendente', 'rotulo' => 'Anuidade pendente', 'validade' => null];
     }
+
+    /**
+     * SEMÁFORO DO PASSAPORTE (#81): o sinal que o instrutor vê ao ler o QR na porta
+     * do treino. Regra num lugar só (a tela do filiado e a página pública usam esta).
+     * - verde: ativo e em dia → "Liberado";
+     * - amarelo: ativo, mas com a anuidade pendente → "Liberado com ressalva";
+     * - vermelho: registro inativo ou suspenso → "Acesso negado".
+     * (Quando existirem as aulas regulares, #80, a assinatura vencida também dá vermelho.)
+     *
+     * @return array{sinal: string, rotulo: string, motivo: string|null}
+     *                                                                   Ex.: ['sinal' => 'amarelo', 'rotulo' => 'Liberado com ressalva', 'motivo' => 'Anuidade pendente'].
+     */
+    public function semaforo(): array
+    {
+        // A situação da carteirinha já diz se está ativo e em dia; o semáforo traduz em cor.
+        return match ($this->situacaoCarteirinha()['situacao']) {
+            'ativa' => ['sinal' => 'verde', 'rotulo' => 'Liberado', 'motivo' => null],
+            'pendente' => ['sinal' => 'amarelo', 'rotulo' => 'Liberado com ressalva', 'motivo' => 'Anuidade pendente'],
+            // Qualquer outra (inativa): acesso negado, com o motivo do cadastro.
+            default => ['sinal' => 'vermelho', 'rotulo' => 'Acesso negado', 'motivo' => $this->status === 'suspenso' ? 'Registro suspenso' : 'Registro inativo'],
+        };
+    }
 }
