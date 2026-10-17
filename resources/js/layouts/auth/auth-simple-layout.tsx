@@ -3,7 +3,6 @@
  * o logo do IBTO (pedido do Gleyson, 10/10/2026): o logo largo do site no
  * topo, sobre a faixa escura, e o título da tela embaixo.
  */
-import { Link } from '@inertiajs/react';
 // Menu de idiomas (#53), no modo "dica do tradutor do navegador".
 import BotaoSuporte from '@/components/botao-suporte';
 import MenuIdiomas from '@/components/menu-idiomas';
@@ -32,8 +31,10 @@ export default function AuthSimpleLayout({
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
                         {/* Logo largo do IBTO (o mesmo do site), sobre a faixa escura da marca. */}
-                        <Link
-                            href={home()}
+                        {/* Logo (17/10/2026): leva ao endereço "/" — visitante vai para a home do site do IBTO;
+                            logado, para o painel. Link comum (<a>), porque pode sair da plataforma. */}
+                        <a
+                            href={home().url}
                             className="flex w-full justify-center rounded-xl bg-[#0a0a0a] px-4 py-3"
                         >
                             <img
@@ -41,7 +42,7 @@ export default function AuthSimpleLayout({
                                 alt="IBTO — Instituto Brasileiro de Treinamento Operacional (página inicial)"
                                 className="h-16 w-auto max-w-full object-contain"
                             />
-                        </Link>
+                        </a>
 
                         <div className="space-y-2 text-center">
                             <h1 className="text-xl font-medium">{title}</h1>
