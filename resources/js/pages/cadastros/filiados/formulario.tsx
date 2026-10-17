@@ -7,6 +7,7 @@
  */
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import FiliadoController from '@/actions/App/Http/Controllers/Cadastros/FiliadoController';
+import AnonimizarFiliado from '@/components/cadastros/anonimizar-filiado';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,7 +83,8 @@ export default function FiliadoFormularioTela({
 }) {
     // Mensagem da última ação (ex.: "Convite reenviado."), ou null; e os erros
     // gerais da página (ex.: errors.anuidade, a regra da anuidade com código).
-    const { sucesso, errors } = usePage().props;
+    // pode: as permissões de quem está logado (ex.: filiados_gerenciar). Só mostra ou esconde.
+    const { sucesso, errors, pode } = usePage().props;
     const editando = filiado !== null;
     const titulo = editando
         ? `Editar filiado ${filiado.registro}`
@@ -518,6 +520,14 @@ export default function FiliadoFormularioTela({
                         </>
                     )}
                 </Form>
+
+                {/* Anonimizar (LGPD, #47): só na edição e só para quem cuida de TODOS os filiados. */}
+                {editando && pode.filiados_gerenciar && (
+                    <AnonimizarFiliado
+                        id={filiado.id}
+                        registro={filiado.registro}
+                    />
+                )}
             </div>
         </>
     );
