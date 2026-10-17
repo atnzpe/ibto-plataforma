@@ -29,26 +29,14 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Homologação (issue #35): senha e noindex só em cursos-homolog.ib-to.org e só
-# no HTTPS (no HTTP vale primeiro o redirecionamento acima, sem pedir senha).
-# Usa o mesmo arquivo de senhas da homologação do site (homolog.ib-to.org),
-# então a equipe entra com o mesmo usuário e senha. Guia:
-# docs/publicacao-homologacao.md.
+# Homologação (issue #35): fora do Google (noindex) só em cursos-homolog.ib-to.org.
 #
-# EXCEÇÃO (15/10/2026, blog #61): ficam SEM senha só os pedidos de LEITURA
-# (GET) de /api/publico/... (os posts já publicados, para o bloco "Últimas do
-# IBTO" do site de testes) e de /imagens/... (capas e fotos). O site busca
-# esses dados "de fora", sem a senha, e sem a exceção receberia "acesso
-# negado". Esses endereços já se protegem sozinhos: só entregam o que está
-# publicado (rascunho dá "não existe"). O resto da homologação continua com senha.
-# THE_REQUEST é a primeira linha do pedido, como chegou (ex.: "GET /api/publico/blog HTTP/1.1"):
-# não muda quando o Laravel redireciona tudo para o index.php por dentro.
-<If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org' && %{HTTPS} == 'on' && %{THE_REQUEST} !~ m#^GET /(api/publico|imagens)/#">
-    AuthType Basic
-    AuthName "Homologacao IBTO Cursos"
-    AuthUserFile "/home1/edua1187/.htpasswds/homolog.ib-to.org/passwd"
-    Require valid-user
-</If>
+# A janelinha de usuário e senha (Basic Auth) foi TIRADA em 17/10/2026, a pedido
+# do Gleyson, para o piloto: várias pessoas indicadas vão acessar, cada uma com a
+# própria conta. A proteção continua no login, na aprovação do cadastro e nas
+# permissões de cada tela; e o "noindex" abaixo tira a homologação das buscas.
+# Para VOLTAR com a janelinha, reverta a PR que a tirou (o bloco <If> com
+# AuthType Basic e o arquivo .htpasswds/homolog.ib-to.org/passwd).
 
 <IfModule mod_headers.c>
     <If "%{HTTP_HOST} == 'cursos-homolog.ib-to.org'">

@@ -217,11 +217,17 @@ jobs:
             "ftp://$FTP_SERVER/VERSAO_DEPLOY"
           echo "VERSAO_DEPLOY enviado: $(cat pacote/VERSAO_DEPLOY)"
 
-      - name: Conferir que está no ar e protegido
+      # Desde 17/10/2026 (início do piloto) a homologação NÃO tem mais a janelinha de
+      # usuário e senha: cada pessoa entra pela tela de login, com a própria conta.
+      # Esta etapa confere que o endereço responde e que continua fora do Google
+      # (cabeçalho X-Robots-Tag: noindex).
+      - name: Conferir que está no ar e fora do Google
         run: |
           code=$(curl -s -o /dev/null -w '%{http_code}' https://cursos-homolog.ib-to.org/)
           echo "https://cursos-homolog.ib-to.org/ respondeu $code"
-          test "$code" = "401" || { echo "Esperado 401 (senha da homologação)"; exit 1; }
+          # 302 = leva ao catálogo; 503 = placa de manutenção (o Cron tira em alguns minutos).
+          case "$code" in 302|503) ;; *) echo "Esperado 302 (catálogo) ou 503 (placa do deploy)"; exit 1 ;; esac
+          curl -s -I https://cursos-homolog.ib-to.org/ | grep -i '^x-robots-tag:.*noindex' || { echo "Esperado o cabeçalho X-Robots-Tag: noindex"; exit 1; }
           code=$(curl -s -o /dev/null -w '%{http_code}' http://cursos-homolog.ib-to.org/)
           echo "http://cursos-homolog.ib-to.org/ respondeu $code"
           test "$code" = "301" || { echo "Esperado 301 para HTTPS, sem pedir senha"; exit 1; }

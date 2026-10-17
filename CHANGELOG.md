@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Removido
+
+- Janelinha de usuário e senha (Basic Auth) da homologação (17/10/2026, início do piloto, pedido do Gleyson): cada pessoa indicada entra pela tela de login, com a própria conta; a homologação continua fora do Google (`X-Robots-Tag: noindex`); o deploy agora confere o noindex em vez da senha. Para voltar, reverter esta mudança.
+
 ### Adicionado
 
 - Conta completa do piloto (pedido de 17/10/2026): com `PILOTO_CONTA_COMPLETA=<e-mail>` no `.env` da homologação, a conta ganha os papéis aluno, filiado, instrutor, admin de equipe e fotógrafo e dados [TESTE] em todos os módulos (matrícula paga, aguardando Pix, gratuita e concluída com certificado; curso como instrutor com alunos, chamada e repasse; solicitação de cadastro na equipe; álbum de fotos vendido e pedidos comprados); a ficha de filiado fica sem CPF, telefone ou nascimento; o e-mail nunca entra no código; roda uma vez pelo pós-deploy e não duplica (`plataforma:conta-completa`).
