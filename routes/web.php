@@ -47,6 +47,7 @@ use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
+use App\Http\Controllers\RelatorioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -504,4 +505,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'can:painel.instrutor'])->group(function () {
     Route::get('meu-painel', [MeuPainelController::class, 'index'])->name('meu-painel');
     Route::get('meu-painel/csv', [MeuPainelController::class, 'csv'])->middleware('throttle:20,1')->name('meu-painel.csv');
+});
+
+// RELATÓRIOS (#73): índice, tela, CSV e impressão (PDF). Cada relatório confere a
+// própria permissão no controlador (relatorio.filiados, relatorio.cursos...).
+Route::middleware(['auth', 'verified', 'can:relatorios.acessar'])->prefix('relatorios')->name('relatorios.')->group(function () {
+    Route::get('/', [RelatorioController::class, 'index'])->name('index');
+    Route::get('{chave}', [RelatorioController::class, 'show'])->whereAlpha('chave')->name('show');
+    Route::get('{chave}/csv', [RelatorioController::class, 'csv'])->whereAlpha('chave')->middleware('throttle:20,1')->name('csv');
+    Route::get('{chave}/imprimir', [RelatorioController::class, 'imprimir'])->whereAlpha('chave')->middleware('throttle:20,1')->name('imprimir');
 });

@@ -16,6 +16,7 @@ use App\Enums\CategoriaFiliado;
 use App\Support\Documento;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -47,6 +48,10 @@ use Illuminate\Support\Carbon;
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
 #[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status', 'data_filiacao'])]
+// LGPD (16/10/2026): CPF, nascimento, telefone e o hash do CPF NUNCA vão junto quando o
+// filiado vira dado para a tela (JSON). Quem precisa (ex.: a ficha do filiado) pede o campo
+// explicitamente. Antes, o filiado carregado ia junto com a conta logada em toda tela.
+#[Hidden(['cpf', 'cpf_hash', 'nascimento', 'telefone'])]
 class Filiado extends Model
 {
     /**

@@ -16,6 +16,7 @@ import {
     UserCog,
     Users,
     Camera,
+    FileChartColumn,
     ChartColumn,
     TicketPercent,
     Wallet,
@@ -171,6 +172,13 @@ const cadastrosNavItems: (NavItem & {
         href: '/financeiro/cupons',
         icon: TicketPercent,
         permissao: 'cupons_gerenciar',
+    },
+    // Relatórios (#73): cada pessoa vê só os relatórios que a permissão dela libera.
+    {
+        title: 'Relatórios',
+        href: '/relatorios',
+        icon: FileChartColumn,
+        permissao: 'relatorios_acessar',
     },
     // Meu painel (#79): inscritos, comparecimento e valores dos cursos do instrutor ou da equipe.
     {

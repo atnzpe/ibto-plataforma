@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Módulo de relatórios (#73): filiados por equipe (com anuidade), cursos (inscritos, receita, repasse e parte do IBTO), frequência e certificados, financeiro por categoria e auditoria; uma permissão por relatório; filtro De/Até; CSV e versão para impressão/PDF com a marca do IBTO, a data e quem gerou; toda exportação vai para a auditoria; nenhum dado pessoal sensível. A geração em fila para relatórios muito grandes fica para quando o volume pedir.
 - Meu painel do instrutor e do admin de equipe (#79): por curso, inscritos por situação, comparecimento (presenças ÷ confirmados × encontros com chamada), a receber e recebido (a parte do instrutor no livro-caixa) e certificados (com os aptos ainda sem certificado); totais do período, filtro De/Até e exportar CSV; o instrutor vê só os dele e o admin de equipe só os da equipe; nenhum dado pessoal de aluno.
 - Venda de fotos dos eventos (#90), começando DESLIGADA: interruptor no Comando Geral; álbum por curso com fotógrafo credenciado (papel novo "Fotógrafo"), preço por foto, parte do fotógrafo e expiração; envio em lote com original privado e prévia com marca d'água (emblema do IBTO + nome do fotógrafo); só a turma (matrícula confirmada) vê e compra; Pix copia e cola com identificador IBTOFOT; confirmar lança a receita "Venda de fotos" e o repasse "Fotógrafos"; download do original por 30 dias; limpeza diária apaga as fotos vencidas; "Meu financeiro" do fotógrafo; manual do Fotógrafo.
 - Cupom promocional nos cursos (#89): tela "Cupons" (Financeiro) para criar códigos com desconto percentual ou fixo, validade de/até, limite total e por pessoa, só filiados e cursos em que vale; o aluno digita na inscrição e o Pix já sai com o valor descontado (100% confirma na hora); recusas com código (`CUPOM_INVALIDO`, `CUPOM_VENCIDO`, `CUPOM_ESGOTADO`…); limite à prova de corrida; desconto antes da divisão IBTO/instrutor; permissão `cupons.gerenciar` (Comando Geral e Tecnologia).
@@ -36,6 +37,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Segurança
 
+- LGPD: a conta logada passa a ir para as telas sem relacionamentos carregados, e o filiado esconde CPF, nascimento, telefone e o hash do CPF sempre que vira dado de tela. Antes, se a requisição já tinha consultado o filiado da pessoa, os dados pessoais dela iam junto no código da página (só para ela mesma).
 - Com o endereço oficial em https, todo link gerado pela plataforma (e-mails, botões, QR codes) sai com https.
 
 ### Corrigido
