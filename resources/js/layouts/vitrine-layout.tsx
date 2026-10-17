@@ -86,6 +86,13 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
             <footer className="flex flex-col items-center gap-2 border-t border-[#e4dccb] py-6 text-center text-xs text-[#5c5644]">
                 Instituto Brasileiro de Treinamento Operacional · Instruções com
                 propósito. Treinamento com resultados.
+                {/* Política de privacidade (LGPD, #47). */}
+                <Link
+                    href="/privacidade"
+                    className="inline-flex min-h-11 items-center underline underline-offset-4"
+                >
+                    Política de privacidade
+                </Link>
                 {/* Suporte técnico pelo WhatsApp (15/10/2026). */}
                 <BotaoSuporte />
                 {/* A versão no ar (#75). */}

@@ -41,6 +41,9 @@ void createInertiaApp({
             // Validação pública do certificado (#44): a vitrine do IBTO.
             case name === 'certificados/validar':
                 return VitrineLayout;
+            // Política de privacidade (LGPD, #47): pública, com a moldura da vitrine.
+            case name === 'privacidade':
+                return VitrineLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
             default:
