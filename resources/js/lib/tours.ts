@@ -153,6 +153,21 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'As equipes filiadas, com cidade, responsável e áreas. Equipe sem área não fica ativa.',
         },
     ],
+    // Venda de fotos (#90).
+    'fotos/admin/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Venda de fotos',
+            texto: 'Ligue ou desligue a venda, crie os álbuns de cada evento (curso, fotógrafo, preço e expiração) e confirme os pedidos pelo identificador IBTOFOT no extrato.',
+        },
+    ],
+    'fotos/fotografo/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Meus álbuns de fotos',
+            texto: 'Os álbuns em que o IBTO te escalou. Envie as fotos: a prévia com marca d\'água é gerada sozinha. Em "Meu financeiro", as suas vendas pagas.',
+        },
+    ],
     // Cupons de desconto (#89).
     'financeiro/cupons/index': [
         {

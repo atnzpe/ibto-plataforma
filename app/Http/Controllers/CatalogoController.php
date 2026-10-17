@@ -12,6 +12,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Fotos\VendaFotos;
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
 use App\Enums\SituacaoCurso;
@@ -22,6 +23,7 @@ use App\Models\CursoAula;
 use App\Models\CursoAulaAssistida;
 use App\Models\CursoModulo;
 use App\Models\CursoPresenca;
+use App\Models\FotoAlbumVenda;
 use App\Models\Trilha;
 use App\Support\Calendario;
 use App\Support\DadosPagamento;
@@ -168,6 +170,10 @@ class CatalogoController extends Controller
                 : null,
             // A matrícula da pessoa logada que ainda vale (aguardando ou confirmada), ou null.
             'matricula' => $this->matriculaDe($request, $curso),
+            // Venda de fotos (#90): os álbuns deste curso que a pessoa pode ver (fez o curso e a venda está ligada).
+            'albuns_fotos' => FotoAlbumVenda::query()->where('curso_id', $curso->id)->where('ativo', true)->where('expirado', false)->get()
+                ->filter(fn (FotoAlbumVenda $album) => VendaFotos::podeVer($album, $request->user()))
+                ->map(fn (FotoAlbumVenda $album) => ['id' => $album->id, 'titulo' => $album->titulo])->values(),
             // Pré-requisitos (#88): cada item com cumprido true/false (visitante: null, só a lista).
             'requisitos' => Requisitos::avaliar($curso, $request->user()),
             // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.

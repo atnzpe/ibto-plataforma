@@ -23,3 +23,9 @@ Artisan::command('inspire', function () {
 Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=240')
     ->everyMinute()
     ->withoutOverlapping();
+
+// Venda de fotos (#90): uma vez por dia, apaga as fotos dos álbuns que já expiraram
+// (guarda os pedidos e o financeiro). Saúde e tamanho do servidor.
+Schedule::command('fotos:expirar')
+    ->dailyAt('03:00')
+    ->withoutOverlapping();

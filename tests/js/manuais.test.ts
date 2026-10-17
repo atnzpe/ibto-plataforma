@@ -34,11 +34,13 @@ describe('secoesDaBusca', () => {
 });
 
 describe('conteúdo dos manuais', () => {
-    test('os cinco perfis existem e cada seção tem passos', () => {
+    test('os seis perfis existem e cada seção tem passos', () => {
         expect(MANUAIS.map((manual) => manual.id)).toEqual([
             'aluno',
             'instrutor',
             'admin-equipe',
+            // Fotógrafo credenciado (#90).
+            'fotografo',
             'comando-geral',
             'tecnologia',
         ]);
@@ -66,6 +68,9 @@ describe('conteúdo dos manuais', () => {
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',
             '/financeiro/lancamentos': 'financeiro/lancamentos/index',
+            // Venda de fotos (#90).
+            '/comando-geral/fotos': 'fotos/admin/index',
+            '/fotografo': 'fotos/fotografo/index',
             // Cupons de desconto (#89).
             '/financeiro/cupons': 'financeiro/cupons/index',
             '/cadastros/filiados': 'cadastros/filiados/index',
