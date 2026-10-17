@@ -54,9 +54,10 @@ beforeEach(function () {
     $this->caixa = app(LivroCaixa::class);
 });
 
-test('a migration já traz as 9 categorias e as 4 formas de pagamento', function () {
-    expect(FinCategoria::where('tipo', 'receita')->count())->toBe(4);
-    expect(FinCategoria::where('tipo', 'despesa')->count())->toBe(5);
+test('as migrations trazem as 11 categorias e as 4 formas de pagamento', function () {
+    // 9 do financeiro (#59) + "Venda de fotos" (receita) e "Fotógrafos" (despesa) da venda de fotos (#90).
+    expect(FinCategoria::where('tipo', 'receita')->count())->toBe(5);
+    expect(FinCategoria::where('tipo', 'despesa')->count())->toBe(6);
     expect(FinFormaPagamento::pluck('nome')->all())->toEqualCanonicalizing(['PIX', 'Dinheiro', 'Transferência', 'Cartão']);
 });
 

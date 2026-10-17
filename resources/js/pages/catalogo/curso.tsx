@@ -177,6 +177,7 @@ export default function PaginaCurso({
     pode_assistir,
     vagas_restantes,
     requisitos = [],
+    albuns_fotos = [],
     vagas_preenchidas = 0,
     matricula,
 }: {
@@ -186,6 +187,8 @@ export default function PaginaCurso({
     // Vagas que sobram (#41); null = sem limite.
     vagas_restantes: number | null;
     requisitos?: RequisitoDoCurso[];
+    // Venda de fotos (#90): os álbuns deste curso que a pessoa pode ver.
+    albuns_fotos?: { id: number; titulo: string }[];
     // Vagas já ocupadas (aguardando ou confirmadas). Ex.: 14.
     vagas_preenchidas?: number;
     // A matrícula da pessoa logada, ou null.
@@ -536,6 +539,16 @@ export default function PaginaCurso({
                             matricula={matricula}
                             requisitos={requisitos}
                         />
+                        {/* Fotos do evento à venda (#90): só para quem fez o curso, com a venda ligada. */}
+                        {albuns_fotos.map((album) => (
+                            <Link
+                                key={album.id}
+                                href={`/fotos/albuns/${album.id}`}
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#6b5d3a] px-4 text-sm font-semibold text-[#6b5d3a] hover:bg-[#6b5d3a] hover:text-white"
+                            >
+                                Fotos do evento: {album.titulo}
+                            </Link>
+                        ))}
                         {curso.whatsapp_url && (
                             <a
                                 href={curso.whatsapp_url}

@@ -50,7 +50,7 @@ class AjudaController extends Controller
     {
         // Administrador e Tecnologia veem todos os manuais.
         if (array_intersect($papeis, ['administrador', 'tecnologia']) !== []) {
-            return ['aluno', 'instrutor', 'admin-equipe', 'comando-geral', 'tecnologia'];
+            return ['aluno', 'instrutor', 'admin-equipe', 'fotografo', 'comando-geral', 'tecnologia'];
         }
 
         // Os outros: o do aluno sempre, mais o de cada papel que a pessoa tem.
@@ -60,6 +60,10 @@ class AjudaController extends Controller
         }
         if (in_array('admin_equipe', $papeis, true)) {
             $manuais[] = 'admin-equipe';
+        }
+        // Fotógrafo credenciado (#90): o manual de enviar as fotos e do financeiro dele.
+        if (in_array('fotografo', $papeis, true)) {
+            $manuais[] = 'fotografo';
         }
 
         return $manuais;

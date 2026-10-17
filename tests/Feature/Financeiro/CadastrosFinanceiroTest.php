@@ -21,7 +21,7 @@ beforeEach(function () {
 
 test('as listas abrem com os cadastros iniciais', function () {
     $this->get(route('financeiro.categorias.index'))
-        ->assertInertia(fn ($tela) => $tela->component('financeiro/categorias/index')->has('categorias', 9));
+        ->assertInertia(fn ($tela) => $tela->component('financeiro/categorias/index')->has('categorias', 11)); // 9 iniciais + Venda de fotos e Fotógrafos (#90)
     $this->get(route('financeiro.formas.index'))
         ->assertInertia(fn ($tela) => $tela->component('financeiro/formas/index')->has('formas', 4));
 });
@@ -71,7 +71,7 @@ test('categoria desativada some das opções do novo lançamento', function () {
     FinCategoria::where('nome', 'Doação')->update(['ativa' => false]);
 
     $this->get(route('financeiro.lancamentos.create'))
-        ->assertInertia(fn ($tela) => $tela->has('categorias', 8));
+        ->assertInertia(fn ($tela) => $tela->has('categorias', 10)); // 11 menos a desativada
 });
 
 test('forma de pagamento: nova, nome único, desativar tira da baixa', function () {

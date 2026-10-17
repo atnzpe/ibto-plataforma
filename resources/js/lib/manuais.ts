@@ -40,6 +40,7 @@ export type IdDoManual =
     | 'aluno'
     | 'instrutor'
     | 'admin-equipe'
+    | 'fotografo'
     | 'comando-geral'
     | 'tecnologia';
 
@@ -90,6 +91,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'A inscrição reserva a vaga; o pagamento por PIX a confirma.',
                 passos: [
                     'Na página do curso, confira o quadro "Requisitos" (se houver): cada item mostra ✅ (cumprido) ou ❌ (falta). Faltando algum, o botão fica "Faltam pré-requisitos".',
+                    'Fez um curso com fotos à venda? Na página do curso aparece "Fotos do evento": escolha as fotos, pague pelo Pix e baixe os originais (sem marca d\'água) por 30 dias.',
                     'Tem um cupom de desconto? Digite no campo "Cupom de desconto" antes de garantir a vaga: o valor do Pix já sai com o desconto.',
                     'Na página do curso, clique em "Garantir minha vaga".',
                     'Aparece o quadro "Pague com Pix": aponte a câmera do app do banco para o QR code, ou toque em "Copiar código Pix" e cole em "Pix copia e cola" no app. O valor já vai preenchido.',
@@ -265,6 +267,40 @@ export const MANUAIS: Manual[] = [
         ],
     },
     {
+        id: 'fotografo',
+        titulo: 'Fotógrafo',
+        publico: 'O fotógrafo credenciado pelo IBTO para os eventos (#90).',
+        secoes: [
+            {
+                id: 'fotos-enviar',
+                titulo: 'Enviar as fotos de um evento',
+                resumo: 'O Comando Geral cria o álbum e te escolhe; você envia as fotos.',
+                passos: [
+                    'Menu "Meus álbuns de fotos" → no álbum do evento, "Enviar e ver fotos".',
+                    'Escolha as fotos (JPG, PNG ou WebP; até 30 por vez, até 15 MB cada) e "Enviar fotos".',
+                    "A plataforma guarda o original e gera a prévia com a marca d'água do IBTO e o seu nome. Quem fez o curso vê só a prévia até comprar.",
+                    '"Tirar" apaga uma foto do álbum.',
+                ],
+                regras: [
+                    'As fotos são apagadas na data de expiração do álbum (pela saúde do servidor). Os pedidos e o financeiro ficam.',
+                    'Só quem fez o curso vê as fotos, e só quando a venda estiver ligada pelo Comando Geral.',
+                ],
+                tela: { endereco: '/fotografo', nome: 'Meus álbuns de fotos' },
+            },
+            {
+                id: 'fotos-financeiro',
+                titulo: 'Meu financeiro',
+                resumo: 'As vendas pagas dos seus álbuns e a sua parte.',
+                passos: [
+                    '"Meus álbuns de fotos" → "Meu financeiro": cada pedido pago, o valor da venda e a sua parte.',
+                ],
+                regras: [
+                    'A sua parte (ex.: 70%) vira uma conta a pagar no livro-caixa do IBTO, que faz o repasse e dá a baixa.',
+                ],
+            },
+        ],
+    },
+    {
         id: 'comando-geral',
         titulo: 'Comando Geral (Administrador)',
         publico:
@@ -406,6 +442,26 @@ export const MANUAIS: Manual[] = [
                     'O blog é público: use fotos em que ninguém seja identificável (de costas, à distância ou desfocadas), ou com a autorização escrita.',
                 ],
                 tela: { endereco: '/comando-geral/blog', nome: 'Blog' },
+            },
+            {
+                id: 'venda-fotos',
+                titulo: 'Venda de fotos dos eventos',
+                resumo: 'O fotógrafo sobe as fotos; a turma compra pelo Pix e baixa o original. Começa desligada.',
+                passos: [
+                    'Em Usuários, dê o papel "Fotógrafo" à conta do fotógrafo credenciado.',
+                    'Menu "Venda de fotos" → "Novo álbum": o curso do evento, o fotógrafo, o preço por foto, a parte dele (%) e quando as fotos expiram.',
+                    'Quando quiser abrir a venda, "Ligar a venda". Desligada, nada aparece para os alunos.',
+                    'Pedidos: confira o Pix no extrato pelo identificador (ex.: IBTOFOT42) e "Confirmar pagamento". O aluno passa a baixar os originais por 30 dias.',
+                ],
+                regras: [
+                    'Só quem tem matrícula confirmada no curso vê as fotos (segurança dos operadores; nada é público).',
+                    'Confirmar lança a receita "Venda de fotos" e a parte do fotógrafo como conta a pagar "Fotógrafos".',
+                    'As fotos são apagadas automaticamente na data de expiração; os pedidos e o financeiro ficam.',
+                ],
+                tela: {
+                    endereco: '/comando-geral/fotos',
+                    nome: 'Venda de fotos',
+                },
             },
             {
                 id: 'cupons',

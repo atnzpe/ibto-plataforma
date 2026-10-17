@@ -36,7 +36,7 @@ test('instrutor e admin de equipe veem também o manual do seu papel', function 
 
 test('Administrador e Tecnologia veem todos os manuais (transparência)', function (string $papel) {
     $this->actingAs(contaComPapeis([$papel]))->get(route('ajuda'))
-        ->assertInertia(fn ($tela) => $tela->where('manuais', ['aluno', 'instrutor', 'admin-equipe', 'comando-geral', 'tecnologia']));
+        ->assertInertia(fn ($tela) => $tela->where('manuais', ['aluno', 'instrutor', 'admin-equipe', 'fotografo', 'comando-geral', 'tecnologia']));
 })->with(['administrador', 'tecnologia']);
 
 test('a regra dos manuais por papel', function () {

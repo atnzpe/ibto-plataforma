@@ -43,6 +43,19 @@ class DadosPagamento
         }
 
         // Senão (chave desligada ou curso sem dados próprios): os do IBTO.
+        return self::doIbto();
+    }
+
+    /**
+     * Os dados para pagamento do IBTO (tela "Dados para pagamento"). Usada também
+     * na venda de fotos (#90), que recebe sempre na conta do IBTO.
+     *
+     * @return array{origem: string, pix_chave: string, favorecido: string, banco: string, agencia: string, conta: string, instrucoes: string}
+     */
+    public static function doIbto(): array
+    {
+        $ibto = PagamentoConfig::atual();
+
         return [
             'origem' => 'ibto',
             'pix_chave' => (string) $ibto->pix_chave,

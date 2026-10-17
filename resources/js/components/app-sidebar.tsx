@@ -15,6 +15,7 @@ import {
     Tags,
     UserCog,
     Users,
+    Camera,
     TicketPercent,
     Wallet,
     UserCheck,
@@ -169,6 +170,20 @@ const cadastrosNavItems: (NavItem & {
         href: '/financeiro/cupons',
         icon: TicketPercent,
         permissao: 'cupons_gerenciar',
+    },
+    // Venda de fotos (#90): interruptor, álbuns e pedidos (Comando Geral).
+    {
+        title: 'Venda de fotos',
+        href: '/comando-geral/fotos',
+        icon: Camera,
+        permissao: 'fotos_gerenciar',
+    },
+    // Fotógrafo (#90): os álbuns dele, o envio das fotos e o financeiro dele.
+    {
+        title: 'Meus álbuns de fotos',
+        href: '/fotografo',
+        icon: Images,
+        permissao: 'fotos_vender',
     },
     // Solicitações de cadastro (#84; grupo fechado): aprovar ou recusar quem pediu acesso.
     {

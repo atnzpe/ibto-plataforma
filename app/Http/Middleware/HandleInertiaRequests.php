@@ -37,6 +37,9 @@ class HandleInertiaRequests extends Middleware
         'cadastros.aprovar',
         // Cupons de desconto (#89).
         'cupons.gerenciar',
+        // Venda de fotos (#90): o Comando Geral e o fotógrafo.
+        'fotos.gerenciar',
+        'fotos.vender',
     ];
 
     /**

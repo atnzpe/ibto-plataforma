@@ -35,6 +35,9 @@ declare module '@inertiajs/core' {
                 cadastros_aprovar: boolean;
                 // Cupons de desconto (#89).
                 cupons_gerenciar: boolean;
+                // Venda de fotos (#90): Comando Geral e fotógrafo.
+                fotos_gerenciar: boolean;
+                fotos_vender: boolean;
             };
             // Tour guiado (#68): o interruptor e as telas já vistas (null sem login).
             tour: { ativo: boolean; vistos: string[] } | null;

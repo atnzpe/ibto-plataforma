@@ -39,6 +39,9 @@ use App\Http\Controllers\Financeiro\CupomController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
+use App\Http\Controllers\Fotos\AlbunsVendaController;
+use App\Http\Controllers\Fotos\FotografoController;
+use App\Http\Controllers\Fotos\VitrineFotosController;
 use App\Http\Controllers\FotoUsuarioController;
 use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
@@ -466,3 +469,31 @@ Route::middleware('auth')->get('cadastro/em-analise', function (Request $request
 })->name('cadastro.em-analise');
 
 require __DIR__.'/settings.php';
+
+// VENDA DE FOTOS DOS EVENTOS (#90). Começa desligada (interruptor do Comando Geral).
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Comando Geral: interruptor, álbuns e pedidos ("fotos.gerenciar").
+    Route::middleware('can:fotos.gerenciar')->prefix('comando-geral/fotos')->name('fotos.admin.')->group(function () {
+        Route::get('/', [AlbunsVendaController::class, 'index'])->name('index');
+        Route::post('interruptor', [AlbunsVendaController::class, 'interruptor'])->name('interruptor');
+        Route::resource('albuns', AlbunsVendaController::class)->except(['index', 'show', 'destroy'])->parameters(['albuns' => 'album']);
+        Route::post('pedidos/{pedido}/confirmar', [AlbunsVendaController::class, 'confirmar'])->name('pedidos.confirmar');
+        Route::post('pedidos/{pedido}/cancelar', [AlbunsVendaController::class, 'cancelar'])->name('pedidos.cancelar');
+    });
+
+    // Fotógrafo: os álbuns dele, o envio das fotos e o financeiro dele ("fotos.vender").
+    Route::middleware('can:fotos.vender')->prefix('fotografo')->name('fotos.fotografo.')->group(function () {
+        Route::get('/', [FotografoController::class, 'index'])->name('index');
+        Route::get('albuns/{album}', [FotografoController::class, 'album'])->name('album');
+        Route::post('albuns/{album}/fotos', [FotografoController::class, 'enviar'])->middleware('throttle:20,1')->name('enviar');
+        Route::delete('fotos/{foto}', [FotografoController::class, 'apagar'])->name('apagar');
+        Route::get('financeiro', [FotografoController::class, 'financeiro'])->name('financeiro');
+    });
+
+    // Aluno: vitrine, compra, pedido (Pix) e os arquivos (cada um confere a permissão).
+    Route::get('fotos/albuns/{album}', [VitrineFotosController::class, 'show'])->name('fotos.vitrine');
+    Route::post('fotos/albuns/{album}/comprar', [VitrineFotosController::class, 'comprar'])->middleware('throttle:10,1')->name('fotos.comprar');
+    Route::get('fotos/pedidos/{pedido}', [VitrineFotosController::class, 'pedido'])->name('fotos.pedido');
+    Route::get('fotos/previa/{foto}', [VitrineFotosController::class, 'previa'])->middleware('throttle:300,1')->name('fotos.previa');
+    Route::get('fotos/pedidos/{pedido}/original/{foto}', [VitrineFotosController::class, 'original'])->middleware('throttle:120,1')->name('fotos.original');
+});

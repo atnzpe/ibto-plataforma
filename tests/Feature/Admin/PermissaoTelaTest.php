@@ -37,8 +37,8 @@ test('Tecnologia abre a grade; Administrador recebe 403', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $pagina) => $pagina
             ->component('admin/permissoes')
-            ->has('papeis', 6)
-            ->has('permissoes', 17)
+            ->has('papeis', 7)
+            ->has('permissoes', 19)
             ->where('travadas.0', ['papel' => 'tecnologia', 'permissao' => 'permissoes.gerenciar']));
 
     $admin = User::factory()->create();
