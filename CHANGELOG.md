@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Logs estruturados (#74): cada linha do log é um JSON com data, nível, código estável e o identificador do pedido (que também volta no cabeçalho `X-Request-Id` de toda resposta); uma máscara esconde CPF, e-mail, telefone, nascimento, endereço, senha e token antes de gravar, mesmo se alguém esquecer; padrão de um arquivo por dia, guardado por 14 dias (`LOG_STACK=daily`).
 - SEO das telas públicas (#74): catálogo, curso e trilha já saem do servidor com descrição, endereço oficial (canônico), cartão do link para WhatsApp e redes (Open Graph, com a capa do curso) e dados estruturados "Course" (schema.org); `/sitemap.xml` com o catálogo, os cursos publicados abertos e as trilhas ativas; prévia, curso fechado e as validações de certificado e de carteirinha levam "noindex" (têm nome de pessoa), e o `robots.txt` foi ajustado.
 - VLibras em todas as telas da plataforma (#74): o widget oficial do governo (tradução em Libras) fica no HTML base, fora do React, e continua aberto ao trocar de tela; afastado do entalhe do celular (safe area); some na impressão; sem internet, simplesmente não aparece.
 

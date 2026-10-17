@@ -4,6 +4,7 @@ use App\Http\Middleware\BloquearCadastroNaoAprovado;
 use App\Http\Middleware\BloquearContaDesativada;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IdentificadorDoPedido;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Identificador do pedido (#74): em TODA rota (telas e API), antes de tudo, para
+        // as linhas de log do pedido inteiro levarem o mesmo código.
+        $middleware->prepend(IdentificadorDoPedido::class);
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
