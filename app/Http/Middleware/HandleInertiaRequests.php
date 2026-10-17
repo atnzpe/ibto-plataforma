@@ -47,6 +47,8 @@ class HandleInertiaRequests extends Middleware
         'relatorios.acessar',
         // Minha carteirinha (#46): só filiados.
         'carteirinha.ver',
+        // Fotos dos eventos (#90): o item aparece enquanto a loja de fotos estiver ligada.
+        'fotos.eventos',
     ];
 
     /**

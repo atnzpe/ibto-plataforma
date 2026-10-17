@@ -80,6 +80,21 @@ test('começa ligada (decisão de 17/10); desligada, a turma não vê a vitrine 
         ->toThrow(fn (RegraCurso $erro) => expect($erro->codigo)->toBe('VENDA_FOTOS_DESLIGADA'));
 });
 
+test('Fotos dos eventos (menu): a turma vê o álbum e os próprios pedidos; quem é de fora não vê o álbum', function () {
+    $fotos = fotografoEnvia($this);
+    $pedido = app(VendaFotos::class)->criarPedido($this->album, $this->aluno, [$fotos[0]->id]);
+
+    $this->actingAs($this->aluno)->get(route('fotos.index'))
+        ->assertOk()
+        ->assertInertia(fn ($tela) => $tela->component('fotos/index')
+            ->has('albuns', 1)
+            ->where('albuns.0.fotos', 2)
+            ->where('pedidos.0.id', $pedido->id));
+
+    $this->actingAs($this->deFora)->get(route('fotos.index'))
+        ->assertInertia(fn ($tela) => $tela->has('albuns', 0)->has('pedidos', 0));
+});
+
 test('o envio guarda o original privado e gera a prévia (1000 px, com a marca)', function () {
     $foto = fotografoEnvia($this, 1)[0];
 
