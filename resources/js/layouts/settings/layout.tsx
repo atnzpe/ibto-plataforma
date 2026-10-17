@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { show as meusDados } from '@/routes/meus-dados';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
@@ -29,6 +30,12 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Aparência',
         href: editAppearance(),
+        icon: null,
+    },
+    // LGPD (#47): o que o IBTO guarda e quem acessou.
+    {
+        title: 'Meus dados',
+        href: meusDados(),
         icon: null,
     },
 ];

@@ -18,9 +18,11 @@ namespace App\Http\Controllers\Cadastros;
 use App\Actions\Filiados\CriarFiliado;
 use App\Enums\CategoriaFiliado;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Settings\MeusDadosController;
 use App\Http\Requests\Cadastros\EquipeRequest;
 use App\Http\Requests\Cadastros\FiliadoRequest;
 use App\Models\AreaAtuacao;
+use App\Models\Auditoria;
 use App\Models\Equipe;
 use App\Models\Filiado;
 use App\Models\Nivel;
@@ -135,6 +137,11 @@ class FiliadoController extends Controller
     {
         // Administrador de equipe: só filiados da própria equipe (senão, 403).
         Gate::authorize('filiados.editar', $filiado);
+
+        // LGPD (#47): esta ficha mostra CPF, nascimento e telefone. Cada abertura fica
+        // registrada (quem e quando; só o número do filiado, nunca o dado em si), e o
+        // próprio filiado vê a lista em Configurações → Meus dados.
+        Auditoria::registrar(MeusDadosController::ACESSO_DADOS_SENSIVEIS, ['filiado_id' => $filiado->id]);
 
         return Inertia::render('cadastros/filiados/formulario', [
             'filiado' => [

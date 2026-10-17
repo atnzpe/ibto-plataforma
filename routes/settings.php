@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\FotoController;
+use App\Http\Controllers\Settings\MeusDadosController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\TourController;
@@ -26,6 +27,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+
+    // MEUS DADOS (LGPD, #47): o que a plataforma guarda e quem abriu a ficha com CPF.
+    Route::get('settings/meus-dados', [MeusDadosController::class, 'show'])->name('meus-dados.show');
 
     // TOUR GUIADO (#68): ligar/desligar e marcar a tela como vista. Limite de
     // 30 pedidos por minuto: o tour chama no máximo um por tela visitada.
