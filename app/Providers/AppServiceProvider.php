@@ -14,6 +14,7 @@ use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -43,6 +44,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // E-MAIL NA FILA (17/10/2026): antes de cada tarefa da fila, "esquece" a conexão
+        // SMTP aberta. O trabalhador da fila reaproveitava a conexão de um e-mail para o
+        // outro; o Titan fecha a conexão parada e o envio seguinte falhava ("closed
+        // unexpectedly"). Com isto, cada e-mail abre uma conexão nova.
+        Queue::before(fn () => app('mail.manager')->purge());
+
         // Endereço oficial em https (homologação e produção): TODO link gerado pela
         // plataforma (e-mails, botões, QR codes) sai com https, nunca http. Protege
         // contra golpe e contra o navegador avisar "site não seguro". No computador do

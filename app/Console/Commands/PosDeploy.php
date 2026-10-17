@@ -55,6 +55,7 @@ class PosDeploy extends Command
         if ($publicada === '' || $publicada === $aplicada) {
             $this->tirarPlacaDoDeploy();
             $this->carregarPilotoSeLigado();
+            $this->carregarContaCompletaSeLigado();
 
             return self::SUCCESS;
         }
@@ -77,6 +78,7 @@ class PosDeploy extends Command
         $this->tirarPlacaDoDeploy();
         Log::info('POS_DEPLOY_APLICADO', ['versao' => $publicada]);
         $this->carregarPilotoSeLigado();
+        $this->carregarContaCompletaSeLigado();
         $this->info("Versão {$publicada} aplicada.");
 
         return self::SUCCESS;
@@ -105,6 +107,38 @@ class PosDeploy extends Command
             Log::info('PILOTO_CARREGADO');
         } catch (Throwable $erro) {
             Log::error('PILOTO_CARGA_FALHOU', ['excecao' => $erro::class]);
+        }
+    }
+
+    /**
+     * Conta completa do piloto (17/10/2026): com PILOTO_CONTA_COMPLETA=<e-mail> no .env,
+     * roda "plataforma:conta-completa" UMA vez para esse e-mail. A marca guarda a
+     * impressão digital (hash) do e-mail, não o e-mail: trocar o e-mail roda de novo.
+     * Se a conta ainda não existe ou der erro, tenta de novo na próxima rodada.
+     */
+    protected function carregarContaCompletaSeLigado(): void
+    {
+        $email = strtolower(trim((string) config('app.piloto_conta_completa')));
+        // Desligado (vazio): não faz nada.
+        if ($email === '') {
+            return;
+        }
+
+        $marca = storage_path('app/conta-completa');
+        $impressao = hash('sha256', $email);
+        // Já montada para este e-mail: não repete.
+        if (File::exists($marca) && trim(File::get($marca)) === $impressao) {
+            return;
+        }
+
+        try {
+            // 0 = deu certo; a conta inexistente devolve 1 e tenta de novo depois.
+            if (Artisan::call('plataforma:conta-completa', ['email' => $email], $this->output) === self::SUCCESS) {
+                File::put($marca, $impressao);
+                Log::info('CONTA_COMPLETA_CARREGADA');
+            }
+        } catch (Throwable $erro) {
+            Log::error('CONTA_COMPLETA_FALHOU', ['excecao' => $erro::class]);
         }
     }
 
