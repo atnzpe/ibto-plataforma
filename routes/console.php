@@ -20,7 +20,10 @@ Artisan::command('inspire', function () {
 
 // Processa a fila (e-mails, por exemplo) e para quando ela esvazia, porque a
 // hospedagem compartilhada não mantém processos rodando.
-Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=240')
+// --backoff=60 (17/10/2026): se um envio falhar (ex.: o Titan fechou a conexão),
+// a nova tentativa espera 1 minuto, em vez de as 3 tentativas acontecerem no mesmo
+// segundo e o e-mail se perder. O próximo minuto do agendador pega a tentativa.
+Schedule::command('queue:work --stop-when-empty --tries=3 --backoff=60 --max-time=240')
     ->everyMinute()
     ->withoutOverlapping();
 

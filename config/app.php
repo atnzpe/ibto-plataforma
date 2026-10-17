@@ -62,6 +62,12 @@ return [
 
     'piloto_carregar' => (bool) env('PILOTO_CARREGAR', false),
 
+    // Conta completa do piloto (17/10/2026): o e-mail de UMA conta que já existe ganha
+    // todos os papéis e dados de teste em todos os módulos (plataforma:conta-completa).
+    // Ex.: PILOTO_CONTA_COMPLETA=fulano@ib-to.org. Vazio = desligado. O e-mail fica só
+    // no .env do servidor, nunca no código. Mudou? Apague bootstrap/cache/config.php.
+    'piloto_conta_completa' => env('PILOTO_CONTA_COMPLETA'),
+
     'pix_cidade' => (string) env('IBTO_PIX_CIDADE', 'Recife'),
 
     'admin_emails' => array_values(array_filter(array_map(

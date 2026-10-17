@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Conta completa do piloto (pedido de 17/10/2026): com `PILOTO_CONTA_COMPLETA=<e-mail>` no `.env` da homologação, a conta ganha os papéis aluno, filiado, instrutor, admin de equipe e fotógrafo e dados [TESTE] em todos os módulos (matrícula paga, aguardando Pix, gratuita e concluída com certificado; curso como instrutor com alunos, chamada e repasse; solicitação de cadastro na equipe; álbum de fotos vendido e pedidos comprados); a ficha de filiado fica sem CPF, telefone ou nascimento; o e-mail nunca entra no código; roda uma vez pelo pós-deploy e não duplica (`plataforma:conta-completa`).
+
 - Conteúdo extra do piloto (pedido de 17/10/2026): o Curso Tático Avançado do Course Ragnar Ukraine (23 e 24/01/2027, em rascunho até o IBTO pôr valor, local, vagas e o cartaz) e posts e álbuns [TESTE] de vários tipos para testar cenários (notícia, evento com pessoas autorizado, agendado, rascunho, em revisão e arquivado; álbum publicado, com foto sem descrição, com menores sem autorização dos responsáveis e arquivado), com imagens geradas, sem pessoas reais; comando `plataforma:carregar-conteudo-piloto`, que roda sozinho uma vez no servidor pela migration e não duplica.
 
 - Menu "Fotos dos eventos" para o aluno (#90, decisão de 17/10/2026): lista os álbuns à venda da turma (só cursos com matrícula confirmada) e "Meus pedidos" (voltar ao Pix ou baixar os originais); aparece enquanto a loja de fotos estiver ligada; o botão na página do curso continua.
@@ -26,6 +28,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 - LGPD, registro de acesso (#47): toda abertura da ficha do filiado com CPF, nascimento e telefone vai para a auditoria (quem e quando, só o número do filiado); nova tela Configurações → Meus dados, onde a pessoa vê o que o IBTO guarda (dados sensíveis mascarados), a autorização de imagem, quem abriu a ficha dela (nome abreviado, data e hora) e como pedir correção, cópia ou exclusão.
 
 - Passaporte digital do filiado (#81): ao ler o QR da carteirinha, o semáforo mostra 🟢 Liberado (ativo e em dia), 🟡 Liberado com ressalva (anuidade pendente, com o motivo) ou 🔴 Acesso negado (registro inativo ou suspenso); a regra fica num lugar só no servidor; o filiado vê o sinal atual e pode trocar o código do QR se ele vazar (o antigo para de valer na hora, auditado, até 3 trocas por hora).
+
+### Corrigido
+
+- E-mails da fila que falhavam com "Connection to smtp.titan.email has been closed unexpectedly" (visto às 01h00 de 17/10/2026): cada tarefa da fila agora abre uma conexão SMTP nova (o Titan fecha a conexão parada), e uma nova tentativa espera 1 minuto (`--backoff=60`), em vez de as 3 tentativas acontecerem no mesmo segundo.
 
 ### Alterado
 
