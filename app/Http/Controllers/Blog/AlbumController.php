@@ -118,6 +118,10 @@ class AlbumController extends Controller
                     'ordem' => $foto->ordem,
                     // false = falta descrever (aparece o aviso na foto).
                     'descrita' => $foto->descrita(),
+                    // Áreas desfocadas (#90): o editor abre com elas; [] = sem desfoque.
+                    'desfoque' => json_decode((string) $foto->desfoque, true) ?: [],
+                    // true = há o original guardado (mostra "Restaurar original").
+                    'tem_original' => $foto->original !== null,
                 ])->values(),
             ],
             'posts' => $this->posts(),
@@ -247,6 +251,10 @@ class AlbumController extends Controller
     public function apagarFoto(GaleriaFoto $foto): RedirectResponse
     {
         Storage::disk('public')->delete($foto->caminho);
+        // O original sem desfoque (#90), se houver, sai junto da pasta privada.
+        if ($foto->original !== null) {
+            Storage::disk('local')->delete($foto->original);
+        }
         $foto->delete();
         Auditoria::registrar('ALBUM_FOTO_APAGADA', ['album_id' => $foto->album_id, 'foto_id' => $foto->id]);
 

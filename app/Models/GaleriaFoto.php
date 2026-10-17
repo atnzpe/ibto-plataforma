@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $descricao
  * @property string|null $credito
  * @property int $ordem
+ * @property string|null $original Foto SEM desfoque na pasta privada (#90); null = nunca desfocada.
+ * @property string|null $desfoque As áreas desfocadas, em JSON (#90). Ex.: '[{"x":0.1,"y":0.2,"w":0.15,"h":0.2}]'.
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

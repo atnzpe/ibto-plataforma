@@ -8,6 +8,7 @@ use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
+use App\Http\Controllers\Blog\FotoDesfoqueController;
 use App\Http\Controllers\Blog\GaleriaController;
 use App\Http\Controllers\Blog\PostCapaController;
 use App\Http\Controllers\Blog\PostController;
@@ -346,6 +347,9 @@ Route::middleware(['auth', 'verified', 'can:blog.publicar'])
         Route::post('galeria/{album}/fotos', [AlbumController::class, 'enviarFotos'])->name('galeria.fotos.enviar');
         Route::put('galeria/{album}/fotos', [AlbumController::class, 'salvarFotos'])->name('galeria.fotos.salvar');
         Route::delete('galeria/fotos/{foto}', [AlbumController::class, 'apagarFoto'])->name('galeria.fotos.apagar');
+        // Desfocar áreas da foto (rostos, distintivos) e restaurar o original (#90, 17/10/2026).
+        Route::post('galeria/fotos/{foto}/desfoque', [FotoDesfoqueController::class, 'desfocar'])->middleware('throttle:30,1')->name('galeria.fotos.desfocar');
+        Route::delete('galeria/fotos/{foto}/desfoque', [FotoDesfoqueController::class, 'restaurar'])->middleware('throttle:30,1')->name('galeria.fotos.restaurar');
     });
 
 // Foto da galeria (#61, B2): pública só de álbum publicado e foto descrita.
