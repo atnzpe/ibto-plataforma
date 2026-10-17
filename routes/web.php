@@ -48,6 +48,7 @@ use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
+use App\Http\Controllers\PrivacidadeController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Middleware\MarcarTelaOffline;
@@ -313,6 +314,8 @@ Route::middleware('throttle:60,1')->group(function () {
     // para ninguém varrer os registros. A foto só sai com a autorização de imagem.
     Route::get('carteirinha/{codigo}', [CarteirinhaController::class, 'validar'])->middleware('throttle:30,1')->name('carteirinha.validar');
     Route::get('carteirinha/{codigo}/foto', [CarteirinhaController::class, 'foto'])->middleware('throttle:60,1')->name('carteirinha.foto');
+    // Política de privacidade (LGPD, #47): pública; aceitar e revogar pedem login.
+    Route::get('privacidade', [PrivacidadeController::class, 'politica'])->name('privacidade');
     // Sitemap (#74): a lista das páginas públicas para os robôs de busca.
     Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
@@ -528,5 +531,10 @@ Route::middleware(['auth', 'verified', 'can:relatorios.acessar'])->prefix('relat
 
 // MINHA CARTEIRINHA (#46): o cartão da própria pessoa para imprimir (só filiados).
 Route::middleware(['auth', 'verified'])->get('minha-carteirinha', [CarteirinhaController::class, 'minha'])->name('carteirinha.minha');
+// Aceite da política de privacidade (LGPD, #47): registra ou revoga, com a versão e a data.
+Route::middleware(['auth', 'throttle:10,1'])->group(function () {
+    Route::post('privacidade/aceite', [PrivacidadeController::class, 'aceitar'])->name('privacidade.aceitar');
+    Route::delete('privacidade/aceite', [PrivacidadeController::class, 'revogar'])->name('privacidade.revogar');
+});
 // Passaporte (#81): troca o código do QR se ele vazou (no máximo 3 trocas por hora).
 Route::middleware(['auth', 'verified', 'throttle:3,60'])->post('minha-carteirinha/trocar-codigo', [CarteirinhaController::class, 'trocarCodigo'])->name('carteirinha.trocar-codigo');

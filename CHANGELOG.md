@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- LGPD, política de privacidade e aceite (#47): página pública `/privacidade` (versão 0.1, rascunho em revisão pela diretoria e pelo jurídico, com aviso no topo e link no rodapé da vitrine): quais dados, para quê, proteção, compartilhamento, prazos e direitos; aceite registrado com versão e data, sem duplicar, e revogável (a revogação grava a data e vai para a auditoria); com `LGPD_EXIGIR_ACEITE=true` (desligado por padrão), quem não aceitou a versão atual é levado à política e volta para a tela que queria; trocar a versão pede o aceite de novo; o encarregado (DPO) aparece como "a definir" até a diretoria decidir (`LGPD_ENCARREGADO`).
+
 - LGPD, registro de acesso (#47): toda abertura da ficha do filiado com CPF, nascimento e telefone vai para a auditoria (quem e quando, só o número do filiado); nova tela Configurações → Meus dados, onde a pessoa vê o que o IBTO guarda (dados sensíveis mascarados), a autorização de imagem, quem abriu a ficha dela (nome abreviado, data e hora) e como pedir correção, cópia ou exclusão.
 
 - Passaporte digital do filiado (#81): ao ler o QR da carteirinha, o semáforo mostra 🟢 Liberado (ativo e em dia), 🟡 Liberado com ressalva (anuidade pendente, com o motivo) ou 🔴 Acesso negado (registro inativo ou suspenso); a regra fica num lugar só no servidor; o filiado vê o sinal atual e pode trocar o código do QR se ele vazar (o antigo para de valer na hora, auditado, até 3 trocas por hora).
