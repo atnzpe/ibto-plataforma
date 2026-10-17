@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\FormatoIbto;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -54,7 +55,8 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            // Padrão (#74): um arquivo por dia (laravel-AAAA-MM-DD.log), guardado por 14 dias.
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -63,6 +65,8 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            // Formato do IBTO (#74): cada linha vira JSON e passa pela máscara de dados pessoais.
+            'tap' => [FormatoIbto::class],
         ],
 
         'daily' => [
@@ -71,6 +75,8 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            // Formato do IBTO (#74): cada linha vira JSON e passa pela máscara de dados pessoais.
+            'tap' => [FormatoIbto::class],
         ],
 
         // Canal de SEGURANÇA (IBTO, #58): acessos negados (403) e afins.
@@ -84,6 +90,8 @@ return [
             'level' => 'info',
             'max_files' => 30,
             'replace_placeholders' => true,
+            // Formato do IBTO (#74): cada linha vira JSON e passa pela máscara de dados pessoais.
+            'tap' => [FormatoIbto::class],
         ],
 
         'monthly' => [
