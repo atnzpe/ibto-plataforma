@@ -1,6 +1,6 @@
 # Publicação da homologação (cursos-homolog.ib-to.org)
 
-Guia da issue #35 (parte 2). A homologação é onde a Aline e o Gleyson testam a plataforma antes da produção. Fica protegida por senha e fora do Google (`noindex`).
+Guia da issue #35 (parte 2). A homologação é onde a Aline e o Gleyson testam a plataforma antes da produção. Fica fora do Google (`noindex`). Até 17/10/2026 tinha também uma janelinha de usuário e senha; ela foi tirada para o piloto (cada pessoa indicada entra com a própria conta).
 
 ## Como funciona
 
@@ -118,9 +118,9 @@ max_input_time = 300
 
 ## Conferir (critério de aceite da #35)
 
-1. `http://cursos-homolog.ib-to.org` redireciona para `https://` sem pedir senha.
-2. `https://cursos-homolog.ib-to.org` pede a **senha da homologação** (a mesma de `homolog.ib-to.org`).
-3. Depois da senha, a página inicial leva ao catálogo de cursos; e `https://cursos-homolog.ib-to.org/api/saude` responde que a plataforma está no ar e o banco conectado (desde 14/10/2026 a tela "Em construção" não existe mais).
+1. `http://cursos-homolog.ib-to.org` redireciona para `https://`.
+2. `https://cursos-homolog.ib-to.org` abre direto, sem janelinha de senha (desde 17/10/2026), e responde com o cabeçalho `X-Robots-Tag: noindex`.
+3. A página inicial leva ao catálogo de cursos; e `https://cursos-homolog.ib-to.org/api/saude` responde que a plataforma está no ar e o banco conectado (desde 14/10/2026 a tela "Em construção" não existe mais).
 4. Criar conta → o e-mail de confirmação chega (até 5 minutos, pela fila) → entrar → painel → sair.
 
 ## Problemas comuns
