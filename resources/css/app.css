@@ -378,7 +378,18 @@
 @media print {
     [data-sidebar='sidebar'],
     [data-slot='sidebar'],
-    header {
+    header,
+    /* O botão do VLibras também não vai para o papel (ex.: a carteirinha, #46). */
+    div[vw] {
         display: none !important;
     }
+}
+
+/*
+ * VLIBRAS (#74): o widget do governo coloca o próprio CSS ([vw] { right: 0 }).
+ * div[vw] ganha na especificidade e afasta o botão do entalhe (notch) com o
+ * celular deitado, igual ao site. Sem o entalhe, a margem é zero.
+ */
+div[vw].enabled {
+    right: env(safe-area-inset-right, 0px);
 }

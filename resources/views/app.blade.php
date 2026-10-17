@@ -52,5 +52,26 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+
+        {{-- VLIBRAS (#74): o widget oficial do governo (vlibras.gov.br), que traduz a tela
+             para a Língua Brasileira de Sinais (Libras). Fica FORA do React (do <x-inertia::app />)
+             porque ele monta a própria parte da página: assim continua aberto quando a pessoa
+             troca de tela. É o mesmo trecho do site. --}}
+        <div vw class="enabled">
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
+                <div class="vw-plugin-top-wrapper"></div>
+            </div>
+        </div>
+        {{-- defer: o script do governo só roda depois que a página já apareceu (não atrasa a tela). --}}
+        <script src="https://vlibras.gov.br/app/vlibras-plugin.js" defer></script>
+        <script>
+            // Liga o widget quando a página termina de carregar. Sem internet (ou se o gov.br
+            // estiver fora do ar), o script acima não carrega: aí o widget simplesmente não
+            // aparece, e a plataforma continua funcionando normalmente.
+            window.addEventListener('load', function () {
+                if (window.VLibras) new window.VLibras.Widget('https://vlibras.gov.br/app');
+            });
+        </script>
     </body>
 </html>
