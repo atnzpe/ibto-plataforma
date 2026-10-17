@@ -5,11 +5,36 @@
  * categoria, nível e equipe. Foto, nome completo e cidade só se o filiado
  * autorizou o uso da imagem. Código que não existe: "não encontrado", sem
  * revelar nada. A situação vem escrita (não só a cor).
+ * PASSAPORTE (#81): no topo, o semáforo (🟢 Liberado, 🟡 Liberado com ressalva,
+ * 🔴 Acesso negado) para o instrutor decidir na porta do treino.
  */
 import { Head } from '@inertiajs/react';
 
+/** As três cores do semáforo do passaporte (#81). */
+type Sinal = 'verde' | 'amarelo' | 'vermelho';
+
+// Cor e símbolo de cada sinal. Contraste AA: texto escuro sobre fundo claro.
+const SEMAFORO: Record<Sinal, { classe: string; simbolo: string }> = {
+    verde: {
+        classe: 'border-green-700 bg-green-50 text-green-900',
+        simbolo: '🟢',
+    },
+    amarelo: {
+        classe: 'border-amber-700 bg-amber-50 text-amber-900',
+        simbolo: '🟡',
+    },
+    vermelho: {
+        classe: 'border-red-700 bg-red-50 text-red-900',
+        simbolo: '🔴',
+    },
+};
+
 /** Os dados públicos da carteirinha. */
 type Carteirinha = {
+    // O semáforo do passaporte (#81): a cor, o texto e o motivo (ex.: 'Anuidade pendente').
+    sinal: Sinal;
+    sinal_rotulo: string;
+    sinal_motivo: string | null;
     registro: string;
     situacao: 'ativa' | 'pendente' | 'inativa';
     situacao_rotulo: string;
@@ -66,11 +91,33 @@ export default function ValidarCarteirinha({
                         aria-labelledby="t-carteirinha"
                         className="flex flex-col gap-4 rounded-xl border border-[#e4dccb] bg-white p-6"
                     >
-                        <p
+                        {/* SEMÁFORO DO PASSAPORTE (#81): cor, símbolo e texto (quem não distingue cores lê o texto). */}
+                        <div
                             role="status"
-                            className={`rounded-lg border p-3 font-semibold ${ESTILO[carteirinha.situacao]}`}
+                            className={`flex items-center gap-4 rounded-lg border-2 p-4 ${SEMAFORO[carteirinha.sinal].classe}`}
                         >
-                            {carteirinha.situacao_rotulo}
+                            <span
+                                aria-hidden="true"
+                                className="text-4xl leading-none"
+                            >
+                                {SEMAFORO[carteirinha.sinal].simbolo}
+                            </span>
+                            <div>
+                                <p className="text-xl font-bold">
+                                    {carteirinha.sinal_rotulo}
+                                </p>
+                                {/* O motivo só aparece no amarelo e no vermelho (ex.: 'Anuidade pendente'). */}
+                                {carteirinha.sinal_motivo && (
+                                    <p className="text-sm">
+                                        {carteirinha.sinal_motivo}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <p
+                            className={`rounded-lg border p-3 text-sm font-semibold ${ESTILO[carteirinha.situacao]}`}
+                        >
+                            Carteirinha: {carteirinha.situacao_rotulo}
                             {carteirinha.validade
                                 ? ` · válida até ${carteirinha.validade}`
                                 : ''}

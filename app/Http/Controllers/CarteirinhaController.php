@@ -15,10 +15,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Auditoria;
 use App\Models\Filiado;
 use App\Relatorios\AuditoriaRelatorio;
 use App\Support\FotoDePerfil;
 use App\Support\QrCode;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -83,6 +85,26 @@ class CarteirinhaController extends Controller
     }
 
     /**
+     * TROCA O CÓDIGO DO QR (#81): se a foto do QR vazou (ex.: alguém postou a
+     * carteirinha num grupo), o filiado sorteia um código novo e o antigo deixa
+     * de abrir a validação na hora. Fica na auditoria (só o número do filiado).
+     *
+     * @param  Request  $request  O pedido do próprio filiado (logado).
+     * @return RedirectResponse De volta para a carteirinha, com o aviso.
+     */
+    public function trocarCodigo(Request $request): RedirectResponse
+    {
+        $filiado = $request->user()->filiado;
+        // Quem não é filiado não tem código para trocar.
+        abort_if($filiado === null, 404);
+
+        $filiado->forceFill(['codigo_validacao' => Filiado::novoCodigoValidacao()])->save();
+        Auditoria::registrar('PASSAPORTE_CODIGO_TROCADO', ['filiado_id' => $filiado->id]);
+
+        return to_route('carteirinha.minha')->with('sucesso', 'Código trocado. Imprima a carteirinha de novo: o QR antigo não vale mais.');
+    }
+
+    /**
      * O que a validação pública mostra (nunca CPF, nascimento, endereço ou telefone).
      *
      * @return array<string, mixed>
@@ -90,10 +112,15 @@ class CarteirinhaController extends Controller
     private function dadosPublicos(Filiado $filiado): array
     {
         $situacao = $filiado->situacaoCarteirinha();
+        // O semáforo do passaporte (#81): verde, amarelo ou vermelho, com o motivo.
+        $semaforo = $filiado->semaforo();
         $autorizou = $filiado->autoriza_imagem_rede;
         $nome = (string) $filiado->usuario?->name;
 
         return [
+            'sinal' => $semaforo['sinal'],
+            'sinal_rotulo' => $semaforo['rotulo'],
+            'sinal_motivo' => $semaforo['motivo'],
             'registro' => $filiado->registro,
             'situacao' => $situacao['situacao'],
             'situacao_rotulo' => $situacao['rotulo'],

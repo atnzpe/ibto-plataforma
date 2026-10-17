@@ -528,3 +528,5 @@ Route::middleware(['auth', 'verified', 'can:relatorios.acessar'])->prefix('relat
 
 // MINHA CARTEIRINHA (#46): o cartão da própria pessoa para imprimir (só filiados).
 Route::middleware(['auth', 'verified'])->get('minha-carteirinha', [CarteirinhaController::class, 'minha'])->name('carteirinha.minha');
+// Passaporte (#81): troca o código do QR se ele vazou (no máximo 3 trocas por hora).
+Route::middleware(['auth', 'verified', 'throttle:3,60'])->post('minha-carteirinha/trocar-codigo', [CarteirinhaController::class, 'trocarCodigo'])->name('carteirinha.trocar-codigo');
