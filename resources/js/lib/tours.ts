@@ -153,6 +153,14 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'As equipes filiadas, com cidade, responsável e áreas. Equipe sem área não fica ativa.',
         },
     ],
+    // Relatórios (#73).
+    'relatorios/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Relatórios',
+            texto: 'Os relatórios que a sua permissão libera. Em cada um: filtro De/Até, CSV e PDF com a marca do IBTO. Toda exportação fica registrada.',
+        },
+    ],
     // Meu painel (#79).
     'meu-painel': [
         {

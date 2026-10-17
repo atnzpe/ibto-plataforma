@@ -478,6 +478,22 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/comando-geral/blog', nome: 'Blog' },
             },
             {
+                id: 'relatorios',
+                titulo: 'Relatórios',
+                resumo: 'Filiados, cursos, frequência, financeiro e auditoria, com De/Até, CSV e PDF.',
+                passos: [
+                    'Menu "Relatórios" → escolha o relatório. Cada pessoa vê só os que a permissão dela libera.',
+                    'Troque o período em "De" e "Até" (sem filtro: o ano atual).',
+                    '"Exportar CSV" baixa para o Excel ou o Google Planilhas. "PDF / imprimir" abre a versão com a marca do IBTO, a data e quem gerou: lá, "Imprimir ou salvar em PDF".',
+                ],
+                regras: [
+                    'Nenhum relatório traz CPF, nascimento, endereço ou telefone. Na auditoria, o nome sai abreviado.',
+                    'Toda exportação (CSV ou PDF) fica registrada na auditoria: quem, qual relatório e o período.',
+                    'Uma permissão por relatório (tela de Permissões). Auditoria: só a Tecnologia. O admin de equipe vê os filiados da equipe dele; o instrutor, a frequência dos cursos dele.',
+                ],
+                tela: { endereco: '/relatorios', nome: 'Relatórios' },
+            },
+            {
                 id: 'venda-fotos',
                 titulo: 'Venda de fotos dos eventos',
                 resumo: 'O fotógrafo sobe as fotos; a turma compra pelo Pix e baixa o original. Começa desligada.',

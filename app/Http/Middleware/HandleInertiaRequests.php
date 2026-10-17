@@ -42,6 +42,8 @@ class HandleInertiaRequests extends Middleware
         'fotos.vender',
         // Meu painel (#79): instrutor e admin de equipe.
         'painel.instrutor',
+        // Relatórios (#73): quem tem pelo menos um relatório.
+        'relatorios.acessar',
     ];
 
     /**
@@ -79,7 +81,10 @@ class HandleInertiaRequests extends Middleware
             // "Suporte técnico". null = sem número no .env (o botão não aparece).
             'suporte_whatsapp' => config('app.suporte_whatsapp') ?: null,
             'auth' => [
-                'user' => $request->user(),
+                // A conta logada SEM relacionamentos carregados (LGPD, 16/10/2026): antes, se a
+                // requisição já tinha consultado o filiado (as regras de permissão fazem isso), ele
+                // ia junto, com dados pessoais. Os campos sensíveis da conta já são escondidos no User.
+                'user' => $request->user()?->withoutRelations(),
             ],
             // Tour guiado (#68): o interruptor e as telas já vistas da pessoa logada.
             // Sem login: null (as telas públicas não abrem o tour sozinhas).

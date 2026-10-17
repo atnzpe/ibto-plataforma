@@ -40,6 +40,8 @@ declare module '@inertiajs/core' {
                 fotos_vender: boolean;
                 // Meu painel (#79): instrutor e admin de equipe.
                 painel_instrutor: boolean;
+                // Relatórios (#73).
+                relatorios_acessar: boolean;
             };
             // Tour guiado (#68): o interruptor e as telas já vistas (null sem login).
             tour: { ativo: boolean; vistos: string[] } | null;
