@@ -516,11 +516,11 @@ export const MANUAIS: Manual[] = [
             {
                 id: 'venda-fotos',
                 titulo: 'Venda de fotos dos eventos',
-                resumo: 'O fotógrafo sobe as fotos; a turma compra pelo Pix e baixa o original. Começa desligada.',
+                resumo: 'O fotógrafo sobe as fotos; a turma compra pelo Pix e baixa o original. Está ligada desde 17/10/2026.',
                 passos: [
                     'Em Usuários, dê o papel "Fotógrafo" à conta do fotógrafo credenciado.',
                     'Menu "Venda de fotos" → "Novo álbum": o curso do evento, o fotógrafo, o preço por foto, a parte dele (%) e quando as fotos expiram.',
-                    'Quando quiser abrir a venda, "Ligar a venda". Desligada, nada aparece para os alunos.',
+                    'A venda está ligada. Para pausar, "Desligar a venda": desligada, nada aparece para os alunos (e "Ligar a venda" reabre).',
                     'Pedidos: confira o Pix no extrato pelo identificador (ex.: IBTOFOT42) e "Confirmar pagamento". O aluno passa a baixar os originais por 30 dias.',
                 ],
                 regras: [
