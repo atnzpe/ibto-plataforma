@@ -1,4 +1,4 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 // Rede de proteção das telas e escuta dos erros da página (#58).
 import RedeDeProtecao from '@/components/rede-de-protecao';
 import { escutarErrosDaJanela } from '@/lib/erros-tela';
@@ -65,3 +65,37 @@ initializeTheme();
 
 // Erros "soltos" da página (fora das telas React) também avisam o servidor (#58).
 escutarErrosDaJanela();
+
+// VERSÃO NO CONSOLE (#75, pedido do Gleyson: build, versão e release do front, do back e do
+// banco no log): na primeira tela, o console do navegador (F12) mostra o que está no ar.
+// Uma vez por visita: as navegações seguintes não repetem.
+let versaoMostrada = false;
+router.on('navigate', (evento) => {
+    // Já mostrou nesta visita: não repete.
+    if (versaoMostrada) {
+        return;
+    }
+    versaoMostrada = true;
+    const versao = evento.detail.page.props.versao as
+        | {
+              numero: string;
+              commit: string | null;
+              front_build: string | null;
+              banco: { versao: string | null; migracao: string | null };
+          }
+        | undefined;
+    // Sem a versão (situação rara): nada a mostrar.
+    if (!versao) {
+        return;
+    }
+    console.info(
+        '%cIBTO plataforma',
+        'font-weight:bold;color:#6b5d3a',
+        `
+  back:  v${versao.numero}${versao.commit ? ` · commit ${versao.commit}` : ' · computador do desenvolvedor'}`,
+        `
+  front: build ${versao.front_build ?? 'em desenvolvimento (Vite)'}`,
+        `
+  banco: ${versao.banco.versao ?? '—'} · última migration ${versao.banco.migracao ?? '—'}`,
+    );
+});

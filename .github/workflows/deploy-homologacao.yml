@@ -84,7 +84,8 @@ jobs:
           # Cria a pasta do pacote e copia o código, SEM a pasta vendor (ela vai zipada).
           # "lang" = as mensagens do servidor em português (login, validação, e-mails; 14/10/2026).
           mkdir pacote
-          cp -r app bootstrap config database deploy lang public resources routes artisan composer.json pacote/
+          # VERSION = a versão da plataforma (#75), mostrada no rodapé e em /api/saude.
+          cp -r app bootstrap config database deploy lang public resources routes artisan composer.json VERSION pacote/
           # O CSS e o JS de origem não vão: o navegador usa só o public/build compilado.
           rm -rf pacote/resources/js pacote/resources/css
           # Copia só os arquivos do storage/ que estão no Git (os .gitignore das pastas vazias).

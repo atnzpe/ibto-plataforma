@@ -11,8 +11,13 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+## [0.2.0] — 2026-10-17 (homologação: piloto completo)
+
+Base do piloto com os cursos reais, Pix copia e cola, cupom, pré-requisitos, fotos, venda de fotos (desligada), Meu painel, relatórios, cadastro fechado e e-mails com a marca.
+
 ### Adicionado
 
+- Versões e releases (#75): arquivo `VERSION` (versionamento semântico); versão e commit no rodapé; `/api/saude` e o console do navegador (F12) mostram o back (versão e commit), o front (data do build) e o banco (versão e última migration); a CI recusa PR de código sem linha no CHANGELOG; ao criar a tag `vX.Y.Z`, a release sai sozinha com o pacote da HostGator, o hash SHA-256 e as notas do CHANGELOG.
 - Módulo de relatórios (#73): filiados por equipe (com anuidade), cursos (inscritos, receita, repasse e parte do IBTO), frequência e certificados, financeiro por categoria e auditoria; uma permissão por relatório; filtro De/Até; CSV e versão para impressão/PDF com a marca do IBTO, a data e quem gerou; toda exportação vai para a auditoria; nenhum dado pessoal sensível. A geração em fila para relatórios muito grandes fica para quando o volume pedir.
 - Meu painel do instrutor e do admin de equipe (#79): por curso, inscritos por situação, comparecimento (presenças ÷ confirmados × encontros com chamada), a receber e recebido (a parte do instrutor no livro-caixa) e certificados (com os aptos ainda sem certificado); totais do período, filtro De/Até e exportar CSV; o instrutor vê só os dele e o admin de equipe só os da equipe; nenhum dado pessoal de aluno.
 - Venda de fotos dos eventos (#90), começando DESLIGADA: interruptor no Comando Geral; álbum por curso com fotógrafo credenciado (papel novo "Fotógrafo"), preço por foto, parte do fotógrafo e expiração; envio em lote com original privado e prévia com marca d'água (emblema do IBTO + nome do fotógrafo); só a turma (matrícula confirmada) vê e compra; Pix copia e cola com identificador IBTOFOT; confirmar lança a receita "Venda de fotos" e o repasse "Fotógrafos"; download do original por 30 dias; limpeza diária apaga as fotos vencidas; "Meu financeiro" do fotógrafo; manual do Fotógrafo.

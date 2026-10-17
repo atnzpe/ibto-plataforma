@@ -61,6 +61,7 @@ class PosDeploy extends Command
 
         try {
             Artisan::call('migrate', ['--force' => true], $this->output);
+            // optimize:clear também limpa o cache: a versão do banco e a última migration (VersaoNoAr) se atualizam.
             Artisan::call('optimize:clear', [], $this->output);
             Artisan::call('optimize', [], $this->output);
         } catch (Throwable $erro) {

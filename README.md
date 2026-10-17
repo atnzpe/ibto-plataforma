@@ -138,3 +138,5 @@ Enquanto `APP_INDEXAVEL=false` (o padrão), todas as páginas saem com `noindex,
 ## Publicação (homologação)
 
 Todo merge na `main` roda a CI e publica em `cursos-homolog.ib-to.org` por FTPS (`.github/workflows/deploy-homologacao.yml`). Sem SSH: migrations e caches rodam pelo Cron Job (`plataforma:pos-deploy`). Configuração inicial e problemas comuns em [docs/publicacao-homologacao.md](./docs/publicacao-homologacao.md). A produção ainda não existe.
+
+**Versões e releases (#75):** versionamento semântico no arquivo `VERSION` (mostrado no rodapé e em `/api/saude`). Toda PR de código leva uma linha no `CHANGELOG.md` (a CI confere). Para lançar: mova o "Não lançado" para `## [X.Y.Z] — data`, troque o `VERSION`, faça a PR e o merge, e crie a tag `vX.Y.Z`; o workflow `release.yml` publica a release com o pacote da HostGator, o SHA-256 e as notas. A produção (#56) só recebe versões com tag.

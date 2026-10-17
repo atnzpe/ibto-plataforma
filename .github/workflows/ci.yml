@@ -21,6 +21,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # CHANGELOG obrigatório (#75): PR que mexe no código (app, rotas, telas, banco,
+  # configuração) precisa de uma linha no CHANGELOG.md, senão é recusada. Só nas
+  # PRs; PR só de documentação ou de testes passa sem a linha.
+  changelog:
+    name: CHANGELOG atualizado
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Baixar o código (com o histórico, para comparar com a base da PR)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Conferir a linha no CHANGELOG
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          CABECA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Arquivos mudados na PR (da base até a ponta).
+          mudados=$(git diff --name-only "$BASE" "$CABECA")
+          echo "$mudados"
+          # Mexeu em código? (app, rotas, telas, banco, configuração ou workflows)
+          if echo "$mudados" | grep -qE '^(app|routes|resources|database|config|bootstrap|\.github)/'; then
+            # Sem o CHANGELOG.md na lista: recusa, explicando o que fazer.
+            if ! echo "$mudados" | grep -qx 'CHANGELOG.md'; then
+              echo "::error::Esta PR mexe no código, mas não tem linha no CHANGELOG.md. Acrescente em '## [Não lançado]' o que mudou (regra da #75)."
+              exit 1
+            fi
+          fi
+          echo "CHANGELOG em dia."
+
   ci:
     name: Lint, testes e build
     runs-on: ubuntu-24.04

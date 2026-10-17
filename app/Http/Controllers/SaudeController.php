@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\VersaoNoAr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +36,8 @@ class SaudeController extends Controller
         return response()->json([
             'status' => 'ok',
             'banco' => 'ok',
+            // A versão no ar (#75): back (VERSION e commit), front (data do build) e banco (versão e última migration).
+            'versao' => VersaoNoAr::tudo(),
         ]);
     }
 }
