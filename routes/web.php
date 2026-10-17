@@ -49,6 +49,7 @@ use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
 use App\Http\Controllers\RelatorioController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -310,6 +311,8 @@ Route::middleware('throttle:60,1')->group(function () {
     // para ninguém varrer os registros. A foto só sai com a autorização de imagem.
     Route::get('carteirinha/{codigo}', [CarteirinhaController::class, 'validar'])->middleware('throttle:30,1')->name('carteirinha.validar');
     Route::get('carteirinha/{codigo}/foto', [CarteirinhaController::class, 'foto'])->middleware('throttle:60,1')->name('carteirinha.foto');
+    // Sitemap (#74): a lista das páginas públicas para os robôs de busca.
+    Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
     Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
         ->whereNumber(['curso', 'aula'])

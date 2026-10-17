@@ -41,7 +41,8 @@ class CarteirinhaController extends Controller
             'codigo' => $codigo,
             // null = não encontrado (não revela se o código já existiu).
             'carteirinha' => $filiado === null ? null : $this->dadosPublicos($filiado),
-        ]);
+            // noindex (#74): a validação tem o nome abreviado do filiado e nunca deve ir para o Google.
+        ])->withViewData(['noindex' => true]);
     }
 
     /**

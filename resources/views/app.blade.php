@@ -7,9 +7,33 @@
              do Gleyson em 10/10/2026) ficam no app.css, para nada ficar escondido atrás deles. --}}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-        @unless (config('app.indexavel'))
+        {{-- noindex: antes do lançamento (APP_INDEXAVEL=false) ou numa tela que nunca deve ir
+             para o Google (ex.: a validação da carteirinha, #46, que mostra um nome abreviado). --}}
+        @if (! config('app.indexavel') || ! empty($noindex))
             <meta name="robots" content="noindex, nofollow">
-        @endunless
+        @endif
+
+        {{-- SEO DA TELA PÚBLICA (#74): só quando o controller mandou ($seo vem do App\Support\Seo).
+             Sai pronto no HTML porque o Google e o WhatsApp leem a página antes do React. --}}
+        @isset($seo)
+            <meta name="description" content="{{ $seo['descricao'] }}">
+            {{-- O endereço oficial da página (sem os filtros da busca). --}}
+            <link rel="canonical" href="{{ $seo['url'] }}">
+            {{-- Open Graph: o cartão que aparece ao colar o link no WhatsApp, Facebook, LinkedIn. --}}
+            <meta property="og:type" content="{{ $seo['tipo'] }}">
+            <meta property="og:site_name" content="{{ config('app.name') }}">
+            <meta property="og:locale" content="pt_BR">
+            <meta property="og:title" content="{{ $seo['titulo'] }}">
+            <meta property="og:description" content="{{ $seo['descricao'] }}">
+            <meta property="og:url" content="{{ $seo['url'] }}">
+            <meta property="og:image" content="{{ $seo['imagem'] }}">
+            <meta name="twitter:card" content="summary_large_image">
+            {{-- Dados estruturados (JSON-LD): "isto é um curso do IBTO". O texto já vem
+                 protegido (JSON_HEX_TAG), por isso pode ir sem o escape do Blade. --}}
+            @if ($seo['json_ld'])
+                <script type="application/ld+json">{!! $seo['json_ld'] !!}</script>
+            @endif
+        @endisset
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

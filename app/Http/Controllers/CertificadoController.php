@@ -165,6 +165,7 @@ class CertificadoController extends Controller
                 'emitido_em' => $certificado->emitido_em->toDateString(),
                 'cancelado_em' => $certificado->cancelado_em?->toDateString(),
             ],
-        ]);
+            // noindex (#74): a validação mostra o nome (abreviado) do aluno e não deve ir para o Google.
+        ])->withViewData(['noindex' => true]);
     }
 }

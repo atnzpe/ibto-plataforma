@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- SEO das telas públicas (#74): catálogo, curso e trilha já saem do servidor com descrição, endereço oficial (canônico), cartão do link para WhatsApp e redes (Open Graph, com a capa do curso) e dados estruturados "Course" (schema.org); `/sitemap.xml` com o catálogo, os cursos publicados abertos e as trilhas ativas; prévia, curso fechado e as validações de certificado e de carteirinha levam "noindex" (têm nome de pessoa), e o `robots.txt` foi ajustado.
 - VLibras em todas as telas da plataforma (#74): o widget oficial do governo (tradução em Libras) fica no HTML base, fora do React, e continua aberto ao trocar de tela; afastado do entalhe do celular (safe area); some na impressão; sem internet, simplesmente não aparece.
 
 - Carteirinha do filiado com QR code (#46): "Minha carteirinha" no menu, no tamanho de cartão para imprimir ou salvar em PDF (foto 3x4, registro, nível, equipe, validade 31/12); cada filiado ganha um código sorteado (`IBTO-XXXX-XXXX`); a validação pública mostra só o nome abreviado, a situação (ativa, anuidade pendente ou inativa), categoria, nível e equipe; nome completo, cidade e foto só com a autorização de imagem; código inexistente não revela nada; limite de consultas por IP. O novo certificado de graduação aguarda a decisão do Mestre Eduardo sobre o número de série.

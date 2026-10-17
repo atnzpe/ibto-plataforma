@@ -30,6 +30,7 @@ use App\Support\DadosPagamento;
 use App\Support\PixCopiaECola;
 use App\Support\QrCode;
 use App\Support\Requisitos;
+use App\Support\Seo;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -84,6 +85,9 @@ class CatalogoController extends Controller
                 ->orderBy('nome')->get(['id', 'nome']),
             // Trilhas ativas, para o atalho "Trilhas de formação".
             'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
+        ])->withViewData([
+            // SEO (#74): o cartão do link e o resumo para o Google.
+            'seo' => Seo::pagina('Cursos', 'Catálogo de cursos de treinamento operacional do IBTO: APH tático, tiro, defesa pessoal, gerenciamento de crises e mais.'),
         ]);
     }
 
@@ -179,7 +183,18 @@ class CatalogoController extends Controller
             // Pode entrar na sala de aula (#39, C4c)? A equipe do curso agora; os inscritos no C5.
             // Visitante sem login: false (o Gate recusa quem não está logado).
             'pode_assistir' => Gate::allows('curso.conteudo', $curso),
-        ]);
+        ])->withViewData(
+            // SEO (#74): prévia (não publicado) e curso FECHADO nunca vão para o Google (noindex);
+            // o curso publicado ganha o cartão do link e os dados de "Course" (schema.org).
+            $previa || $curso->fechado
+                ? ['noindex' => true]
+                : ['seo' => Seo::pagina(
+                    $curso->titulo,
+                    $curso->chamada ?: $curso->descricao,
+                    $curso->imagemUrl(),
+                    Seo::curso($curso->titulo, $curso->chamada ?: $curso->descricao, route('catalogo.curso', $curso)),
+                )],
+        );
     }
 
     /**
@@ -224,7 +239,10 @@ class CatalogoController extends Controller
             'etapas' => $etapas,
             // As outras trilhas ativas, para trocar pelo topo ("Todas as trilhas").
             'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
-        ]);
+        ])->withViewData(
+            // SEO (#74): trilha desativada (prévia do Comando Geral) não vai para o Google.
+            $trilha->ativa ? ['seo' => Seo::pagina('Trilha: '.$trilha->nome, $trilha->descricao)] : ['noindex' => true],
+        );
     }
 
     /**
