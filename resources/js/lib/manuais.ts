@@ -176,6 +176,7 @@ export const MANUAIS: Manual[] = [
                     'Em Configurações, troque nome, e-mail e senha.',
                     'Em Configurações → Perfil, "Escolher foto" coloca a sua foto (JPG, PNG ou WebP, até 5 MB; ela é recortada em quadrado). Ela aparece no menu da conta e ajuda o instrutor a reconhecer você na chamada.',
                     'Se você é filiado, ali também ficam a foto 3x4 (a da carteirinha) e a caixa "Autorizo o uso da minha foto na Rede Nacional do site". A caixa começa desmarcada: sem ela, a foto nunca sai da plataforma.',
+                    'Em Configurações → Meus dados, veja o que o IBTO guarda sobre você (CPF e telefone aparecem mascarados) e quem abriu a sua ficha completa, com data e hora. Para corrigir, pedir cópia ou exclusão, use o e-mail indicado ali.',
                     'O menu de idiomas (no topo) explica como traduzir a tela para inglês ou espanhol.',
                     'O "?" do topo abre o tour da tela; "Tour guiado: ligado/desligado" controla se ele abre sozinho.',
                     'Problema técnico? Use o botão "Suporte técnico": ele abre o WhatsApp com a mensagem pronta.',

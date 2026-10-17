@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- LGPD, registro de acesso (#47): toda abertura da ficha do filiado com CPF, nascimento e telefone vai para a auditoria (quem e quando, só o número do filiado); nova tela Configurações → Meus dados, onde a pessoa vê o que o IBTO guarda (dados sensíveis mascarados), a autorização de imagem, quem abriu a ficha dela (nome abreviado, data e hora) e como pedir correção, cópia ou exclusão.
+
 - Passaporte digital do filiado (#81): ao ler o QR da carteirinha, o semáforo mostra 🟢 Liberado (ativo e em dia), 🟡 Liberado com ressalva (anuidade pendente, com o motivo) ou 🔴 Acesso negado (registro inativo ou suspenso); a regra fica num lugar só no servidor; o filiado vê o sinal atual e pode trocar o código do QR se ele vazar (o antigo para de valer na hora, auditado, até 3 trocas por hora).
 
 ### Alterado
