@@ -1,0 +1,29 @@
+{
+    "name": "IBTO — Plataforma de cursos",
+    "short_name": "IBTO",
+    "description": "Cursos do Instituto Brasileiro de Treinamento Operacional.",
+    "lang": "pt-BR",
+    "start_url": "/cursos",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#14161a",
+    "theme_color": "#0a0a0a",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

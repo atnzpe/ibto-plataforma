@@ -50,6 +50,7 @@ use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Middleware\MarcarTelaOffline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -293,15 +294,16 @@ Route::middleware(['auth', 'verified'])
 // CATÁLOGO PÚBLICO (#38, bloco C4a): qualquer pessoa, mesmo sem login, vê os
 // cursos publicados. Limite de 60 pedidos por minuto por IP.
 Route::middleware('throttle:60,1')->group(function () {
-    Route::get('cursos', [CatalogoController::class, 'index'])->name('catalogo.index');
+    // MarcarTelaOffline (#74): a tela do visitante pode ser guardada para usar sem internet.
+    Route::get('cursos', [CatalogoController::class, 'index'])->middleware(MarcarTelaOffline::class)->name('catalogo.index');
     // whereNumber: só números no {curso} (não confunde com /cursos/aulas/...).
-    Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->name('catalogo.curso');
+    Route::get('cursos/{curso}', [CatalogoController::class, 'show'])->whereNumber('curso')->middleware(MarcarTelaOffline::class)->name('catalogo.curso');
     // Trilha em fluxograma (#38, bloco C4b).
-    Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->name('catalogo.trilha');
+    Route::get('trilhas/{trilha}', [CatalogoController::class, 'trilha'])->whereNumber('trilha')->middleware(MarcarTelaOffline::class)->name('catalogo.trilha');
     // BLOG PÚBLICO (#61): a lista (com filtro por categoria) e a página de cada
     // post, pelo slug. Ex.: /blog?categoria=evento e /blog/formacao-no-estande
-    Route::get('blog', [BlogController::class, 'index'])->name('blog.index');
-    Route::get('blog/{post:slug}', [BlogController::class, 'show'])->name('blog.post');
+    Route::get('blog', [BlogController::class, 'index'])->middleware(MarcarTelaOffline::class)->name('blog.index');
+    Route::get('blog/{post:slug}', [BlogController::class, 'show'])->middleware(MarcarTelaOffline::class)->name('blog.post');
     // GALERIA DE EVENTOS PÚBLICA (#61, B2): os álbuns publicados e as fotos de cada um.
     Route::get('eventos', [GaleriaController::class, 'index'])->name('galeria.index');
     Route::get('eventos/{album:slug}', [GaleriaController::class, 'show'])->name('galeria.album');

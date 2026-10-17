@@ -65,6 +65,8 @@
         {{-- Cor da barra do navegador no celular: o preto da marca IBTO (igual ao site). --}}
         <meta name="theme-color" content="#0a0a0a">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        {{-- Manifesto (#74, offline): deixa "instalar" a plataforma na tela inicial do celular. --}}
+        <link rel="manifest" href="/manifest.webmanifest">
 
         @fonts
 
@@ -76,6 +78,38 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+
+        {{-- AVISO "SEM INTERNET" (#74): fora do React, para aparecer em qualquer tela. Fica
+             escondido (hidden) e o script abaixo mostra quando a conexão cai. role="status":
+             o leitor de tela anuncia a mudança. Respeita o entalhe do celular (safe area). --}}
+        <div id="aviso-offline" role="status" hidden
+             style="position:fixed;left:0;right:0;top:0;z-index:60;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;background:#7a5c00;color:#fff;text-align:center;font:500 14px/1.4 system-ui,sans-serif">
+            Você está sem internet. As telas já abertas continuam disponíveis; o que precisar gravar espera a conexão voltar.
+        </div>
+        <script>
+            // Mostra ou esconde o aviso conforme a conexão (navigator.onLine).
+            (function () {
+                var aviso = document.getElementById('aviso-offline');
+                function atualizar() { aviso.hidden = navigator.onLine; }
+                window.addEventListener('online', atualizar);
+                window.addEventListener('offline', atualizar);
+                atualizar();
+            })();
+        </script>
+
+        {{-- SERVICE WORKER (#74, offline first): o "ajudante" que guarda as telas públicas e o
+             visual para usar sem internet (regras em public/sw.js). A versão no endereço faz o
+             navegador trocar as cópias a cada publicação. No computador do desenvolvedor
+             (APP_ENV=local) fica desligado, para não atrapalhar o Vite. --}}
+        @unless (app()->environment('local'))
+            <script>
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', function () {
+                        navigator.serviceWorker.register('/sw.js?v={{ urlencode(config('app.versao').'-'.config('app.commit')) }}');
+                    });
+                }
+            </script>
+        @endunless
 
         {{-- VLIBRAS (#74): o widget oficial do governo (vlibras.gov.br), que traduz a tela
              para a Língua Brasileira de Sinais (Libras). Fica FORA do React (do <x-inertia::app />)
