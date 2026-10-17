@@ -10,6 +10,8 @@
  */
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import AlbumController from '@/actions/App/Http/Controllers/Blog/AlbumController';
+import DesfocarFoto from '@/components/galeria/desfocar-foto';
+import type { Area } from '@/components/galeria/desfocar-foto';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +29,9 @@ type FotoEdicao = {
     ordem: number;
     // false = falta descrever (o álbum não publica assim).
     descrita: boolean;
+    // Áreas desfocadas (#90) e se há o original guardado.
+    desfoque: Area[];
+    tem_original: boolean;
 };
 
 /** O álbum aberto para edição. */
@@ -522,6 +527,21 @@ export default function AlbumFormulario({
                                                         />
                                                     </div>
                                                 </div>
+                                                {/* Desfocar rostos, distintivos e placas (#90). */}
+                                                <DesfocarFoto
+                                                    fotoId={foto.id}
+                                                    url={foto.url}
+                                                    descricao={
+                                                        foto.descricao ??
+                                                        'Foto ainda sem descrição'
+                                                    }
+                                                    areasIniciais={
+                                                        foto.desfoque
+                                                    }
+                                                    temOriginal={
+                                                        foto.tem_original
+                                                    }
+                                                />
                                                 {/* Apagar: pergunta antes (não tem como desfazer). */}
                                                 <Button
                                                     type="button"

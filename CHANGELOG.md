@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- Desfocar áreas das fotos da galeria (#90, pedido de 17/10/2026): no álbum, "Desfocar áreas" abre a foto para marcar retângulos (mouse, dedo ou teclado) sobre rostos, distintivos e placas; o servidor desfoca de verdade (a informação é descartada, não só escondida) e acerta a orientação das fotos de celular; o original fica numa pasta privada só para o Comando Geral, com "Restaurar original"; desfocar de novo parte sempre do original; apagar a foto apaga o original; tudo na auditoria.
+
 - LGPD, anonimização a pedido do titular (#47): na ficha do filiado, só para quem cuida de todos os filiados, "Anonimizar a pedido do titular" pede a senha, o registro digitado de novo e o motivo; apaga nome, e-mail, senha, CPF, nascimento, telefone, cidade, fotos (os arquivos também), a autorização de imagem e o nome nos certificados; desativa a conta e invalida o QR da carteirinha; mantém o registro, a equipe, o nível, as presenças e o financeiro (sem nome); vai para a auditoria. Não tem volta.
 
 - LGPD, política de privacidade e aceite (#47): página pública `/privacidade` (versão 0.1, rascunho em revisão pela diretoria e pelo jurídico, com aviso no topo e link no rodapé da vitrine): quais dados, para quê, proteção, compartilhamento, prazos e direitos; aceite registrado com versão e data, sem duplicar, e revogável (a revogação grava a data e vai para a auditoria); com `LGPD_EXIGIR_ACEITE=true` (desligado por padrão), quem não aceitou a versão atual é levado à política e volta para a tela que queria; trocar a versão pede o aceite de novo; o encarregado (DPO) aparece como "a definir" até a diretoria decidir (`LGPD_ENCARREGADO`).
