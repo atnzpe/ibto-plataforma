@@ -27,6 +27,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 - Passaporte digital do filiado (#81): ao ler o QR da carteirinha, o semáforo mostra 🟢 Liberado (ativo e em dia), 🟡 Liberado com ressalva (anuidade pendente, com o motivo) ou 🔴 Acesso negado (registro inativo ou suspenso); a regra fica num lugar só no servidor; o filiado vê o sinal atual e pode trocar o código do QR se ele vazar (o antigo para de valer na hora, auditado, até 3 trocas por hora).
 
+### Corrigido
+
+- E-mails da fila que falhavam com "Connection to smtp.titan.email has been closed unexpectedly" (visto às 01h00 de 17/10/2026): cada tarefa da fila agora abre uma conexão SMTP nova (o Titan fecha a conexão parada), e uma nova tentativa espera 1 minuto (`--backoff=60`), em vez de as 3 tentativas acontecerem no mesmo segundo.
+
 ### Alterado
 
 - Loja de fotos dos eventos (#90) ligada por decisão do Gleyson (17/10/2026); o interruptor do Comando Geral continua desligando quando preciso, e só a turma do curso vê e compra.
