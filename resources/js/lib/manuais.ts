@@ -447,6 +447,11 @@ export const MANUAIS: Manual[] = [
                     'Áreas de atuação e níveis: mantenha a lista oficial (o site mostra as áreas ativas).',
                     'Equipes: cidade, UF, responsável, telefone, logo e pelo menos uma área (sem área, a equipe não fica ativa).',
                     'Filiados: cadastro um a um ou importação da planilha (com prévia antes de gravar).',
+                    'LGPD: se o titular pedir a exclusão, abra a ficha dele e use "Anonimizar a pedido do titular" no fim da página (pede a sua senha, o registro digitado e o motivo).',
+                ],
+                regras: [
+                    'Abrir a ficha completa de um filiado (com CPF, nascimento e telefone) fica registrado, e o filiado vê a lista em Configurações → Meus dados.',
+                    'Anonimizar NÃO TEM VOLTA: apaga nome, e-mail, CPF, nascimento, telefone, cidade e fotos, desativa a conta e invalida a carteirinha. Ficam o registro e os números do financeiro e das presenças.',
                 ],
                 tela: { endereco: '/cadastros/equipes', nome: 'Equipes' },
             },

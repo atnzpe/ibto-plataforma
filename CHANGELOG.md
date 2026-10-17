@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- LGPD, anonimização a pedido do titular (#47): na ficha do filiado, só para quem cuida de todos os filiados, "Anonimizar a pedido do titular" pede a senha, o registro digitado de novo e o motivo; apaga nome, e-mail, senha, CPF, nascimento, telefone, cidade, fotos (os arquivos também), a autorização de imagem e o nome nos certificados; desativa a conta e invalida o QR da carteirinha; mantém o registro, a equipe, o nível, as presenças e o financeiro (sem nome); vai para a auditoria. Não tem volta.
+
 - LGPD, política de privacidade e aceite (#47): página pública `/privacidade` (versão 0.1, rascunho em revisão pela diretoria e pelo jurídico, com aviso no topo e link no rodapé da vitrine): quais dados, para quê, proteção, compartilhamento, prazos e direitos; aceite registrado com versão e data, sem duplicar, e revogável (a revogação grava a data e vai para a auditoria); com `LGPD_EXIGIR_ACEITE=true` (desligado por padrão), quem não aceitou a versão atual é levado à política e volta para a tela que queria; trocar a versão pede o aceite de novo; o encarregado (DPO) aparece como "a definir" até a diretoria decidir (`LGPD_ENCARREGADO`).
 
 - LGPD, registro de acesso (#47): toda abertura da ficha do filiado com CPF, nascimento e telefone vai para a auditoria (quem e quando, só o número do filiado); nova tela Configurações → Meus dados, onde a pessoa vê o que o IBTO guarda (dados sensíveis mascarados), a autorização de imagem, quem abriu a ficha dela (nome abreviado, data e hora) e como pedir correção, cópia ou exclusão.

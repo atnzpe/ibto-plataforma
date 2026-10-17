@@ -13,6 +13,7 @@ use App\Http\Controllers\Blog\PostCapaController;
 use App\Http\Controllers\Blog\PostController;
 use App\Http\Controllers\Cadastros\AreaAtuacaoController;
 use App\Http\Controllers\Cadastros\EquipeController;
+use App\Http\Controllers\Cadastros\FiliadoAnonimizarController;
 use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\FiliadoFotoController;
@@ -167,6 +168,12 @@ Route::middleware(['auth', 'verified'])
         Route::post('filiados/{filiado}/anuidade', [FiliadoAnuidadeController::class, 'store'])
             ->middleware(['can:filiados.acessar', 'can:financeiro.lancar'])
             ->name('filiados.anuidade');
+
+        // Anonimizar a pedido do titular (LGPD, #47): só quem cuida de TODOS os filiados;
+        // pede a senha, o registro digitado e o motivo (validados no controller).
+        Route::post('filiados/{filiado}/anonimizar', FiliadoAnonimizarController::class)
+            ->middleware(['can:filiados.gerenciar', 'throttle:5,1'])
+            ->name('filiados.anonimizar');
 
         // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
