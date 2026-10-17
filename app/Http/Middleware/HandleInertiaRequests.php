@@ -35,6 +35,8 @@ class HandleInertiaRequests extends Middleware
         'blog.publicar',
         // Solicitações de cadastro (#84): Comando Geral, Tecnologia e admin de equipe.
         'cadastros.aprovar',
+        // Cupons de desconto (#89).
+        'cupons.gerenciar',
     ];
 
     /**

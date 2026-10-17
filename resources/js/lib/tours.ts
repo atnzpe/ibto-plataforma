@@ -153,6 +153,14 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'As equipes filiadas, com cidade, responsável e áreas. Equipe sem área não fica ativa.',
         },
     ],
+    // Cupons de desconto (#89).
+    'financeiro/cupons/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Cupons de desconto',
+            texto: 'Crie códigos de desconto com validade e limite de usos. O aluno digita na inscrição e o Pix já sai com o desconto. Para encerrar, desative pela edição.',
+        },
+    ],
     'financeiro/lancamentos/index': [
         {
             elemento: 'main h1',

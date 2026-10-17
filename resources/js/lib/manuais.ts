@@ -90,6 +90,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'A inscrição reserva a vaga; o pagamento por PIX a confirma.',
                 passos: [
                     'Na página do curso, confira o quadro "Requisitos" (se houver): cada item mostra ✅ (cumprido) ou ❌ (falta). Faltando algum, o botão fica "Faltam pré-requisitos".',
+                    'Tem um cupom de desconto? Digite no campo "Cupom de desconto" antes de garantir a vaga: o valor do Pix já sai com o desconto.',
                     'Na página do curso, clique em "Garantir minha vaga".',
                     'Aparece o quadro "Pague com Pix": aponte a câmera do app do banco para o QR code, ou toque em "Copiar código Pix" e cole em "Pix copia e cola" no app. O valor já vai preenchido.',
                     'Antes de confirmar no app do banco, confira se quem recebe é o Instituto Brasileiro de Treinamento Operacional (ou o favorecido mostrado na tela). Outro nome? Não pague e avise o IBTO pelo suporte.',
@@ -405,6 +406,24 @@ export const MANUAIS: Manual[] = [
                     'O blog é público: use fotos em que ninguém seja identificável (de costas, à distância ou desfocadas), ou com a autorização escrita.',
                 ],
                 tela: { endereco: '/comando-geral/blog', nome: 'Blog' },
+            },
+            {
+                id: 'cupons',
+                titulo: 'Cupons de desconto',
+                resumo: 'Um código que o aluno digita na inscrição; o Pix já sai com o desconto.',
+                passos: [
+                    'Menu "Cupons" → "Novo cupom": código (ex.: FILIADO10), tipo (percentual ou valor fixo) e o valor.',
+                    'Defina a validade (de/até), o limite total de usos e quantas vezes cada pessoa pode usar (padrão 1).',
+                    'Marque "Só para filiados ativos" se for o caso, e "Vale em todos os cursos pagos" ou escolha os cursos.',
+                    'Para encerrar um cupom, abra "Editar" e desmarque "Ativo". A lista mostra os usos e o total já descontado.',
+                ],
+                regras: [
+                    'O desconto entra ANTES da divisão: IBTO e instrutor dividem o que de fato entrou. O livro-caixa mostra o cupom na descrição da receita.',
+                    'Cupom de 100% confirma a matrícula na hora, como um curso gratuito.',
+                    'Matrícula cancelada devolve o uso do cupom. Cupom usado nunca é apagado, só desativado.',
+                    'Começa só com o Comando Geral e a Tecnologia (permissão "cupons.gerenciar"), porque o desconto mexe também na parte do IBTO.',
+                ],
+                tela: { endereco: '/financeiro/cupons', nome: 'Cupons' },
             },
             {
                 id: 'pagamento-config',

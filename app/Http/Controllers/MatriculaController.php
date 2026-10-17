@@ -34,11 +34,17 @@ class MatriculaController extends Controller
      */
     public function store(Request $request, Curso $curso, Matriculas $matriculas): RedirectResponse
     {
+        // Cupom de desconto (#89): opcional, curto (o código tem até 30 letras).
+        $dados = $request->validate(['cupom' => ['nullable', 'string', 'max:30']]);
+
         try {
-            $matricula = $matriculas->matricular($curso, $request->user());
+            $matricula = $matriculas->matricular($curso, $request->user(), cupom: $dados['cupom'] ?? null);
         } catch (RegraCurso $erro) {
-            // Regra não deixou (ex.: vagas esgotadas): volta com o motivo e o código.
-            return back()->withErrors(['matricula' => "{$erro->getMessage()} (código {$erro->codigo})"]);
+            // Regra não deixou (ex.: vagas esgotadas): volta com o motivo e o código. Erro do cupom
+            // (códigos CUPOM_...) aparece embaixo do campo do cupom; os outros, no topo do quadro.
+            $campo = str_starts_with($erro->codigo, 'CUPOM_') ? 'cupom' : 'matricula';
+
+            return back()->withErrors([$campo => "{$erro->getMessage()} (código {$erro->codigo})"]);
         }
 
         // Gratuito: já pode assistir. Pago: o próximo passo é o PIX.
