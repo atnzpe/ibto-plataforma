@@ -3,7 +3,7 @@
 /*
  * VENDA DE FOTOS — LADO DO COMANDO GERAL (#90). Permissão "fotos.gerenciar".
  *
- * - Liga/desliga a venda (começa desligada; depende da aprovação do Mestre).
+ * - Liga/desliga a venda (ligada desde 17/10/2026, decisão do Gleyson).
  * - Álbuns à venda: escolhe o curso, o fotógrafo credenciado, o preço por foto,
  *   a parte do fotógrafo e quando as fotos expiram.
  * - Pedidos: confirma o pagamento do Pix (lança a receita e o repasse) ou cancela.

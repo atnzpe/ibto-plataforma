@@ -66,9 +66,14 @@ function fotografoEnvia($teste, int $quantas = 2): array
     return FotoVenda::where('album_id', $teste->album->id)->orderBy('id')->get()->all();
 }
 
-test('começa desligada: a turma não vê a vitrine e não consegue comprar', function () {
+test('começa ligada (decisão de 17/10); desligada, a turma não vê a vitrine e não consegue comprar', function () {
     $fotos = fotografoEnvia($this);
 
+    // A loja vem ligada desde a migration de 17/10/2026.
+    expect(VendaFotos::ligada())->toBeTrue();
+
+    // Desligada pelo interruptor: nada de vitrine nem de compra.
+    Configuracao::definir(VendaFotos::CHAVE, false);
     expect(VendaFotos::ligada())->toBeFalse();
     $this->actingAs($this->aluno)->get(route('fotos.vitrine', $this->album))->assertNotFound();
     expect(fn () => app(VendaFotos::class)->criarPedido($this->album, $this->aluno, [$fotos[0]->id]))

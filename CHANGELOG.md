@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado
+
+- Loja de fotos dos eventos (#90) ligada por decisão do Gleyson (17/10/2026); o interruptor do Comando Geral continua desligando quando preciso, e só a turma do curso vê e compra.
+
 ### Adicionado
 
 - Offline na plataforma (#74): dá para "instalar" na tela inicial do celular (manifesto com os ícones do IBTO); um service worker guarda o visual e as telas públicas abertas por visitante (catálogo, curso, trilha e blog) para abrir sem internet; tela com login nunca fica guardada no aparelho (LGPD, celular emprestado); sem internet e sem cópia, aparece a página "Sem internet"; em qualquer tela, um aviso avisa quando a conexão cai; cada publicação troca as cópias pela versão nova.
