@@ -114,6 +114,9 @@ test('LGPD: a conta logada vai para a tela sem o filiado (nem CPF, nem nasciment
     // Carrega o filiado na conta antes da tela (como as regras de permissão fazem).
     $usuario->load('filiado');
 
-    $pagina = $this->actingAs($usuario)->get(route('dashboard'))->getContent();
+    // A tela de perfil abre para qualquer conta (a inicial pode redirecionar e o teste passaria sem conferir nada).
+    $resposta = $this->actingAs($usuario)->get(route('profile.edit'));
+    $resposta->assertOk()->assertInertia(fn ($tela) => $tela->missing('auth.user.filiado'));
+    $pagina = $resposta->getContent();
     expect($pagina)->not->toContain('52998224725')->not->toContain('81999990000')->not->toContain('1985-01-01');
 });

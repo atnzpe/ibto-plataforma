@@ -6,6 +6,7 @@
  * O menu de idiomas é o do Google (telas públicas, regra de 07/10/2026).
  * Responsivo: o menu quebra linha no celular; nada de rolagem lateral.
  */
+import VersaoNoAr from '@/components/versao-no-ar';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import BotaoSuporte from '@/components/botao-suporte';
@@ -87,6 +88,8 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
                 propósito. Treinamento com resultados.
                 {/* Suporte técnico pelo WhatsApp (15/10/2026). */}
                 <BotaoSuporte />
+                {/* A versão no ar (#75). */}
+                <VersaoNoAr />
             </footer>
         </div>
     );

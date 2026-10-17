@@ -6,7 +6,11 @@ use Illuminate\Support\Facades\Log;
 test('responde ok quando o banco está conectado', function () {
     $this->getJson('/api/saude')
         ->assertOk()
-        ->assertExactJson(['status' => 'ok', 'banco' => 'ok']);
+        ->assertJsonPath('status', 'ok')
+        ->assertJsonPath('banco', 'ok')
+        // A versão no ar (#75): back, front e banco.
+        ->assertJsonPath('versao.numero', config('app.versao'))
+        ->assertJsonStructure(['versao' => ['numero', 'commit', 'front_build', 'banco' => ['versao', 'migracao']]]);
 });
 
 test('limita a 30 consultas por minuto por IP', function () {

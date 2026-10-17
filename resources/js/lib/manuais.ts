@@ -588,10 +588,13 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Toda mudança: issue → branch → testes → PR → merge na main.',
                     'O merge publica sozinho na homologação (FTPS); o Cron roda as migrations e os caches.',
-                    'Cada versão tem número (ex.: v0.1.0), CHANGELOG e release no GitHub.',
+                    'Cada versão tem número (ex.: v0.2.0), CHANGELOG e release no GitHub. O número fica no arquivo VERSION e aparece no rodapé (com o commit) e em /api/saude.',
+                    'Para lançar uma versão: mova o "Não lançado" do CHANGELOG para "## [X.Y.Z] — data", troque o VERSION para X.Y.Z, faça a PR e o merge; depois crie a tag (git tag vX.Y.Z e git push origin vX.Y.Z). A release sai sozinha, com o pacote da HostGator e o hash SHA-256.',
                 ],
                 regras: [
                     'A produção só recebe versões com número: voltar atrás é publicar a versão anterior.',
+                    'A CI recusa PR que mexe no código sem uma linha no CHANGELOG.',
+                    'A tag precisa bater com o VERSION; se não bater, a release é recusada.',
                 ],
             },
             {

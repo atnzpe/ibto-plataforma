@@ -43,6 +43,13 @@ declare module '@inertiajs/core' {
                 // Relatórios (#73).
                 relatorios_acessar: boolean;
             };
+            // A versão no ar (#75): back (número e commit), front (build) e banco (versão e última migration).
+            versao: {
+                numero: string;
+                commit: string | null;
+                front_build: string | null;
+                banco: { versao: string | null; migracao: string | null };
+            };
             // Tour guiado (#68): o interruptor e as telas já vistas (null sem login).
             tour: { ativo: boolean; vistos: string[] } | null;
             // Mensagem de sucesso da última ação (ex.: "Área cadastrada."), ou null.

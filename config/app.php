@@ -16,6 +16,15 @@ return [
     'name' => env('APP_NAME', 'Laravel'),
 
     /*
+    | VERSÃO DA PLATAFORMA (#75): versionamento semântico MAIOR.MENOR.CORREÇÃO
+    | (0.x enquanto for homologação), lida do arquivo VERSION da raiz. O commit
+    | vem do VERSAO_DEPLOY (gravado pelo deploy); no computador do desenvolvedor,
+    | null. Aparecem no rodapé e na rota /api/saude (o suporte sabe o que está no ar).
+    */
+    'versao' => is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : '0.0.0',
+    'commit' => is_file(base_path('VERSAO_DEPLOY')) ? substr(trim((string) file_get_contents(base_path('VERSAO_DEPLOY'))), 0, 7) : null,
+
+    /*
     |--------------------------------------------------------------------------
     | Indexação por buscadores (IBTO)
     |--------------------------------------------------------------------------

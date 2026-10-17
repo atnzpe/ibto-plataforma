@@ -1,3 +1,4 @@
+import VersaoNoAr from '@/components/versao-no-ar';
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
@@ -263,6 +264,8 @@ export function AppSidebar() {
                 {/* Suporte técnico pelo WhatsApp (15/10/2026), logo acima do nome da pessoa. */}
                 <BotaoSuporte jeito="menu" />
                 <NavUser />
+                {/* A versão no ar (#75): ajuda o suporte a saber o que a pessoa está usando. */}
+                <VersaoNoAr />
             </SidebarFooter>
         </Sidebar>
     );

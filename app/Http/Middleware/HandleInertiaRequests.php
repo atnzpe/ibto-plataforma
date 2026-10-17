@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\VersaoNoAr;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -80,6 +81,9 @@ class HandleInertiaRequests extends Middleware
             // Número do suporte técnico no WhatsApp (só números), para o botão
             // "Suporte técnico". null = sem número no .env (o botão não aparece).
             'suporte_whatsapp' => config('app.suporte_whatsapp') ?: null,
+            // A versão no ar (#75): back, front e banco, para o rodapé e o console do navegador.
+            // Ex.: ['numero' => '0.2.0', 'commit' => 'a1b2c3d', 'front_build' => '17/10/2026 03:12', 'banco' => [...]].
+            'versao' => fn () => VersaoNoAr::tudo(),
             'auth' => [
                 // A conta logada SEM relacionamentos carregados (LGPD, 16/10/2026): antes, se a
                 // requisição já tinha consultado o filiado (as regras de permissão fazem isso), ele
