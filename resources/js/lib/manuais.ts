@@ -198,6 +198,23 @@ export const MANUAIS: Manual[] = [
                 ],
             },
             {
+                id: 'meu-painel-instrutor',
+                titulo: 'Meu painel: inscritos, comparecimento e valores',
+                resumo: 'Os números dos seus cursos no período, para decidir a próxima turma.',
+                passos: [
+                    'Menu "Meu painel": no topo, os totais do período (inscritos, comparecimento, a receber, recebido, certificados).',
+                    'Troque o período em "De" e "Até" (sem filtro: o ano atual). Curso gravado, sem data, aparece sempre.',
+                    'Cada cartão mostra um curso: confirmados, aguardando Pix, cancelados, comparecimento, a receber, recebido e certificados (com os aptos ainda sem certificado).',
+                    '"Exportar CSV" baixa os mesmos números para abrir no Excel ou no Google Planilhas.',
+                ],
+                regras: [
+                    'Comparecimento = presenças ÷ (confirmados × encontros que já tiveram chamada).',
+                    'A receber e recebido = a parte do instrutor no livro-caixa (conta a pagar "Instrutores"), em aberto ou já paga pelo IBTO.',
+                    'Nenhum dado pessoal dos alunos aparece no painel: só contagens, percentuais e valores.',
+                ],
+                tela: { endereco: '/meu-painel', nome: 'Meu painel' },
+            },
+            {
                 id: 'chamada',
                 titulo: 'Inscritos, chamada e certificados',
                 resumo: 'A chamada de cada encontro alimenta o dossiê do aluno e libera o certificado.',
@@ -254,6 +271,23 @@ export const MANUAIS: Manual[] = [
                     endereco: '/admin/solicitacoes',
                     nome: 'Solicitações de cadastro',
                 },
+            },
+            {
+                id: 'meu-painel-equipe',
+                titulo: 'Meu painel: inscritos, comparecimento e valores',
+                resumo: 'Os números dos cursos da sua equipe no período.',
+                passos: [
+                    'Menu "Meu painel": no topo, os totais do período (inscritos, comparecimento, a receber, recebido, certificados).',
+                    'Troque o período em "De" e "Até" (sem filtro: o ano atual). Curso gravado, sem data, aparece sempre.',
+                    'Cada cartão mostra um curso: confirmados, aguardando Pix, cancelados, comparecimento, a receber, recebido e certificados (com os aptos ainda sem certificado).',
+                    '"Exportar CSV" baixa os mesmos números para abrir no Excel ou no Google Planilhas.',
+                ],
+                regras: [
+                    'Comparecimento = presenças ÷ (confirmados × encontros que já tiveram chamada).',
+                    'A receber e recebido = a parte do instrutor no livro-caixa (conta a pagar "Instrutores"), em aberto ou já paga pelo IBTO.',
+                    'Nenhum dado pessoal dos alunos aparece no painel: só contagens, percentuais e valores.',
+                ],
+                tela: { endereco: '/meu-painel', nome: 'Meu painel' },
             },
             {
                 id: 'chamada-equipe',

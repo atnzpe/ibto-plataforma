@@ -45,6 +45,7 @@ use App\Http\Controllers\Fotos\VitrineFotosController;
 use App\Http\Controllers\FotoUsuarioController;
 use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
+use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -496,4 +497,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('fotos/pedidos/{pedido}', [VitrineFotosController::class, 'pedido'])->name('fotos.pedido');
     Route::get('fotos/previa/{foto}', [VitrineFotosController::class, 'previa'])->middleware('throttle:300,1')->name('fotos.previa');
     Route::get('fotos/pedidos/{pedido}/original/{foto}', [VitrineFotosController::class, 'original'])->middleware('throttle:120,1')->name('fotos.original');
+});
+
+// MEU PAINEL (#79): números dos cursos do instrutor (os dele) e do admin de equipe
+// (os da equipe). Sem dado pessoal de aluno. Quem não é nenhum dos dois: 403.
+Route::middleware(['auth', 'verified', 'can:painel.instrutor'])->group(function () {
+    Route::get('meu-painel', [MeuPainelController::class, 'index'])->name('meu-painel');
+    Route::get('meu-painel/csv', [MeuPainelController::class, 'csv'])->middleware('throttle:20,1')->name('meu-painel.csv');
 });

@@ -16,6 +16,7 @@ import {
     UserCog,
     Users,
     Camera,
+    ChartColumn,
     TicketPercent,
     Wallet,
     UserCheck,
@@ -170,6 +171,13 @@ const cadastrosNavItems: (NavItem & {
         href: '/financeiro/cupons',
         icon: TicketPercent,
         permissao: 'cupons_gerenciar',
+    },
+    // Meu painel (#79): inscritos, comparecimento e valores dos cursos do instrutor ou da equipe.
+    {
+        title: 'Meu painel',
+        href: '/meu-painel',
+        icon: ChartColumn,
+        permissao: 'painel_instrutor',
     },
     // Venda de fotos (#90): interruptor, álbuns e pedidos (Comando Geral).
     {

@@ -40,6 +40,8 @@ class HandleInertiaRequests extends Middleware
         // Venda de fotos (#90): o Comando Geral e o fotógrafo.
         'fotos.gerenciar',
         'fotos.vender',
+        // Meu painel (#79): instrutor e admin de equipe.
+        'painel.instrutor',
     ];
 
     /**

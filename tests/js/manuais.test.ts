@@ -68,6 +68,8 @@ describe('conteúdo dos manuais', () => {
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',
             '/financeiro/lancamentos': 'financeiro/lancamentos/index',
+            // Meu painel (#79).
+            '/meu-painel': 'meu-painel',
             // Venda de fotos (#90).
             '/comando-geral/fotos': 'fotos/admin/index',
             '/fotografo': 'fotos/fotografo/index',
