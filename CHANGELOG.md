@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado
 
+- VLibras em todas as telas da plataforma (#74): o widget oficial do governo (tradução em Libras) fica no HTML base, fora do React, e continua aberto ao trocar de tela; afastado do entalhe do celular (safe area); some na impressão; sem internet, simplesmente não aparece.
+
 - Carteirinha do filiado com QR code (#46): "Minha carteirinha" no menu, no tamanho de cartão para imprimir ou salvar em PDF (foto 3x4, registro, nível, equipe, validade 31/12); cada filiado ganha um código sorteado (`IBTO-XXXX-XXXX`); a validação pública mostra só o nome abreviado, a situação (ativa, anuidade pendente ou inativa), categoria, nível e equipe; nome completo, cidade e foto só com a autorização de imagem; código inexistente não revela nada; limite de consultas por IP. O novo certificado de graduação aguarda a decisão do Mestre Eduardo sobre o número de série.
 
 ## [0.2.0] — 2026-10-17 (homologação: piloto completo)
