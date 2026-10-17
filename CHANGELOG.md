@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (fotos pelo instrutor)
+
+- O instrutor cuida das fotos do curso (Mestre Eduardo, 17/10/2026): na tela de Inscritos, o quadro "Fotos do curso" abre o álbum do evento (galeria gratuita para filiados, ligado ao curso, em rascunho até o Comando Geral publicar) e o álbum à venda (o instrutor é o fotógrafo; nasce desativado, 70% para ele, 60 dias); o instrutor envia, descreve e desfoca as fotos do curso dele, mas não publica; outro instrutor ou aluno recebe 403. A compra do aluno mostra os 3 passos (escolher, pagar o Pix, baixar).
+
 ### Removido
 
 - Janelinha de usuário e senha (Basic Auth) da homologação (17/10/2026, início do piloto, pedido do Gleyson): cada pessoa indicada entra pela tela de login, com a própria conta; a homologação continua fora do Google (`X-Robots-Tag: noindex`); o deploy agora confere o noindex em vez da senha. Para voltar, reverter esta mudança.

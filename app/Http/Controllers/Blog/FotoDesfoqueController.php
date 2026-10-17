@@ -22,6 +22,7 @@ use App\Models\GaleriaFoto;
 use App\Support\DesfocarAreas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -43,6 +44,8 @@ class FotoDesfoqueController extends Controller
      */
     public function desfocar(Request $request, GaleriaFoto $foto): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $foto->album);
         $dados = $request->validate([
             // De 1 a 20 áreas; cada uma dentro da foto (0 a 1) e com tamanho mínimo de 1% (senão nem se vê).
             'areas' => ['required', 'array', 'min:1', 'max:'.DesfocarAreas::MAXIMO_DE_AREAS],
@@ -93,6 +96,8 @@ class FotoDesfoqueController extends Controller
      */
     public function restaurar(GaleriaFoto $foto): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $foto->album);
         // Nunca foi desfocada: não há o que restaurar.
         if ($foto->original === null) {
             return back()->with('sucesso', 'Esta foto não tem desfoque.');

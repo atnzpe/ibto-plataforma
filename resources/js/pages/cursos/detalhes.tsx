@@ -7,6 +7,7 @@
  * inscrito. O certificado chega com a #44 ("em breve").
  * Sem rolagem lateral: resumo em grade e inscritos em cartões.
  */
+import FotosDoCurso from '@/components/cursos/fotos-do-curso';
 import FotoPessoa from '@/components/foto-pessoa';
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -81,6 +82,7 @@ export default function DetalhesCurso({
     pode_emitir,
     pode_matricular = false,
     fechado = false,
+    pode_fotos = false,
 }: {
     curso: {
         id: number;
@@ -116,6 +118,8 @@ export default function DetalhesCurso({
     pode_emitir: boolean;
     pode_matricular?: boolean;
     fechado?: boolean;
+    // true = instrutor responsável ou Comando Geral: mostra o quadro "Fotos do curso".
+    pode_fotos?: boolean;
 }) {
     // Mensagem da última ação (ex.: "Chamada registrada: 9 de 12 presentes").
     const { sucesso, errors } = usePage().props;
@@ -226,6 +230,9 @@ export default function DetalhesCurso({
                         {errors.certificado}
                     </p>
                 )}
+
+                {/* Fotos do curso (17/10/2026): só o instrutor responsável e o Comando Geral. */}
+                {pode_fotos && <FotosDoCurso cursoId={curso.id} />}
 
                 {/* Resumo em passos: 2 colunas no celular, 5 na tela larga. */}
                 <section

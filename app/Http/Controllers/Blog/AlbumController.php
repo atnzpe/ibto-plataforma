@@ -20,6 +20,7 @@ use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -93,6 +94,11 @@ class AlbumController extends Controller
      */
     public function edit(GaleriaAlbum $album, PublicacaoAlbum $publicacao): Response
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $album);
+        // Publicar é só do Comando Geral: o instrutor vê o álbum sem os botões do caminho.
+        $podePublicar = Gate::allows('blog.publicar');
+
         return Inertia::render('galeria-admin/formulario', [
             'album' => [
                 'id' => $album->id,
@@ -109,7 +115,9 @@ class AlbumController extends Controller
                 'autorizacao_responsaveis' => $album->autorizacao_responsaveis,
                 'situacao' => $album->situacao->value,
                 'situacao_rotulo' => $album->situacao->rotulo(),
-                'acoes' => $publicacao->acoesPara($album),
+                'acoes' => $podePublicar ? $publicacao->acoesPara($album) : [],
+                // O curso do álbum (17/10/2026), ou null se for avulso.
+                'curso' => $album->curso?->titulo,
                 'fotos' => $album->fotos()->get()->map(fn (GaleriaFoto $foto) => [
                     'id' => $foto->id,
                     'url' => $foto->url(),
@@ -137,6 +145,8 @@ class AlbumController extends Controller
      */
     public function update(Request $request, GaleriaAlbum $album): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $album);
         $album->update($this->validarAlbum($request));
         Auditoria::registrar('ALBUM_EDITADO', ['album_id' => $album->id]);
 
@@ -171,6 +181,8 @@ class AlbumController extends Controller
      */
     public function enviarFotos(Request $request, GaleriaAlbum $album): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $album);
         $request->validate([
             'fotos' => ['required', 'array', 'min:1', 'max:'.self::FOTOS_POR_ENVIO],
             'fotos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.self::FOTO_MAXIMA_KB],
@@ -220,6 +232,8 @@ class AlbumController extends Controller
      */
     public function salvarFotos(Request $request, GaleriaAlbum $album): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $album);
         $dados = $request->validate([
             'fotos' => ['array'],
             'fotos.*.descricao' => ['nullable', 'string', 'max:200'],
@@ -250,6 +264,8 @@ class AlbumController extends Controller
      */
     public function apagarFoto(GaleriaFoto $foto): RedirectResponse
     {
+        // Comando Geral ou o instrutor do curso ligado ao álbum (17/10/2026); os outros: 403.
+        Gate::authorize('galeria.editar', $foto->album);
         Storage::disk('public')->delete($foto->caminho);
         // O original sem desfoque (#90), se houver, sai junto da pasta privada.
         if ($foto->original !== null) {

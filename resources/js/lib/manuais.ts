@@ -254,6 +254,22 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/meu-painel', nome: 'Meu painel' },
             },
             {
+                id: 'fotos-do-curso',
+                titulo: 'Fotos do curso (você é o responsável)',
+                resumo: 'O instrutor cuida das fotos do curso dele; o Comando Geral confere e publica.',
+                passos: [
+                    'Abra o curso em "Inscritos": no quadro "Fotos do curso" há dois botões.',
+                    '"Álbum do evento": envie as fotos gratuitas para os filiados, descreva cada uma e use "Desfocar áreas" em rostos e distintivos.',
+                    '"Fotos à venda": você é o fotógrafo. Envie as fotos; elas saem com a marca d\'água do IBTO.',
+                    'Avise o Comando Geral: ele confere, publica o álbum do evento e ativa a venda.',
+                ],
+                regras: [
+                    'O álbum do evento fica em rascunho até o Comando Geral publicar; a venda fica desativada até ele ativar.',
+                    'Só o instrutor responsável pelo curso (e o Comando Geral) mexe nas fotos dele.',
+                    'Em cursos com balaclava, o desfoque pode não ser necessário; na dúvida, desfoque.',
+                ],
+            },
+            {
                 id: 'chamada',
                 titulo: 'Inscritos, chamada e certificados',
                 resumo: 'A chamada de cada encontro alimenta o dossiê do aluno e libera o certificado.',

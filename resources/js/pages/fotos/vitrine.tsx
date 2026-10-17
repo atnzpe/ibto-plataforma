@@ -6,6 +6,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import VitrineFotosController from '@/actions/App/Http/Controllers/Fotos/VitrineFotosController';
+import PassosCompra from '@/components/fotos/passos-compra';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
@@ -70,10 +71,16 @@ export default function VitrineFotos({
                     </h1>
                     <p className="text-sm text-muted-foreground">
                         {album.curso} · {formatarReais(album.preco_centavos)}{' '}
-                        por foto · disponíveis até {album.expira_em}. Toque nas
-                        fotos para escolher.
+                        cada · disponíveis até {album.expira_em}
                     </p>
                 </div>
+
+                {/* Os 3 passos (17/10/2026): aqui é o passo 1. */}
+                <PassosCompra atual={1} />
+                <p className="text-base">
+                    Toque nas fotos que você quer. Depois, toque em{' '}
+                    <strong>Comprar com Pix</strong>.
+                </p>
 
                 {meus_pedidos.length > 0 && (
                     <ul
@@ -169,5 +176,5 @@ export default function VitrineFotos({
 
 // Caminho mostrado no topo da tela.
 VitrineFotos.layout = {
-    breadcrumbs: [{ title: 'Meus cursos', href: '/meus-cursos' }],
+    breadcrumbs: [{ title: 'Fotos dos eventos', href: '/fotos' }],
 };
