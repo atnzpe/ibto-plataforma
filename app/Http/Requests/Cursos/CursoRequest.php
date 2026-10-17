@@ -13,6 +13,7 @@ namespace App\Http\Requests\Cursos;
 
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
+use App\Models\Curso;
 use App\Support\Dinheiro;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -33,6 +34,11 @@ class CursoRequest extends FormRequest
      */
     public function rules(): array
     {
+        // O curso em edição (para ele não exigir a si mesmo como pré-requisito, #88).
+        // No cadastro de um curso novo não há curso na rota: 0 (nenhum id é 0).
+        $cursoAtual = $this->route('curso');
+        $idAtual = $cursoAtual instanceof Curso ? $cursoAtual->id : 0;
+
         return [
             'titulo' => ['required', 'string', 'max:150'],
             'descricao' => ['nullable', 'string', 'max:5000'],
@@ -45,6 +51,12 @@ class CursoRequest extends FormRequest
             // Parte do IBTO, em % (só o IBTO vê o campo; o controlador ignora para os outros).
             // Vazio = fica como está (ou 20 no curso novo). Ex.: 20; a Formação de instrutor, 100.
             'percentual_ibto' => ['nullable', 'integer', 'min:0', 'max:100'],
+            // Pré-requisitos (#88), só o IBTO grava (no CursoController): nível mínimo, meses de
+            // filiação e os cursos anteriores (basta um concluído). Nunca o próprio curso.
+            'nivel_minimo_id' => ['nullable', 'integer', Rule::exists('niveis', 'id')],
+            'meses_filiacao_minimo' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'requisitos' => ['nullable', 'array', 'max:50'],
+            'requisitos.*' => ['integer', 'distinct', Rule::exists('cursos', 'id'), Rule::notIn([$idAtual])],
             'vagas' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'data_inicio' => ['nullable', 'date_format:Y-m-d'],
             // O fim não pode ser antes do início.
@@ -127,8 +139,8 @@ class CursoRequest extends FormRequest
     public function paraGravar(): array
     {
         return [
-            // "percentual_ibto" fica de fora: só o IBTO grava (no CursoController).
-            ...$this->safe()->except(['valor', 'imagem', 'percentual_ibto']),
+            // "percentual_ibto" e os pré-requisitos ficam de fora: só o IBTO grava (no CursoController).
+            ...$this->safe()->except(['valor', 'imagem', 'percentual_ibto', 'nivel_minimo_id', 'meses_filiacao_minimo', 'requisitos']),
             'valor_centavos' => (int) $this->centavos(),
         ];
     }

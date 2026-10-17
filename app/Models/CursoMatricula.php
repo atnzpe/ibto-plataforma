@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $confirmada_em
  * @property Carbon|null $cancelada_em
  * @property string|null $motivo_cancelamento
+ * @property string|null $excecao_motivo Por que o IBTO matriculou quem não cumpre os pré-requisitos (#88).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

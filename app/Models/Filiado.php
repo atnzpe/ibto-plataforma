@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $nivel_id
  * @property string|null $abrangencia
  * @property bool $documentacao_emitida
+ * @property Carbon|null $data_filiacao Data REAL de filiação ao IBTO (#88: conta o tempo de filiado).
  * @property string $status
  * @property string|null $foto Foto 3x4 na pasta PRIVADA (#78). Ex.: 'fotos/filiados/9f1c...webp'.
  * @property bool $autoriza_imagem_rede Autorizou a foto na Rede Nacional do site (#78)? Começa false.
@@ -45,7 +46,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
-#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status'])]
+#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status', 'data_filiacao'])]
 class Filiado extends Model
 {
     /**
@@ -62,6 +63,8 @@ class Filiado extends Model
             'categoria' => CategoriaFiliado::class,
             // 0/1 do banco vira false/true.
             'documentacao_emitida' => 'boolean',
+            // Data de filiação (#88): texto do banco vira data.
+            'data_filiacao' => 'date',
             // Autorização de imagem (#78): 0/1 vira false/true; a data vira Carbon.
             'autoriza_imagem_rede' => 'boolean',
             'autoriza_imagem_em' => 'datetime',

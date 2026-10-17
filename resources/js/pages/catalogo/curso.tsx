@@ -8,6 +8,7 @@
  * Responsivo: conteúdo e lateral lado a lado na tela larga; um embaixo do
  * outro no celular.
  */
+import type { RequisitoDoCurso } from '@/components/cursos/quadro-matricula';
 import { Head, Link } from '@inertiajs/react';
 import QuadroMatricula from '@/components/cursos/quadro-matricula';
 import type { MatriculaDaPessoa } from '@/components/cursos/quadro-matricula';
@@ -165,6 +166,7 @@ const selo = 'rounded-full px-3 py-0.5 text-xs';
  * @param logado true se há alguém logado (muda o botão da inscrição).
  * @param pode_assistir true se a pessoa pode ver o conteúdo (botão e aulas viram links para a sala de aula).
  * @param vagas_restantes Quantas vagas sobram (null = sem limite). Ex.: 3
+ * @param requisitos Pré-requisitos do curso (#88), cada um com cumprido true/false (visitante: null).
  * @param vagas_preenchidas Quantas vagas já estão ocupadas. Ex.: 14
  * @param matricula A matrícula da pessoa logada (aguardando ou confirmada), ou null.
  * @returns A página do curso.
@@ -174,6 +176,7 @@ export default function PaginaCurso({
     logado,
     pode_assistir,
     vagas_restantes,
+    requisitos = [],
     vagas_preenchidas = 0,
     matricula,
 }: {
@@ -182,6 +185,7 @@ export default function PaginaCurso({
     pode_assistir: boolean;
     // Vagas que sobram (#41); null = sem limite.
     vagas_restantes: number | null;
+    requisitos?: RequisitoDoCurso[];
     // Vagas já ocupadas (aguardando ou confirmadas). Ex.: 14.
     vagas_preenchidas?: number;
     // A matrícula da pessoa logada, ou null.
@@ -530,6 +534,7 @@ export default function PaginaCurso({
                             previa={curso.previa}
                             vagasRestantes={vagas_restantes}
                             matricula={matricula}
+                            requisitos={requisitos}
                         />
                         {curso.whatsapp_url && (
                             <a

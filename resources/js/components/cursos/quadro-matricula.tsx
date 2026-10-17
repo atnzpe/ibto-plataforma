@@ -2,7 +2,8 @@
  * QUADRO DA MATRÍCULA na página do curso (#41, bloco C5b). Mostra o passo em
  * que a pessoa está:
  * - visitante: "Entrar para se inscrever";
- * - sem matrícula: "Garantir minha vaga" (ou "Vagas esgotadas");
+ * - sem matrícula: "Garantir minha vaga" (ou "Vagas esgotadas"); com pré-requisitos (#88),
+ *   a lista com ✅/❌ e, faltando algum, o botão bloqueado com o motivo escrito;
  * - aguardando pagamento: o Pix copia e cola com QR code (#83) e os dados para pagar (PIX e/ou conta, do curso ou
  *   do IBTO, conforme a chave liga/desliga do Comando Geral), o envio do
  *   comprovante e "Desistir";
@@ -34,6 +35,16 @@ export type MatriculaDaPessoa = {
     pix: PixDaMatricula | null;
 };
 
+/** Um pré-requisito do curso (#88), conferido no servidor (App\Support\Requisitos). */
+export type RequisitoDoCurso = {
+    // 'curso' (curso anterior), 'nivel' ou 'filiacao' (tempo de filiado).
+    tipo: 'curso' | 'nivel' | 'filiacao';
+    // O texto para a tela. Ex.: 'Ter concluído: Combate Corpo a Corpo'.
+    texto: string;
+    // true = cumpre; false = não cumpre; null = visitante (sem conferência).
+    cumprido: boolean | null;
+};
+
 /** Os dados para pagar: do curso ou do IBTO (chave liga/desliga no Comando Geral). */
 type DadosParaPagar = {
     origem: 'curso' | 'ibto';
@@ -52,6 +63,7 @@ type DadosParaPagar = {
  * @param previa true = curso ainda não publicado (sem matrícula).
  * @param vagasRestantes Quantas vagas sobram; null = sem limite.
  * @param matricula A matrícula da pessoa, ou null.
+ * @param requisitos Os pré-requisitos do curso (#88), cada um com cumprido true/false; vazio = sem requisito.
  * @returns O quadro com o passo atual.
  */
 export default function QuadroMatricula({
@@ -61,6 +73,7 @@ export default function QuadroMatricula({
     previa,
     vagasRestantes,
     matricula,
+    requisitos = [],
 }: {
     cursoId: number;
     logado: boolean;
@@ -68,7 +81,13 @@ export default function QuadroMatricula({
     previa: boolean;
     vagasRestantes: number | null;
     matricula: MatriculaDaPessoa | null;
+    // Pré-requisitos do curso (#88); vazio = sem requisito.
+    requisitos?: RequisitoDoCurso[];
 }) {
+    // true = a pessoa logada não cumpre algum pré-requisito (o servidor também recusa).
+    const faltaRequisito = requisitos.some(
+        (requisito) => requisito.cumprido === false,
+    );
     // Mensagem de sucesso e erros (a matrícula manda em "matricula"; o envio, em "comprovante").
     const { sucesso, errors } = usePage().props;
     // Chave copiada? (mostra "Copiada!" por um instante no botão).
@@ -128,10 +147,61 @@ export default function QuadroMatricula({
                 </Link>
             )}
 
+            {/* Pré-requisitos (#88): a lista, com o estado escrito (não só a cor) para o leitor de tela. */}
+            {requisitos.length > 0 && matricula === null && (
+                <section
+                    aria-labelledby="titulo-requisitos"
+                    className="rounded-xl border border-[#e4dccb] bg-white p-4 text-sm"
+                >
+                    <h3 id="titulo-requisitos" className="font-semibold">
+                        Requisitos
+                    </h3>
+                    <ul className="mt-2 grid gap-1">
+                        {requisitos.map((requisito) => (
+                            <li
+                                key={requisito.tipo}
+                                className="flex items-start gap-2"
+                            >
+                                <span aria-hidden="true">
+                                    {requisito.cumprido === null
+                                        ? '•'
+                                        : requisito.cumprido
+                                          ? '✅'
+                                          : '❌'}
+                                </span>
+                                <span>
+                                    {requisito.texto}
+                                    {requisito.cumprido !== null && (
+                                        <span className="sr-only">
+                                            {requisito.cumprido
+                                                ? ' (cumprido)'
+                                                : ' (não cumprido)'}
+                                        </span>
+                                    )}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
+            {/* Logado, sem matrícula e faltando requisito: botão bloqueado, com o motivo. */}
+            {!previa && logado && matricula === null && faltaRequisito && (
+                <button
+                    type="button"
+                    className={principal}
+                    disabled
+                    aria-describedby="titulo-requisitos"
+                >
+                    Faltam pré-requisitos
+                </button>
+            )}
+
             {/* Logado e sem matrícula: garantir a vaga, ou vagas esgotadas. */}
             {!previa &&
                 logado &&
                 matricula === null &&
+                !faltaRequisito &&
                 (vagasRestantes === 0 ? (
                     <button type="button" className={principal} disabled>
                         Vagas esgotadas

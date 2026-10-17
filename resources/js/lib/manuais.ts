@@ -89,6 +89,7 @@ export const MANUAIS: Manual[] = [
                 titulo: 'Garantir a vaga e pagar',
                 resumo: 'A inscrição reserva a vaga; o pagamento por PIX a confirma.',
                 passos: [
+                    'Na página do curso, confira o quadro "Requisitos" (se houver): cada item mostra ✅ (cumprido) ou ❌ (falta). Faltando algum, o botão fica "Faltam pré-requisitos".',
                     'Na página do curso, clique em "Garantir minha vaga".',
                     'Aparece o quadro "Pague com Pix": aponte a câmera do app do banco para o QR code, ou toque em "Copiar código Pix" e cole em "Pix copia e cola" no app. O valor já vai preenchido.',
                     'Antes de confirmar no app do banco, confira se quem recebe é o Instituto Brasileiro de Treinamento Operacional (ou o favorecido mostrado na tela). Outro nome? Não pague e avise o IBTO pelo suporte.',
@@ -223,6 +224,7 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Filiados": a lista mostra só a sua equipe.',
                     'Use "Novo filiado" para cadastrar e "Convite" para a pessoa criar a senha.',
+                    'Na ficha do filiado, preencha a "Data de filiação ao IBTO" (a real, não a do cadastro): ela conta o tempo de filiado nos cursos com pré-requisito.',
                     'Na ficha do filiado, "Escolher foto 3x4" coloca a foto da carteirinha. Só marque "O filiado autorizou o uso da foto na Rede Nacional" com a autorização assinada em mãos.',
                 ],
                 regras: [
@@ -297,6 +299,8 @@ export const MANUAIS: Manual[] = [
                 resumo: 'O Comando Geral confere o comprovante e confirma o pagamento.',
                 passos: [
                     '"Matrículas" → filtre por "Aguardando confirmação".',
+                    'Pré-requisitos: no cadastro do curso, a seção "Pré-requisitos" define os cursos anteriores (basta ter concluído um), o nível mínimo e o tempo mínimo de filiado. Só o IBTO define.',
+                    'Exceção: em "Inscritos" → "Matricular pessoa", quem não cumpre os requisitos só entra com o campo "Motivo" preenchido; o motivo fica na matrícula e a exceção vai para a auditoria.',
                     'Cada matrícula mostra o identificador do Pix (ex.: "Pix: IBTOMAT1234"). Ele vem no código que o aluno pagou e aparece no extrato do banco: procure por ele para achar o pagamento certo.',
                     'Abra a ficha, confira o comprovante com o extrato e clique em "Confirmar pagamento".',
                     'Pagamento errado? "Cancelar" com o motivo.',

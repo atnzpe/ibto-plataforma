@@ -347,6 +347,20 @@ export default function DetalhesCurso({
                                             aria-describedby="erro-matricular"
                                         />
                                     </div>
+                                    {/* Motivo da exceção (#88): só exigido se a pessoa não cumpre os pré-requisitos. */}
+                                    <div className="grid gap-1">
+                                        <Label htmlFor="motivo-excecao">
+                                            Motivo (se a pessoa não cumpre os
+                                            pré-requisitos)
+                                        </Label>
+                                        <Input
+                                            id="motivo-excecao"
+                                            name="motivo"
+                                            maxLength={500}
+                                            autoComplete="off"
+                                            placeholder="Ex.: instrutor experiente vindo de outra federação"
+                                        />
+                                    </div>
                                     {/* processing: trava o botão enquanto o servidor responde (evita clique duplo). */}
                                     <Button
                                         type="submit"

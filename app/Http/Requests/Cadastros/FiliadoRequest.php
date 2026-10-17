@@ -83,6 +83,8 @@ class FiliadoRequest extends FormRequest
             // Já recebeu carteirinha/certificado do IBTO? (sim/não). A tela sempre manda 0 ou 1;
             // se não vier (ex.: outro sistema), vale o padrão no cadastro e o atual na edição.
             'documentacao_emitida' => ['sometimes', 'boolean'],
+            // Data REAL de filiação ao IBTO (#88: conta o tempo de filiado); opcional, nunca no futuro.
+            'data_filiacao' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             // Abrangência do instrutor (opcional): nacional ou internacional.
             'abrangencia' => ['nullable', Rule::in(['nacional', 'internacional'])],
         ];

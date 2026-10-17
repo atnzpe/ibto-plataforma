@@ -152,6 +152,8 @@ class FiliadoController extends Controller
                 'nivel_id' => $filiado->nivel_id,
                 'abrangencia' => $filiado->abrangencia,
                 'documentacao_emitida' => $filiado->documentacao_emitida,
+                // Data de filiação (#88), no formato do campo. Ex.: '2024-03-15'.
+                'data_filiacao' => $filiado->data_filiacao?->toDateString(),
                 'areas' => $filiado->areas()->pluck('areas_atuacao.id'),
                 'status' => $filiado->status,
                 // true quando a pessoa já criou a senha pelo convite (e-mail confirmado).
