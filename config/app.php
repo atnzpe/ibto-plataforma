@@ -68,6 +68,15 @@ return [
     // no .env do servidor, nunca no código. Mudou? Apague bootstrap/cache/config.php.
     'piloto_conta_completa' => env('PILOTO_CONTA_COMPLETA'),
 
+    // Stakeholders do piloto (17/10/2026): "Nome|email|papel1,papel2;Nome 2|email|papel".
+    // Cada um ganha conta (convite por e-mail), papéis e matrícula no evento de teste.
+    // Só no .env do servidor (LGPD). Vazio = desligado. Mudou? Apague bootstrap/cache/config.php.
+    'piloto_stakeholders' => env('PILOTO_STAKEHOLDERS'),
+
+    // Senha das contas de exemplo por papel (aluno@demo.ib-to.org e outras). Vazio = sem
+    // contas de exemplo. Nunca no código nem em mensagem de grupo.
+    'piloto_senha_demo' => env('PILOTO_SENHA_DEMO'),
+
     'pix_cidade' => (string) env('IBTO_PIX_CIDADE', 'Recife'),
 
     'admin_emails' => array_values(array_filter(array_map(

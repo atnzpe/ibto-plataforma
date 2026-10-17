@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (stakeholders do piloto)
+
+- Stakeholders e contas de exemplo do piloto (17/10/2026): com `PILOTO_STAKEHOLDERS` no `.env` (nome, e-mail e papéis de cada um), cada stakeholder ganha conta com convite por e-mail, ficha de filiado, os papéis da função (admin de equipe com equipe [TESTE] própria) e a matrícula no evento "[TESTE] Evento do piloto: Operação Avançada (fotos)", que tem o álbum à venda ativo (a conta completa é a fotógrafa e sobe as fotos); com `PILOTO_SENHA_DEMO`, contas de exemplo de aluno, filiado, instrutor, admin de equipe e fotógrafo (`@demo.ib-to.org`), nunca de Comando Geral ou Tecnologia; nomes, e-mails e senha só no `.env`; roda pelo pós-deploy quando a lista muda e não duplica (`plataforma:piloto-stakeholders`).
+
 ### Adicionado (fotos pelo instrutor)
 
 - O instrutor cuida das fotos do curso (Mestre Eduardo, 17/10/2026): na tela de Inscritos, o quadro "Fotos do curso" abre o álbum do evento (galeria gratuita para filiados, ligado ao curso, em rascunho até o Comando Geral publicar) e o álbum à venda (o instrutor é o fotógrafo; nasce desativado, 70% para ele, 60 dias); o instrutor envia, descreve e desfoca as fotos do curso dele, mas não publica; outro instrutor ou aluno recebe 403. A compra do aluno mostra os 3 passos (escolher, pagar o Pix, baixar).
