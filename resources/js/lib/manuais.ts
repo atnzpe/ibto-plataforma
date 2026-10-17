@@ -146,6 +146,22 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/meu-dossie', nome: 'Meu dossiê' },
             },
             {
+                id: 'fotos-eventos',
+                titulo: 'Fotos dos eventos',
+                resumo: 'Compre as fotos profissionais dos cursos de que você participou.',
+                passos: [
+                    'Menu "Fotos dos eventos": aparecem os álbuns da sua turma (cursos com matrícula confirmada).',
+                    '"Ver as fotos": toque nas prévias para escolher e confira o total.',
+                    '"Comprar": sai o Pix copia e cola com o valor exato. Depois que o IBTO confirmar, "Baixar as fotos" libera os originais por 30 dias.',
+                    'Em "Meus pedidos" você volta ao Pix ou baixa de novo.',
+                ],
+                regras: [
+                    'Só a sua turma vê os álbuns do curso (segurança dos operadores; nada é público).',
+                    "As prévias têm marca d'água; o original sai só depois do pagamento confirmado.",
+                ],
+                tela: { endereco: '/fotos', nome: 'Fotos dos eventos' },
+            },
+            {
                 id: 'carteirinha',
                 titulo: 'Minha carteirinha',
                 resumo: 'A carteirinha de filiado com QR code, para imprimir ou guardar em PDF.',

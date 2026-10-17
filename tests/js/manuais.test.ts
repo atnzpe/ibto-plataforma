@@ -66,6 +66,8 @@ describe('conteúdo dos manuais', () => {
             '/meu-dossie': 'meu-dossie',
             // Minha carteirinha (#46): página de impressão, sem menu e sem tour.
             '/minha-carteirinha': '',
+            // Fotos dos eventos (#90): ainda sem tour próprio.
+            '/fotos': '',
             '/comando-geral': 'comando-geral',
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Actions\Fotos\VendaFotos;
 use App\Enums\SituacaoCurso;
 use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
@@ -131,6 +132,9 @@ class AppServiceProvider extends ServiceProvider
 
         // "carteirinha.ver" (#46): ter o item "Minha carteirinha" no menu. Só quem é filiado.
         Gate::define('carteirinha.ver', fn (User $usuario): bool => $usuario->filiado !== null);
+        // "fotos.eventos" (#90, 17/10/2026): ter o item "Fotos dos eventos" no menu,
+        // enquanto a loja de fotos estiver ligada. Quem vê cada álbum continua sendo a turma.
+        Gate::define('fotos.eventos', fn (User $usuario): bool => VendaFotos::ligada());
 
         // "relatorios.acessar" (#73): abrir o módulo de relatórios. Passa quem tem pelo menos
         // UMA permissão de relatório (cada relatório confere a sua no controlador).

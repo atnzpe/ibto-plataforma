@@ -516,7 +516,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('financeiro', [FotografoController::class, 'financeiro'])->name('financeiro');
     });
 
-    // Aluno: vitrine, compra, pedido (Pix) e os arquivos (cada um confere a permissão).
+    // Aluno: o menu "Fotos dos eventos" (álbuns que pode ver + pedidos, 17/10/2026),
+    // vitrine, compra, pedido (Pix) e os arquivos (cada um confere a permissão).
+    Route::get('fotos', [VitrineFotosController::class, 'index'])->name('fotos.index');
     Route::get('fotos/albuns/{album}', [VitrineFotosController::class, 'show'])->name('fotos.vitrine');
     Route::post('fotos/albuns/{album}/comprar', [VitrineFotosController::class, 'comprar'])->middleware('throttle:10,1')->name('fotos.comprar');
     Route::get('fotos/pedidos/{pedido}', [VitrineFotosController::class, 'pedido'])->name('fotos.pedido');

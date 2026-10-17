@@ -44,6 +44,8 @@ declare module '@inertiajs/core' {
                 relatorios_acessar: boolean;
                 // Minha carteirinha (#46): só filiados.
                 carteirinha_ver: boolean;
+                // Fotos dos eventos (#90): a loja de fotos está ligada.
+                fotos_eventos: boolean;
             };
             // A versão no ar (#75): back (número e commit), front (build) e banco (versão e última migration).
             versao: {

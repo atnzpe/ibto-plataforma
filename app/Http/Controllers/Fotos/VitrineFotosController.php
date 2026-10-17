@@ -32,6 +32,53 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class VitrineFotosController extends Controller
 {
     /**
+     * FOTOS DOS EVENTOS (menu, decisão do Gleyson em 17/10/2026): os álbuns à venda
+     * que a pessoa pode ver (só os dos cursos em que ela tem matrícula confirmada)
+     * e todos os pedidos dela (Pix pendente, pago com download, cancelado).
+     *
+     * @param  Request  $request  O pedido de quem está logado.
+     * @return Response A tela "fotos/index".
+     */
+    public function index(Request $request): Response
+    {
+        $usuario = $request->user();
+
+        // Os álbuns ativos e no prazo; o filtro final é a mesma regra da vitrine (podeVer).
+        $albuns = FotoAlbumVenda::query()
+            ->with('curso:id,titulo')
+            ->where('ativo', true)->where('expirado', false)
+            ->orderByDesc('id')
+            ->get()
+            ->filter(fn (FotoAlbumVenda $album) => VendaFotos::podeVer($album, $usuario))
+            ->map(fn (FotoAlbumVenda $album) => [
+                'id' => $album->id,
+                'titulo' => $album->titulo,
+                'curso' => $album->curso->titulo,
+                'preco_centavos' => $album->preco_centavos,
+                'expira_em' => $album->expira_em->format('d/m/Y'),
+                'fotos' => $album->fotos()->count(),
+            ])
+            ->values()
+            ->all();
+
+        return Inertia::render('fotos/index', [
+            'ligada' => VendaFotos::ligada(),
+            'albuns' => $albuns,
+            'pedidos' => PedidoFoto::query()->with('album:id,titulo')->where('user_id', $usuario->id)->orderByDesc('id')->limit(50)->get()
+                ->map(fn (PedidoFoto $pedido) => [
+                    'id' => $pedido->id,
+                    'album' => $pedido->album->titulo,
+                    'situacao' => $pedido->situacao,
+                    'valor_centavos' => $pedido->valor_centavos,
+                    'data' => $pedido->created_at?->format('d/m/Y'),
+                    'pode_baixar' => $pedido->podeBaixar(),
+                ])
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    /**
      * A vitrine de um álbum: prévias para escolher e o preço por foto.
      */
     public function show(Request $request, FotoAlbumVenda $album): Response

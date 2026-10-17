@@ -196,6 +196,14 @@ const cadastrosNavItems: (NavItem & {
         icon: ChartColumn,
         permissao: 'painel_instrutor',
     },
+    // Fotos dos eventos (#90, 17/10/2026): os álbuns à venda da turma e os pedidos da pessoa.
+    // Aparece enquanto a loja de fotos estiver ligada.
+    {
+        title: 'Fotos dos eventos',
+        href: '/fotos',
+        icon: Camera,
+        permissao: 'fotos_eventos',
+    },
     // Venda de fotos (#90): interruptor, álbuns e pedidos (Comando Geral).
     {
         title: 'Venda de fotos',
