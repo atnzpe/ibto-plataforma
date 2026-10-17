@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado
+
+- Carteirinha do filiado com QR code (#46): "Minha carteirinha" no menu, no tamanho de cartão para imprimir ou salvar em PDF (foto 3x4, registro, nível, equipe, validade 31/12); cada filiado ganha um código sorteado (`IBTO-XXXX-XXXX`); a validação pública mostra só o nome abreviado, a situação (ativa, anuidade pendente ou inativa), categoria, nível e equipe; nome completo, cidade e foto só com a autorização de imagem; código inexistente não revela nada; limite de consultas por IP. O novo certificado de graduação aguarda a decisão do Mestre Eduardo sobre o número de série.
+
 ## [0.2.0] — 2026-10-17 (homologação: piloto completo)
 
 Base do piloto com os cursos reais, Pix copia e cola, cupom, pré-requisitos, fotos, venda de fotos (desligada), Meu painel, relatórios, cadastro fechado e e-mails com a marca.

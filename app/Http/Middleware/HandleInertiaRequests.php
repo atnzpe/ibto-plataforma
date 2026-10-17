@@ -45,6 +45,8 @@ class HandleInertiaRequests extends Middleware
         'painel.instrutor',
         // Relatórios (#73): quem tem pelo menos um relatório.
         'relatorios.acessar',
+        // Minha carteirinha (#46): só filiados.
+        'carteirinha.ver',
     ];
 
     /**

@@ -42,6 +42,8 @@ declare module '@inertiajs/core' {
                 painel_instrutor: boolean;
                 // Relatórios (#73).
                 relatorios_acessar: boolean;
+                // Minha carteirinha (#46): só filiados.
+                carteirinha_ver: boolean;
             };
             // A versão no ar (#75): back (número e commit), front (build) e banco (versão e última migration).
             versao: {

@@ -1,0 +1,143 @@
+/**
+ * MINHA CARTEIRINHA (#46): o cartão do filiado para imprimir ou guardar em PDF.
+ *
+ * Frente única no tamanho de cartão (85,6 × 54 mm, o mesmo do RG e do cartão de
+ * banco): foto 3x4, nome, registro, nível, equipe, validade e o QR code que abre
+ * a validação pública. Página limpa (sem menu): o botão "Imprimir" some na
+ * impressão. Sem foto: um aviso para enviar a 3x4 em Configurações.
+ */
+import { Head, Link } from '@inertiajs/react';
+
+/** Os dados da carteirinha da própria pessoa. */
+type MinhaCarteirinha = {
+    nome: string;
+    registro: string;
+    situacao: 'ativa' | 'pendente' | 'inativa';
+    situacao_rotulo: string;
+    validade: string | null;
+    categoria: string | null;
+    nivel: string | null;
+    equipe: string | null;
+    foto_url: string | null;
+    codigo: string;
+    endereco_validacao: string;
+    qr_svg: string;
+};
+
+/**
+ * @param carteirinha Os dados da carteirinha.
+ * @returns A página da carteirinha.
+ */
+export default function MinhaCarteirinha({
+    carteirinha,
+}: {
+    carteirinha: MinhaCarteirinha;
+}) {
+    return (
+        <>
+            <Head title="Minha carteirinha" />
+            <main className="mx-auto flex max-w-3xl flex-col items-center gap-6 bg-white p-6 text-black print:p-0">
+                <div className="flex w-full flex-wrap items-center justify-between gap-3 print:hidden">
+                    <Link
+                        href="/dashboard"
+                        className="text-sm underline underline-offset-4"
+                    >
+                        Voltar à plataforma
+                    </Link>
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="min-h-11 rounded-md border border-black/30 px-4 text-sm font-medium"
+                    >
+                        Imprimir ou salvar em PDF
+                    </button>
+                </div>
+
+                {/* Sem foto 3x4: aviso (some na impressão). */}
+                {!carteirinha.foto_url && (
+                    <p
+                        role="note"
+                        className="w-full rounded-md border border-amber-700 bg-amber-50 p-3 text-sm text-amber-900 print:hidden"
+                    >
+                        Sua carteirinha está sem foto. Envie a foto 3x4 em
+                        Configurações → Perfil.
+                    </p>
+                )}
+
+                {/* O cartão: 85,6 × 54 mm na impressão. */}
+                <section
+                    aria-label="Carteirinha do filiado"
+                    className="flex w-full max-w-[540px] gap-3 overflow-hidden rounded-xl border-2 border-[#6b5d3a] bg-[#14161a] p-4 text-[#f3f1ec] print:h-[54mm] print:w-[85.6mm] print:max-w-none print:gap-2 print:p-2"
+                >
+                    <div className="flex h-36 w-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-neutral-700 print:h-[38mm] print:w-[28mm]">
+                        {carteirinha.foto_url ? (
+                            <img
+                                src={carteirinha.foto_url}
+                                alt="Foto 3x4"
+                                className="size-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-xs text-neutral-300">
+                                sem foto
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col justify-between gap-1">
+                        <div className="flex items-center gap-2">
+                            <img
+                                src="/images/ibto-emblema.png"
+                                alt=""
+                                className="size-8 print:size-6"
+                            />
+                            <p className="text-[10px] leading-tight tracking-wide uppercase print:text-[6pt]">
+                                Instituto Brasileiro de Treinamento Operacional
+                            </p>
+                        </div>
+                        <div>
+                            <p className="font-semibold [overflow-wrap:anywhere] print:text-[8pt]">
+                                {carteirinha.nome}
+                            </p>
+                            <p className="font-mono text-sm print:text-[7pt]">
+                                {carteirinha.registro}
+                            </p>
+                            <p className="text-xs text-[#c9bd94] print:text-[6.5pt]">
+                                {[carteirinha.categoria, carteirinha.nivel]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                            </p>
+                            {carteirinha.equipe && (
+                                <p className="text-xs print:text-[6.5pt]">
+                                    {carteirinha.equipe}
+                                </p>
+                            )}
+                        </div>
+                        <p className="text-xs print:text-[6.5pt]">
+                            {carteirinha.situacao_rotulo}
+                            {carteirinha.validade
+                                ? ` · válida até ${carteirinha.validade}`
+                                : ''}
+                        </p>
+                    </div>
+                    {/* QR code: abre a validação pública (fundo branco para a câmera ler). */}
+                    <div className="flex shrink-0 flex-col items-center gap-1">
+                        <div
+                            className="rounded bg-white p-1 [&>svg]:size-24 print:[&>svg]:size-[22mm]"
+                            dangerouslySetInnerHTML={{
+                                __html: carteirinha.qr_svg,
+                            }}
+                        />
+                        <p className="font-mono text-[9px] print:text-[5pt]">
+                            {carteirinha.codigo}
+                        </p>
+                    </div>
+                </section>
+
+                <p className="text-center text-xs text-black/60 print:hidden">
+                    Quem ler o QR code vê a validação em{' '}
+                    {carteirinha.endereco_validacao}, só com o necessário para
+                    conferir.
+                </p>
+            </main>
+        </>
+    );
+}

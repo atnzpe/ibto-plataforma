@@ -20,7 +20,8 @@ test('as telas recebem a versão para o rodapé', function () {
 
 test('o banco aparece com a versão e a última migration aplicada', function () {
     $this->getJson(route('api.saude'))
-        ->assertJsonPath('versao.banco.migracao', fn ($migracao) => is_string($migracao) && str_contains($migracao, 'create_'))
+        // A última migration tem o formato do nome do arquivo (data_hora_descricao), seja ela qual for.
+        ->assertJsonPath('versao.banco.migracao', fn ($migracao) => is_string($migracao) && preg_match('/^\d{4}_\d{2}_\d{2}_\d{6}_\w+$/', $migracao) === 1)
         ->assertJsonPath('versao.banco.versao', fn ($versao) => is_string($versao) && $versao !== '');
 });
 

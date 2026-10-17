@@ -18,6 +18,7 @@ import {
     Users,
     Camera,
     FileChartColumn,
+    IdCard,
     ChartColumn,
     TicketPercent,
     Wallet,
@@ -173,6 +174,13 @@ const cadastrosNavItems: (NavItem & {
         href: '/financeiro/cupons',
         icon: TicketPercent,
         permissao: 'cupons_gerenciar',
+    },
+    // Minha carteirinha (#46): o cartão do filiado com o QR code, para imprimir.
+    {
+        title: 'Minha carteirinha',
+        href: '/minha-carteirinha',
+        icon: IdCard,
+        permissao: 'carteirinha_ver',
     },
     // Relatórios (#73): cada pessoa vê só os relatórios que a permissão dela libera.
     {
