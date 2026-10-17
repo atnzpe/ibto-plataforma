@@ -9,6 +9,7 @@ use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
 use App\Http\Controllers\Blog\FotoDesfoqueController;
+use App\Http\Controllers\Blog\FotosDoCursoController;
 use App\Http\Controllers\Blog\GaleriaController;
 use App\Http\Controllers\Blog\PostCapaController;
 use App\Http\Controllers\Blog\PostController;
@@ -341,9 +342,21 @@ Route::middleware(['auth', 'verified', 'can:blog.publicar'])
     ->group(function () {
         Route::resource('blog', PostController::class)->except(['show', 'destroy']);
         Route::post('blog/{blog}/situacao', [PostController::class, 'situacao'])->name('blog.situacao');
-        // Galeria de eventos (#61, bloco B2): álbuns, envio de fotos, descrições e o caminho.
-        Route::resource('galeria', AlbumController::class)->parameters(['galeria' => 'album'])->except(['show', 'destroy']);
+        // Galeria de eventos (#61, bloco B2): a lista, o álbum novo e o caminho (publicar,
+        // arquivar). PUBLICAR é só do Comando Geral (blog.publicar).
+        Route::resource('galeria', AlbumController::class)->parameters(['galeria' => 'album'])->only(['index', 'create', 'store']);
         Route::post('galeria/{album}/situacao', [AlbumController::class, 'situacao'])->name('galeria.situacao');
+    });
+
+// EDITAR AS FOTOS DE UM ÁLBUM (17/10/2026): o Comando Geral OU o instrutor do curso ligado
+// ao álbum ("o responsável pelas fotos é sempre o instrutor do curso", Mestre Eduardo).
+// Cada ação confere a regra "galeria.editar" no controlador. Mesmos endereços e nomes de antes.
+Route::middleware(['auth', 'verified'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::get('galeria/{album}/edit', [AlbumController::class, 'edit'])->name('galeria.edit');
+        Route::match(['put', 'patch'], 'galeria/{album}', [AlbumController::class, 'update'])->name('galeria.update');
         Route::post('galeria/{album}/fotos', [AlbumController::class, 'enviarFotos'])->name('galeria.fotos.enviar');
         Route::put('galeria/{album}/fotos', [AlbumController::class, 'salvarFotos'])->name('galeria.fotos.salvar');
         Route::delete('galeria/fotos/{foto}', [AlbumController::class, 'apagarFoto'])->name('galeria.fotos.apagar');
@@ -351,6 +364,14 @@ Route::middleware(['auth', 'verified', 'can:blog.publicar'])
         Route::post('galeria/fotos/{foto}/desfoque', [FotoDesfoqueController::class, 'desfocar'])->middleware('throttle:30,1')->name('galeria.fotos.desfocar');
         Route::delete('galeria/fotos/{foto}/desfoque', [FotoDesfoqueController::class, 'restaurar'])->middleware('throttle:30,1')->name('galeria.fotos.restaurar');
     });
+
+// O INSTRUTOR ABRE O ÁLBUM DO CURSO DELE (17/10/2026): o da galeria (fotos gratuitas para
+// os filiados, publicado pelo Comando Geral) e o da venda (ele é o fotógrafo; o Comando Geral
+// ativa). Só o responsável pelo curso ou o Comando Geral ("curso.instrutor").
+Route::middleware(['auth', 'verified', 'throttle:10,1'])->group(function () {
+    Route::post('cursos/{curso}/album-fotos', [FotosDoCursoController::class, 'galeria'])->whereNumber('curso')->name('cursos.album-fotos');
+    Route::post('cursos/{curso}/fotos-venda', [FotosDoCursoController::class, 'venda'])->whereNumber('curso')->name('cursos.fotos-venda');
+});
 
 // Foto da galeria (#61, B2): pública só de álbum publicado e foto descrita.
 Route::get('imagens/galeria/{foto}', [GaleriaController::class, 'foto'])

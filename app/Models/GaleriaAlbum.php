@@ -32,10 +32,13 @@ use Illuminate\Support\Str;
  * @property bool $tem_menores
  * @property bool $autorizacao_responsaveis
  * @property int|null $autor_id
+ * @property int|null $curso_id O curso do álbum (17/10/2026); o instrutor dele cuida das fotos. null = avulso.
+ * @property-read Curso|null $curso
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-// Ficam de fora: "slug" (calculado aqui), "situacao" (só a PublicacaoAlbum muda) e "autor_id".
+// Ficam de fora: "slug" (calculado aqui), "situacao" (só a PublicacaoAlbum muda), "autor_id" e
+// "curso_id" (quem liga ao curso é o controlador, conferindo o instrutor).
 #[Fillable(['titulo', 'descricao', 'data_evento', 'local_evento', 'post_id', 'credito_padrao', 'autorizacao_imagem', 'autorizacao_origem', 'tem_menores', 'autorizacao_responsaveis'])]
 class GaleriaAlbum extends Model
 {
@@ -110,5 +113,16 @@ class GaleriaAlbum extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
+    }
+
+    /**
+     * O curso do álbum (17/10/2026): o instrutor responsável por ele cuida das fotos.
+     * null = álbum avulso, sem curso.
+     *
+     * @return BelongsTo<Curso, $this>
+     */
+    public function curso(): BelongsTo
+    {
+        return $this->belongsTo(Curso::class);
     }
 }

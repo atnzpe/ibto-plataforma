@@ -6,6 +6,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import VitrineFotosController from '@/actions/App/Http/Controllers/Fotos/VitrineFotosController';
 import PixCopiaECola from '@/components/cursos/pix-copia-e-cola';
+import PassosCompra from '@/components/fotos/passos-compra';
 import type { PixDaMatricula } from '@/components/cursos/pix-copia-e-cola';
 import { formatarReais } from '@/lib/dinheiro';
 
@@ -48,6 +49,17 @@ export default function PedidoFotos({
                         {formatarReais(pedido.valor_centavos)}
                     </p>
                 </div>
+                {/* Os 3 passos (17/10/2026): aguardando = passo 2 (pagar); pago = passo 3 (baixar). Cancelado: sem a faixa. */}
+                {pedido.situacao !== 'cancelado' && (
+                    <PassosCompra atual={pedido.situacao === 'pago' ? 3 : 2} />
+                )}
+                {pedido.situacao === 'aguardando_pagamento' && (
+                    <p className="text-base">
+                        Pague o Pix abaixo. Quando o IBTO confirmar, as fotos
+                        sem marca ficam liberadas aqui mesmo e em{' '}
+                        <strong>Fotos dos eventos</strong>.
+                    </p>
+                )}
                 {sucesso && (
                     <p
                         role="status"
@@ -118,5 +130,5 @@ export default function PedidoFotos({
 
 // Caminho mostrado no topo da tela.
 PedidoFotos.layout = {
-    breadcrumbs: [{ title: 'Meus cursos', href: '/meus-cursos' }],
+    breadcrumbs: [{ title: 'Fotos dos eventos', href: '/fotos' }],
 };

@@ -8,6 +8,8 @@ use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\Filiado;
+use App\Models\FotoAlbumVenda;
+use App\Models\GaleriaAlbum;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Console\ServeCommand;
@@ -142,6 +144,22 @@ class AppServiceProvider extends ServiceProvider
         // "fotos.eventos" (#90, 17/10/2026): ter o item "Fotos dos eventos" no menu,
         // enquanto a loja de fotos estiver ligada. Quem vê cada álbum continua sendo a turma.
         Gate::define('fotos.eventos', fn (User $usuario): bool => VendaFotos::ligada());
+
+        // FOTOS DO CURSO PELO INSTRUTOR (Mestre Eduardo, 17/10/2026: "o responsável pelas
+        // fotos é sempre o instrutor do curso").
+        // "curso.instrutor": cuidar do curso como instrutor. Passa o Comando Geral
+        // (cursos.gerenciar) e o RESPONSÁVEL pelo curso. Aluno matriculado não passa.
+        Gate::define('curso.instrutor', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $curso->responsavel_id === $usuario->id);
+        // "galeria.editar": enviar, descrever e desfocar as fotos de um álbum da galeria.
+        // Passa quem cuida do blog (blog.publicar) e o instrutor do curso ligado ao álbum.
+        // PUBLICAR continua só com blog.publicar (o Comando Geral confere antes).
+        Gate::define('galeria.editar', fn (User $usuario, GaleriaAlbum $album): bool => $usuario->temPermissao('blog.publicar')
+            || ($album->curso !== null && Gate::forUser($usuario)->allows('curso.instrutor', $album->curso)));
+        // "fotos.vender" (fallback): quem não tem o papel Fotógrafo, mas é o fotógrafo de algum
+        // álbum à venda (ex.: o instrutor que abriu o álbum do curso dele), também entra nas
+        // telas de fotógrafo; lá cada um só vê e mexe nos PRÓPRIOS álbuns.
+        Gate::define('fotos.vender', fn (User $usuario): bool => FotoAlbumVenda::where('fotografo_id', $usuario->id)->exists());
 
         // "relatorios.acessar" (#73): abrir o módulo de relatórios. Passa quem tem pelo menos
         // UMA permissão de relatório (cada relatório confere a sua no controlador).

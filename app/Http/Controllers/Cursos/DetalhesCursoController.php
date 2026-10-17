@@ -137,6 +137,8 @@ class DetalhesCursoController extends Controller
             'pode_matricular' => Gate::allows('cursos.gerenciar'),
             // true = curso FECHADO: a tela explica que só entra quem o IBTO matricular.
             'fechado' => $curso->fechado,
+            // Fotos do curso (17/10/2026): o instrutor responsável (ou o Comando Geral) cuida delas.
+            'pode_fotos' => Gate::allows('curso.instrutor', $curso),
         ]);
     }
 }

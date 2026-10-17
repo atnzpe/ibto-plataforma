@@ -56,6 +56,7 @@ class PosDeploy extends Command
             $this->tirarPlacaDoDeploy();
             $this->carregarPilotoSeLigado();
             $this->carregarContaCompletaSeLigado();
+            $this->carregarStakeholdersSeLigado();
 
             return self::SUCCESS;
         }
@@ -79,6 +80,7 @@ class PosDeploy extends Command
         Log::info('POS_DEPLOY_APLICADO', ['versao' => $publicada]);
         $this->carregarPilotoSeLigado();
         $this->carregarContaCompletaSeLigado();
+        $this->carregarStakeholdersSeLigado();
         $this->info("Versão {$publicada} aplicada.");
 
         return self::SUCCESS;
@@ -139,6 +141,36 @@ class PosDeploy extends Command
             }
         } catch (Throwable $erro) {
             Log::error('CONTA_COMPLETA_FALHOU', ['excecao' => $erro::class]);
+        }
+    }
+
+    /**
+     * Stakeholders e contas de exemplo do piloto (17/10/2026): roda
+     * "plataforma:piloto-stakeholders" quando a lista, a senha de exemplo ou a conta
+     * completa mudam no .env. A marca guarda só a impressão digital (hash) delas.
+     */
+    protected function carregarStakeholdersSeLigado(): void
+    {
+        $lista = trim((string) config('app.piloto_stakeholders'));
+        $senha = (string) config('app.piloto_senha_demo');
+        // Nada configurado: não faz nada.
+        if ($lista === '' && $senha === '') {
+            return;
+        }
+
+        $marca = storage_path('app/piloto-stakeholders');
+        $impressao = hash('sha256', $lista.'|'.$senha.'|'.config('app.piloto_conta_completa'));
+        // Já rodou com estes mesmos dados: não repete.
+        if (File::exists($marca) && trim(File::get($marca)) === $impressao) {
+            return;
+        }
+
+        try {
+            Artisan::call('plataforma:piloto-stakeholders', [], $this->output);
+            File::put($marca, $impressao);
+            Log::info('PILOTO_STAKEHOLDERS_CARREGADOS');
+        } catch (Throwable $erro) {
+            Log::error('PILOTO_STAKEHOLDERS_FALHOU', ['excecao' => $erro::class]);
         }
     }
 
