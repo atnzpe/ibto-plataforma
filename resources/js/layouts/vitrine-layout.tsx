@@ -13,7 +13,7 @@ import BotaoSuporte from '@/components/botao-suporte';
 import { index as blog } from '@/routes/blog';
 import { index as eventos } from '@/routes/galeria';
 import MenuIdiomas from '@/components/menu-idiomas';
-import { dashboard, login } from '@/routes';
+import { dashboard, home, login } from '@/routes';
 import { index as catalogo } from '@/routes/catalogo';
 
 /**
@@ -37,12 +37,14 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
 
             <header className="bg-[#1c1b17] text-[#f4f1e8]">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-                    <Link
-                        href={catalogo()}
+                    {/* O logo (17/10/2026): visitante vai para a home do site do IBTO; logado, para o painel.
+                        Quem decide é o endereço "/" no servidor. Link comum (<a>), porque pode sair da plataforma. */}
+                    <a
+                        href={home().url}
                         className="font-[Audiowide,sans-serif] text-2xl tracking-wide text-[#c9bd94] no-underline"
                     >
                         IBTO
-                    </Link>
+                    </a>
                     {/* Menu: quebra linha no celular; cada item com 44 px de altura (bom para o dedo). */}
                     <nav
                         aria-label="Menu da vitrine"

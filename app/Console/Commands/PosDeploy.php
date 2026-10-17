@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -57,6 +58,7 @@ class PosDeploy extends Command
             $this->carregarPilotoSeLigado();
             $this->carregarContaCompletaSeLigado();
             $this->carregarStakeholdersSeLigado();
+            $this->gravarEstadoDoPiloto();
 
             return self::SUCCESS;
         }
@@ -81,6 +83,7 @@ class PosDeploy extends Command
         $this->carregarPilotoSeLigado();
         $this->carregarContaCompletaSeLigado();
         $this->carregarStakeholdersSeLigado();
+        $this->gravarEstadoDoPiloto();
         $this->info("Versão {$publicada} aplicada.");
 
         return self::SUCCESS;
@@ -141,6 +144,36 @@ class PosDeploy extends Command
             }
         } catch (Throwable $erro) {
             Log::error('CONTA_COMPLETA_FALHOU', ['excecao' => $erro::class]);
+        }
+    }
+
+    /**
+     * ESTADO DO PILOTO (17/10/2026): grava storage/app/piloto-estado a cada passada, SEM
+     * dado pessoal (só sim/não e números), para o diagnóstico mostrar o que está ligado.
+     * Ex.: "conta_completa_encontrada: nao" = o e-mail do .env não tem conta na plataforma.
+     */
+    protected function gravarEstadoDoPiloto(): void
+    {
+        $email = strtolower(trim((string) config('app.piloto_conta_completa')));
+        // Quantas linhas a lista de stakeholders tem (sem ler nomes nem e-mails).
+        $stakeholders = count(array_filter(explode(';', (string) config('app.piloto_stakeholders')), fn (string $l) => trim($l) !== ''));
+
+        $linhas = [
+            'atualizado: '.now()->format('d/m/Y H:i'),
+            // Config em cache: o .env só é lido de novo depois de apagar este arquivo.
+            'config_em_cache: '.(File::exists(base_path('bootstrap/cache/config.php')) ? 'sim' : 'nao'),
+            'conta_completa_configurada: '.($email !== '' ? 'sim' : 'nao'),
+            'conta_completa_encontrada: '.($email !== '' && User::where('email', $email)->exists() ? 'sim' : 'nao'),
+            'conta_completa_montada: '.(File::exists(storage_path('app/conta-completa')) ? 'sim' : 'nao'),
+            'senha_demo_configurada: '.((string) config('app.piloto_senha_demo') !== '' ? 'sim' : 'nao'),
+            'stakeholders_na_lista: '.$stakeholders,
+            'stakeholders_carregados: '.(File::exists(storage_path('app/piloto-stakeholders')) ? 'sim' : 'nao'),
+        ];
+
+        try {
+            File::put(storage_path('app/piloto-estado'), implode("\n", $linhas)."\n");
+        } catch (Throwable) {
+            // Não conseguiu gravar (ex.: disco): não atrapalha o pós-deploy.
         }
     }
 

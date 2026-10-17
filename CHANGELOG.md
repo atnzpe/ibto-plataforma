@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (logo e diagnóstico do piloto)
+
+- O logo leva à home do site do IBTO para o visitante e ao painel para quem está logado (17/10/2026); antes, o visitante ia ao catálogo. Sem o endereço do site configurado, continua o catálogo.
+- Estado do piloto no diagnóstico: o pós-deploy grava `storage/app/piloto-estado` (só sim/não e números, sem dado pessoal): config em cache, conta completa configurada/encontrada/montada, senha das contas de exemplo e stakeholders; o workflow de diagnóstico mostra esse arquivo.
+
 ### Adicionado (stakeholders do piloto)
 
 - Stakeholders e contas de exemplo do piloto (17/10/2026): com `PILOTO_STAKEHOLDERS` no `.env` (nome, e-mail e papéis de cada um), cada stakeholder ganha conta com convite por e-mail, ficha de filiado, os papéis da função (admin de equipe com equipe [TESTE] própria) e a matrícula no evento "[TESTE] Evento do piloto: Operação Avançada (fotos)", que tem o álbum à venda ativo (a conta completa é a fotógrafa e sobe as fotos); com `PILOTO_SENHA_DEMO`, contas de exemplo de aluno, filiado, instrutor, admin de equipe e fotógrafo (`@demo.ib-to.org`), nunca de Comando Geral ou Tecnologia; nomes, e-mails e senha só no `.env`; roda pelo pós-deploy quando a lista muda e não duplica (`plataforma:piloto-stakeholders`).

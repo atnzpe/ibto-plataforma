@@ -60,8 +60,8 @@ use Illuminate\Support\Facades\Route;
 
 // PÁGINA INICIAL da plataforma (14/10/2026): não existe mais a tela "Em
 // construção". Quem entrou vai para a página inicial dele (o /dashboard decide:
-// Comando Geral ou "Meus cursos"); quem não entrou vai para a vitrine (o
-// catálogo de cursos, com "Entrar" e "Criar conta"). A conferência "plataforma
+// Comando Geral ou "Meus cursos"); quem não entrou vai para a home do site do
+// IBTO (desde 17/10/2026; antes ia para o catálogo). A conferência "plataforma
 // no ar" continua em /api/saude.
 Route::get('/', function (Request $request) {
     // Logado: a página inicial certa para o papel dele.
@@ -69,8 +69,15 @@ Route::get('/', function (Request $request) {
         return to_route('dashboard');
     }
 
-    // Visitante: o catálogo de cursos.
-    return to_route('catalogo.index');
+    // Visitante (17/10/2026, pedido do Gleyson): a HOME do site do IBTO (a "casa" da
+    // instituição). O catálogo continua no menu "Cursos" do site e da vitrine.
+    $site = (string) config('app.site_url');
+    // Sem o endereço do site (ex.: computador local): o catálogo, como antes.
+    if ($site === '') {
+        return to_route('catalogo.index');
+    }
+
+    return redirect()->away($site);
 })->name('home');
 
 // Convite do filiado (#37, F3): link ASSINADO do e-mail ("signed": endereço

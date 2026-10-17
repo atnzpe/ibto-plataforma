@@ -17,10 +17,20 @@ class ExampleTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Visitante (sem entrar): vai para o catálogo de cursos.
+     * Visitante (sem entrar): vai para a home do site do IBTO (17/10/2026).
      */
-    public function test_visitante_vai_para_o_catalogo()
+    public function test_visitante_vai_para_a_home_do_site()
     {
+        config(['app.site_url' => 'https://homolog.ib-to.org']);
+        $this->get(route('home'))->assertRedirect('https://homolog.ib-to.org');
+    }
+
+    /**
+     * Sem o endereço do site configurado (ex.: computador local): o catálogo, como antes.
+     */
+    public function test_sem_endereco_do_site_vai_para_o_catalogo()
+    {
+        config(['app.site_url' => '']);
         $this->get(route('home'))->assertRedirect(route('catalogo.index'));
     }
 

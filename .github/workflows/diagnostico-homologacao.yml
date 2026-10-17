@@ -45,3 +45,7 @@ jobs:
           # Versão publicada e a última aplicada pelo Cron.
           curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/VERSAO_DEPLOY" && echo " <- publicada"
           curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/storage/app/versao-aplicada" && echo " <- aplicada"
+          # Estado do piloto (17/10/2026): só sim/não e números, sem dado pessoal
+          # (conta completa encontrada? senha das contas de exemplo? config em cache?).
+          echo "--- estado do piloto ---"
+          curl --silent --ssl-reqd --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/storage/app/piloto-estado" || echo "(ainda sem o arquivo piloto-estado)"
