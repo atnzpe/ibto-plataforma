@@ -132,8 +132,11 @@ export default function VitrineFotos({
                     })}
                 </ul>
 
-                {/* Barra do total: fica no fim da lista, com o botão de comprar. */}
-                <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-background p-4">
+                {/* Barra do total, grudada no rodapé ACIMA da barra de gestos do celular (safe area), com o botão de comprar. */}
+                <div
+                    style={{ bottom: 'env(safe-area-inset-bottom)' }}
+                    className="sticky flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-background p-4"
+                >
                     <p className="font-semibold" aria-live="polite">
                         {escolhidas.length} foto(s) ·{' '}
                         {formatarReais(

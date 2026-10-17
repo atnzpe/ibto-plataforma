@@ -153,6 +153,14 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'As equipes filiadas, com cidade, responsável e áreas. Equipe sem área não fica ativa.',
         },
     ],
+    // Meu painel (#79).
+    'meu-painel': [
+        {
+            elemento: 'main h1',
+            titulo: 'Meu painel',
+            texto: 'Os números dos seus cursos (ou da sua equipe): inscritos, comparecimento, a receber, recebido e certificados. Troque o período em De/Até e exporte em CSV.',
+        },
+    ],
     // Venda de fotos (#90).
     'fotos/admin/index': [
         {

@@ -129,6 +129,11 @@ class AppServiceProvider extends ServiceProvider
                     ->exists();
         });
 
+        // "painel.instrutor" (#79): abrir "Meu painel". Passa quem propõe cursos (instrutor)
+        // ou cuida de uma equipe (admin de equipe).
+        Gate::define('painel.instrutor', fn (User $usuario): bool => $usuario->temPermissao('cursos.propor')
+            || $usuario->temPermissao('filiados.equipe'));
+
         Gate::define('filiados.acessar', fn (User $usuario): bool => $usuario->temPermissao('filiados.gerenciar')
             || $usuario->temPermissao('filiados.equipe'));
 
