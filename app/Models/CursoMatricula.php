@@ -28,6 +28,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $confirmada_em
  * @property Carbon|null $cancelada_em
  * @property string|null $motivo_cancelamento
+ * @property int|null $cupom_id Cupom de desconto usado (#89).
+ * @property int|null $valor_cheio_centavos Preço cheio quando usou cupom (#89). Ex.: 25000.
+ * @property int $desconto_centavos Desconto do cupom (#89). Ex.: 2500.
  * @property string|null $excecao_motivo Por que o IBTO matriculou quem não cumpre os pré-requisitos (#88).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -48,6 +51,9 @@ class CursoMatricula extends Model
             // 'confirmada' vira SituacaoMatricula::Confirmada.
             'situacao' => SituacaoMatricula::class,
             'valor_centavos' => 'integer',
+            // Cupom (#89): preço cheio e desconto, em centavos.
+            'valor_cheio_centavos' => 'integer',
+            'desconto_centavos' => 'integer',
             'confirmada_em' => 'datetime',
             'cancelada_em' => 'datetime',
         ];
@@ -88,5 +94,15 @@ class CursoMatricula extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * O cupom de desconto usado na inscrição (#89), se houve.
+     *
+     * @return BelongsTo<Cupom, $this>
+     */
+    public function cupom(): BelongsTo
+    {
+        return $this->belongsTo(Cupom::class);
     }
 }

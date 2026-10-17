@@ -32,6 +32,7 @@ use App\Models\FinCategoria;
 use App\Models\User;
 use App\Notifications\MatriculaConfirmada;
 use App\Services\LivroCaixa;
+use App\Support\Cupons;
 use App\Support\Requisitos;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,11 +51,12 @@ class Matriculas
      * @param  User  $usuario  Quem está se matriculando.
      * @param  bool  $peloIbto  true = é o IBTO matriculando a pessoa (único jeito de
      *                          entrar num curso FECHADO). Ex.: false na inscrição pelo site.
+     * @param  string|null  $cupom  Cupom de desconto digitado (#89), ou null. Ex.: 'FILIADO10'.
      * @return CursoMatricula A matrícula criada (confirmada ou aguardando pagamento).
      *
      * @throws RegraCurso Quando a regra não deixa (o código diz o motivo).
      */
-    public function matricular(Curso $curso, User $usuario, bool $peloIbto = false): CursoMatricula
+    public function matricular(Curso $curso, User $usuario, bool $peloIbto = false, ?string $cupom = null): CursoMatricula
     {
         // Só curso publicado (chancelado) recebe matrícula.
         if ($curso->situacao !== SituacaoCurso::Publicado) {
@@ -84,7 +86,7 @@ class Matriculas
             throw new RegraCurso('MATRICULA_REQUISITO_PENDENTE', 'Você ainda não cumpre os pré-requisitos deste curso. Falta: '.implode('; ', Requisitos::pendentes($curso, $usuario)).'.');
         }
 
-        return DB::transaction(function () use ($curso, $usuario): CursoMatricula {
+        return DB::transaction(function () use ($curso, $usuario, $cupom): CursoMatricula {
             // A TRAVA: lê o curso de novo, trancando a linha até o fim da transação.
             // Quem chegar ao mesmo tempo espera aqui e só conta as vagas depois.
             $curso = Curso::query()->lockForUpdate()->findOrFail($curso->id);
@@ -99,16 +101,31 @@ class Matriculas
                 throw new RegraCurso('VAGAS_ESGOTADAS', 'As vagas deste curso acabaram.');
             }
 
-            // Gratuito: confirmada na hora. Pago: aguarda o PIX.
-            $gratuito = $curso->valor_centavos === 0;
+            // Cupom (#89): conferido COM TRAVA (o último uso não passa para duas pessoas ao
+            // mesmo tempo). Só em curso pago; o desconto nunca passa do preço.
+            $cupomUsado = null;
+            $desconto = 0;
+            if ($cupom !== null && trim($cupom) !== '' && $curso->valor_centavos > 0) {
+                $cupomUsado = Cupons::validar($cupom, $curso, $usuario, travar: true);
+                $desconto = $cupomUsado->descontoSobre($curso->valor_centavos);
+            }
+            // O que de fato se paga. Ex.: R$ 250,00 com 10% → R$ 225,00.
+            $aPagar = $curso->valor_centavos - $desconto;
+
+            // Nada a pagar (gratuito ou cupom de 100%): confirmada na hora. Senão: aguarda o PIX.
+            $gratuito = $aPagar === 0;
 
             $matricula = new CursoMatricula;
             $matricula->forceFill([
                 'curso_id' => $curso->id,
                 'user_id' => $usuario->id,
                 'situacao' => $gratuito ? SituacaoMatricula::Confirmada : SituacaoMatricula::AguardandoPagamento,
-                // O preço do dia (se o curso mudar de preço depois, este fica).
-                'valor_centavos' => $curso->valor_centavos,
+                // O preço do dia JÁ com o desconto (se o curso mudar de preço depois, este fica).
+                'valor_centavos' => $aPagar,
+                // Cupom (#89): qual, o preço cheio e o desconto (só quando usou cupom).
+                'cupom_id' => $cupomUsado?->id,
+                'valor_cheio_centavos' => $cupomUsado !== null ? $curso->valor_centavos : null,
+                'desconto_centavos' => $desconto,
                 'confirmada_em' => $gratuito ? now() : null,
             ])->save();
 
@@ -117,6 +134,8 @@ class Matriculas
                 'curso_id' => $curso->id,
                 'usuario_id' => $usuario->id,
                 'situacao' => $matricula->situacao->value,
+                // Cupom usado (#89), só o número.
+                'cupom_id' => $cupomUsado?->id,
             ]);
 
             return $matricula;
@@ -160,7 +179,9 @@ class Matriculas
             $receita = $this->caixa->lancar([
                 'tipo' => 'receita',
                 'categoria_id' => (int) $categoriaId,
-                'descricao' => "Inscrição — {$matricula->curso->titulo} — matrícula nº {$matricula->id}",
+                // Com cupom (#89), o código vai na descrição (o livro-caixa mostra o desconto dado).
+                'descricao' => "Inscrição — {$matricula->curso->titulo} — matrícula nº {$matricula->id}"
+                    .($matricula->cupom !== null ? " — cupom {$matricula->cupom->codigo}" : ''),
                 'valor_centavos' => $matricula->valor_centavos,
                 'vencimento' => $pagoEm,
                 'equipe_id' => $matricula->curso->equipe_id,

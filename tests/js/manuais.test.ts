@@ -66,6 +66,8 @@ describe('conteúdo dos manuais', () => {
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',
             '/financeiro/lancamentos': 'financeiro/lancamentos/index',
+            // Cupons de desconto (#89).
+            '/financeiro/cupons': 'financeiro/cupons/index',
             '/cadastros/filiados': 'cadastros/filiados/index',
             '/cadastros/equipes': 'cadastros/equipes/index',
             '/admin/usuarios': 'admin/usuarios/index',

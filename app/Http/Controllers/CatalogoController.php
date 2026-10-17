@@ -405,6 +405,10 @@ class CatalogoController extends Controller
             'situacao' => $matricula->situacao->value,
             'situacao_rotulo' => $matricula->situacao->rotulo(),
             'valor_centavos' => $matricula->valor_centavos,
+            // Cupom (#89): o código, o preço cheio e o desconto (null/0 sem cupom).
+            'cupom' => $matricula->cupom?->codigo,
+            'valor_cheio_centavos' => $matricula->valor_cheio_centavos,
+            'desconto_centavos' => $matricula->desconto_centavos,
             'tem_comprovante' => $matricula->comprovante !== null,
             'pagamento' => $pagamento,
             // Pix copia e cola + QR code (#83), com o valor exato e o identificador da

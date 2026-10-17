@@ -35,6 +35,7 @@ use App\Http\Controllers\Cursos\PagamentoConfigController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
+use App\Http\Controllers\Financeiro\CupomController;
 use App\Http\Controllers\Financeiro\FormaPagamentoController;
 use App\Http\Controllers\Financeiro\HistoricoController;
 use App\Http\Controllers\Financeiro\LancamentoController;
@@ -383,6 +384,11 @@ Route::middleware(['auth', 'verified'])
             ->name('lancamentos.store');
         // Ações sobre um lançamento: baixa (pendente → pago), cancelar (pendente)
         // e estornar (pago). As regras ficam no LivroCaixa.
+        // Cupons de desconto (#89): só quem tem "cupons.gerenciar" (sem "destroy": apagar = desativar).
+        Route::resource('cupons', CupomController::class)
+            ->except(['show', 'destroy'])
+            ->parameters(['cupons' => 'cupom'])
+            ->middleware('can:cupons.gerenciar');
         Route::middleware('can:financeiro.lancar')->group(function () {
             // Cadastros de apoio: categorias e formas de pagamento (sem "destroy":
             // apagar = desativar).

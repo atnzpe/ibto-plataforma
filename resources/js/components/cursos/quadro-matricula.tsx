@@ -28,6 +28,10 @@ export type MatriculaDaPessoa = {
     situacao: 'aguardando_pagamento' | 'confirmada';
     situacao_rotulo: string;
     valor_centavos: number;
+    // Cupom usado (#89): o código, o preço cheio e o desconto (null/0 sem cupom).
+    cupom?: string | null;
+    valor_cheio_centavos?: number | null;
+    desconto_centavos?: number;
     tem_comprovante: boolean;
     // Só quando aguardando pagamento (ver App\Support\DadosPagamento). Campos vazios = não cadastrados.
     pagamento: DadosParaPagar | null;
@@ -207,17 +211,47 @@ export default function QuadroMatricula({
                         Vagas esgotadas
                     </button>
                 ) : (
-                    <Form {...MatriculaController.store.form(cursoId)}>
+                    <Form
+                        {...MatriculaController.store.form(cursoId)}
+                        className="flex flex-col gap-2"
+                    >
                         {({ processing }) => (
-                            <button
-                                type="submit"
-                                className={principal}
-                                disabled={processing}
-                            >
-                                {gratuito
-                                    ? 'Matricular-me (gratuito)'
-                                    : 'Garantir minha vaga'}
-                            </button>
+                            <>
+                                {/* Cupom de desconto (#89): só em curso pago; opcional. */}
+                                {!gratuito && (
+                                    <div className="grid gap-1">
+                                        <label
+                                            htmlFor="cupom"
+                                            className="text-sm font-medium"
+                                        >
+                                            Cupom de desconto (opcional)
+                                        </label>
+                                        <input
+                                            id="cupom"
+                                            name="cupom"
+                                            maxLength={30}
+                                            autoComplete="off"
+                                            autoCapitalize="characters"
+                                            placeholder="Ex.: FILIADO10"
+                                            aria-describedby="erro-cupom"
+                                            className="h-11 rounded-xl border border-[#e4dccb] bg-white px-3 text-sm uppercase"
+                                        />
+                                        <InputError
+                                            id="erro-cupom"
+                                            message={errors.cupom}
+                                        />
+                                    </div>
+                                )}
+                                <button
+                                    type="submit"
+                                    className={principal}
+                                    disabled={processing}
+                                >
+                                    {gratuito
+                                        ? 'Matricular-me (gratuito)'
+                                        : 'Garantir minha vaga'}
+                                </button>
+                            </>
                         )}
                     </Form>
                 ))}
@@ -264,6 +298,20 @@ export default function QuadroMatricula({
                             <dd className="text-lg font-semibold">
                                 {formatarReais(matricula.valor_centavos)}
                             </dd>
+                            {/* Com cupom (#89): o preço cheio e o desconto dado. */}
+                            {matricula.cupom &&
+                                matricula.valor_cheio_centavos != null && (
+                                    <dd className="text-xs text-[#5c5644]">
+                                        {formatarReais(
+                                            matricula.valor_cheio_centavos,
+                                        )}{' '}
+                                        com o cupom {matricula.cupom} (−
+                                        {formatarReais(
+                                            matricula.desconto_centavos ?? 0,
+                                        )}
+                                        )
+                                    </dd>
+                                )}
                             {matricula.pagamento.pix_chave !== '' && (
                                 <>
                                     <dt className="text-xs text-[#5c5644]">

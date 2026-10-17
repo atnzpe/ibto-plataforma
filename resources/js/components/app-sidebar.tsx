@@ -15,6 +15,7 @@ import {
     Tags,
     UserCog,
     Users,
+    TicketPercent,
     Wallet,
     UserCheck,
 } from 'lucide-react';
@@ -161,6 +162,13 @@ const cadastrosNavItems: (NavItem & {
         href: financeiro(),
         icon: Wallet,
         permissao: 'financeiro_ver',
+    },
+    // Cupons de desconto (#89): criar e cuidar dos cupons (Comando Geral e Tecnologia).
+    {
+        title: 'Cupons',
+        href: '/financeiro/cupons',
+        icon: TicketPercent,
+        permissao: 'cupons_gerenciar',
     },
     // Solicitações de cadastro (#84; grupo fechado): aprovar ou recusar quem pediu acesso.
     {
