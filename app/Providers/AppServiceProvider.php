@@ -129,6 +129,9 @@ class AppServiceProvider extends ServiceProvider
                     ->exists();
         });
 
+        // "carteirinha.ver" (#46): ter o item "Minha carteirinha" no menu. Só quem é filiado.
+        Gate::define('carteirinha.ver', fn (User $usuario): bool => $usuario->filiado !== null);
+
         // "relatorios.acessar" (#73): abrir o módulo de relatórios. Passa quem tem pelo menos
         // UMA permissão de relatório (cada relatório confere a sua no controlador).
         Gate::define('relatorios.acessar', fn (User $usuario): bool => collect(['relatorio.filiados', 'relatorio.cursos', 'relatorio.frequencia', 'relatorio.financeiro', 'relatorio.auditoria'])

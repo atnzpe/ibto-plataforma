@@ -18,6 +18,7 @@ use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\FiliadoFotoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\CarteirinhaController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\ComandoGeralController;
@@ -305,6 +306,10 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('eventos/{album:slug}', [GaleriaController::class, 'show'])->name('galeria.album');
     // Validação PÚBLICA do certificado pelo código (#44). Ex.: /validar/IBTO-7K2M-9QXA
     Route::get('validar/{codigo}', [CertificadoController::class, 'validar'])->name('certificados.validar');
+    // Validação PÚBLICA da carteirinha pelo QR code (#46): 30 consultas por minuto por IP,
+    // para ninguém varrer os registros. A foto só sai com a autorização de imagem.
+    Route::get('carteirinha/{codigo}', [CarteirinhaController::class, 'validar'])->middleware('throttle:30,1')->name('carteirinha.validar');
+    Route::get('carteirinha/{codigo}/foto', [CarteirinhaController::class, 'foto'])->middleware('throttle:60,1')->name('carteirinha.foto');
     // Lembrete do encontro (#38, bloco C4d): arquivo .ics para a agenda.
     Route::get('cursos/{curso}/aulas/{aula}/lembrete', [CatalogoController::class, 'lembrete'])
         ->whereNumber(['curso', 'aula'])
@@ -515,3 +520,6 @@ Route::middleware(['auth', 'verified', 'can:relatorios.acessar'])->prefix('relat
     Route::get('{chave}/csv', [RelatorioController::class, 'csv'])->whereAlpha('chave')->middleware('throttle:20,1')->name('csv');
     Route::get('{chave}/imprimir', [RelatorioController::class, 'imprimir'])->whereAlpha('chave')->middleware('throttle:20,1')->name('imprimir');
 });
+
+// MINHA CARTEIRINHA (#46): o cartão da própria pessoa para imprimir (só filiados).
+Route::middleware(['auth', 'verified'])->get('minha-carteirinha', [CarteirinhaController::class, 'minha'])->name('carteirinha.minha');

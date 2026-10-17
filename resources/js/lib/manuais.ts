@@ -146,6 +146,26 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/meu-dossie', nome: 'Meu dossiê' },
             },
             {
+                id: 'carteirinha',
+                titulo: 'Minha carteirinha',
+                resumo: 'A carteirinha de filiado com QR code, para imprimir ou guardar em PDF.',
+                passos: [
+                    'Abra "Minha carteirinha" no menu.',
+                    'Confira a foto 3x4, o nome, o registro, o nível, a equipe e a validade (31/12 do ano).',
+                    'Clique em "Imprimir ou salvar em PDF": sai no tamanho de cartão (85,6 × 54 mm).',
+                    'Quem ler o QR code abre a página de validação do IBTO e vê se a carteirinha está ativa.',
+                ],
+                regras: [
+                    'Sem foto 3x4, a carteirinha mostra um aviso: envie a foto em Configurações → Perfil.',
+                    'A validação pública mostra só o nome abreviado, a situação, a categoria, o nível e a equipe. Nome completo, cidade e foto só se você autorizou o uso da imagem.',
+                    'Anuidade em aberto aparece como "Anuidade pendente" na validação.',
+                ],
+                tela: {
+                    endereco: '/minha-carteirinha',
+                    nome: 'Minha carteirinha',
+                },
+            },
+            {
                 id: 'conta',
                 titulo: 'Sua conta, idioma, tour e suporte',
                 resumo: 'Ajustes da conta e onde pedir ajuda.',

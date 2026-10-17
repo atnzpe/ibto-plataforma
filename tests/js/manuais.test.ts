@@ -64,6 +64,8 @@ describe('conteúdo dos manuais', () => {
             '/cursos': 'catalogo/index',
             '/meus-cursos': 'meus-cursos',
             '/meu-dossie': 'meu-dossie',
+            // Minha carteirinha (#46): página de impressão, sem menu e sem tour.
+            '/minha-carteirinha': '',
             '/comando-geral': 'comando-geral',
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',

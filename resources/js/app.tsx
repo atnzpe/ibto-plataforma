@@ -33,6 +33,11 @@ void createInertiaApp({
             // Relatório para imprimir ou salvar em PDF (#73): página limpa, sem menu.
             case name === 'relatorios/imprimir':
                 return null;
+            // Carteirinha (#46): a validação pública na vitrine; a minha, página limpa para imprimir.
+            case name === 'carteirinha/validar':
+                return VitrineLayout;
+            case name === 'carteirinha/minha':
+                return null;
             // Validação pública do certificado (#44): a vitrine do IBTO.
             case name === 'certificados/validar':
                 return VitrineLayout;

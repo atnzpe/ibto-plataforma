@@ -40,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property bool $documentacao_emitida
  * @property Carbon|null $data_filiacao Data REAL de filiação ao IBTO (#88: conta o tempo de filiado).
  * @property string $status
+ * @property string|null $codigo_validacao Código sorteado da carteirinha (#46), no QR code. Ex.: 'IBTO-7K2M-9QXA'.
  * @property string|null $foto Foto 3x4 na pasta PRIVADA (#78). Ex.: 'fotos/filiados/9f1c...webp'.
  * @property bool $autoriza_imagem_rede Autorizou a foto na Rede Nacional do site (#78)? Começa false.
  * @property Carbon|null $autoriza_imagem_em Quando a autorização foi marcada (#78).
@@ -82,6 +83,11 @@ class Filiado extends Model
      */
     protected static function booted(): void
     {
+        // Filiado novo ganha o código sorteado da carteirinha (#46), que vai no QR code.
+        static::creating(function (Filiado $filiado): void {
+            $filiado->codigo_validacao ??= self::novoCodigoValidacao();
+        });
+
         static::saving(function (Filiado $filiado): void {
             // Só mexe quando o CPF foi informado ou trocado.
             if ($filiado->isDirty('cpf')) {
@@ -238,5 +244,49 @@ class Filiado extends Model
         }
 
         return route('filiados.foto', ['filiado' => $this->id, 'v' => $this->updated_at?->getTimestamp()]);
+    }
+
+    /**
+     * Um código novo e único para a carteirinha (#46). Letras e números sem os parecidos
+     * (0/O, 1/I/L), para ninguém errar ao digitar. Ex.: 'IBTO-7K2M-9QXA'.
+     */
+    public static function novoCodigoValidacao(): string
+    {
+        $letras = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+        do {
+            $sorteio = '';
+            for ($i = 0; $i < 8; $i++) {
+                // random_int: sorteio seguro (não dá para adivinhar o próximo código).
+                $sorteio .= $letras[random_int(0, strlen($letras) - 1)];
+            }
+            $codigo = 'IBTO-'.substr($sorteio, 0, 4).'-'.substr($sorteio, 4, 4);
+        } while (self::where('codigo_validacao', $codigo)->exists());
+
+        return $codigo;
+    }
+
+    /**
+     * Situação da carteirinha (#46): ativa (filiado ativo e anuidade em dia ou ano isento),
+     * anuidade pendente ou inativa.
+     *
+     * @return array{situacao: string, rotulo: string, validade: string|null}
+     *                                                                        Ex.: ['situacao' => 'ativa', 'rotulo' => 'Ativa', 'validade' => '31/12/2026'].
+     */
+    public function situacaoCarteirinha(): array
+    {
+        // Inativo no cadastro: a carteirinha não vale.
+        if ($this->status !== 'ativo') {
+            return ['situacao' => 'inativa', 'rotulo' => 'Inativa', 'validade' => null];
+        }
+
+        $ano = today()->year;
+        $doAno = Anuidade::where('ano', $ano)->first();
+        // Ano isento (ou sem valor cadastrado) ou anuidade paga: vale até o fim do ano.
+        $emDia = $doAno === null || $doAno->isenta || $this->anuidadeEmDia();
+
+        return $emDia
+            ? ['situacao' => 'ativa', 'rotulo' => 'Ativa', 'validade' => "31/12/{$ano}"]
+            : ['situacao' => 'pendente', 'rotulo' => 'Anuidade pendente', 'validade' => null];
     }
 }
