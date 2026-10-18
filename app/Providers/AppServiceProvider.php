@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fotos\VendaFotos;
+use App\Enums\AcessoCurso;
 use App\Enums\SituacaoCurso;
 use App\Enums\SituacaoMatricula;
 use App\Models\Curso;
@@ -256,7 +257,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('curso.conteudo', fn (User $usuario, Curso $curso): bool => $usuario->temPermissao('cursos.gerenciar')
             || $usuario->temPermissao('cursos.chancelar')
             || ($usuario->temPermissao('cursos.propor') && $curso->responsavel_id === $usuario->id)
-            || $curso->matriculas()->where('user_id', $usuario->id)->where('situacao', SituacaoMatricula::Confirmada->value)->exists());
+            || ($curso->matriculas()->where('user_id', $usuario->id)->where('situacao', SituacaoMatricula::Confirmada->value)->exists()
+                // Curso exclusivo para filiados (#37): o aluno matriculado só assiste enquanto
+                // for filiado ativo e com a anuidade em dia (vencido perde o acesso até pagar).
+                && ($curso->acesso !== AcessoCurso::Restrito
+                    || ($usuario->filiado?->status === 'ativo' && $usuario->filiado->anuidadeEmDia()))));
     }
 
     /**
