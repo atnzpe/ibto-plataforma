@@ -15,6 +15,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 - Auditoria automática de acessibilidade na CI: 15 telas (públicas, do aluno e do Comando Geral) abrem num navegador de verdade (Chromium) e passam pelo axe (regras WCAG); falha nova deixa a CI vermelha.
 - Telas de entrar e de pedir acesso sem tabindex forçado: a ordem do teclado é a ordem natural da tela.
+- Lighthouse depois de cada deploy na homologação (workflow "Lighthouse homologação"): catálogo, entrar e privacidade no celular, com acessibilidade, SEO e boas práticas ≥ 95 (bloqueante) e desempenho ≥ 90 (aviso); o relatório fica nos artefatos do job.
 
 ### Segurança (#74)
 
