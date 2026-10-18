@@ -25,11 +25,14 @@ export default function ChamadaRegular({
     turma,
     data,
     feita,
+    conteudo,
     alunos,
 }: {
     turma: { id: number; nome: string; horario: string; programa: string };
     data: string;
     feita: boolean;
+    // O que foi ministrado (vazio = ainda não registrado).
+    conteudo: string;
     alunos: AlunoChamada[];
 }) {
     const { sucesso } = usePage<{ sucesso?: string | null }>().props;
@@ -91,7 +94,7 @@ export default function ChamadaRegular({
                         options={{ preserveScroll: true }}
                         className="flex flex-col gap-3"
                     >
-                        {({ processing }) => (
+                        {({ processing, errors }) => (
                             <>
                                 <input type="hidden" name="data" value={data} />
                                 <fieldset className="flex flex-col gap-2">
@@ -119,6 +122,44 @@ export default function ChamadaRegular({
                                         </label>
                                     ))}
                                 </fieldset>
+                                {/* O que foi ministrado: obrigatório, vai para o dossiê de cada aluno. */}
+                                <div className="grid gap-1">
+                                    <label
+                                        htmlFor="conteudo"
+                                        className="text-sm font-medium"
+                                    >
+                                        O que foi ministrado nesta aula
+                                        (obrigatório)
+                                    </label>
+                                    <textarea
+                                        id="conteudo"
+                                        name="conteudo"
+                                        rows={4}
+                                        minLength={3}
+                                        maxLength={2000}
+                                        required
+                                        defaultValue={conteudo}
+                                        placeholder="Ex.: defesa contra estrangulamento frontal, quedas e condicionamento."
+                                        aria-describedby="conteudo-ajuda"
+                                        data-tour="conteudo-aula"
+                                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                                    />
+                                    <p
+                                        id="conteudo-ajuda"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        Aparece no dossiê de cada aluno, na
+                                        lista do que ele já viu.
+                                    </p>
+                                    {errors.conteudo && (
+                                        <p
+                                            role="alert"
+                                            className="text-sm text-red-700 dark:text-red-300"
+                                        >
+                                            {errors.conteudo}
+                                        </p>
+                                    )}
+                                </div>
                                 <Button
                                     disabled={processing}
                                     data-tour="salvar-chamada"

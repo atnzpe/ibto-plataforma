@@ -82,7 +82,7 @@ test('curso misto: precisa da presença E de todas as gravadas', function () {
     $admin->papeis()->attach(Papel::where('slug', 'administrador')->value('id'));
     $this->actingAs($admin)->put(
         route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $encontro->id]),
-        ['presentes' => [$this->matricula->id]],
+        ['presentes' => [$this->matricula->id], 'registro_encontro' => 'Guarda e base.'],
     );
 
     // Presente no encontro, mas com uma gravada faltando: não está apto.

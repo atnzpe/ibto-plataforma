@@ -79,7 +79,11 @@ class ChamadaController extends Controller
         $dados = $request->validate([
             'presentes' => ['nullable', 'array'],
             'presentes.*' => ['integer'],
-            'registro_encontro' => ['nullable', 'string', 'max:2000'],
+            // Obrigatório (18/10/2026): o que foi trabalhado vai para o dossiê de cada aluno.
+            'registro_encontro' => ['required', 'string', 'min:3', 'max:2000'],
+        ], [
+            'registro_encontro.required' => 'Escreva o que foi trabalhado no encontro (vai para o dossiê dos alunos).',
+            'registro_encontro.min' => 'Descreva o que foi trabalhado com pelo menos 3 letras.',
         ]);
 
         $confirmadas = $this->confirmadas($curso);
@@ -96,7 +100,7 @@ class ChamadaController extends Controller
             }
 
             $aula->forceFill([
-                'registro_encontro' => $dados['registro_encontro'] ?? null,
+                'registro_encontro' => trim($dados['registro_encontro']),
                 'chamada_feita_em' => now(),
                 'chamada_por' => $request->user()?->id,
             ])->save();

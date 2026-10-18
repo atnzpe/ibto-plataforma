@@ -59,8 +59,8 @@ test('a chamada lista os confirmados só pelo registro; salvar grava presentes e
 
 test('refazer a chamada corrige a mesma linha (não duplica)', function () {
     $endereco = route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $this->encontro->id]);
-    $this->actingAs($this->admin)->put($endereco, ['presentes' => [$this->m1->id]]);
-    $this->actingAs($this->admin)->put($endereco, ['presentes' => [$this->m2->id]]);
+    $this->actingAs($this->admin)->put($endereco, ['presentes' => [$this->m1->id], 'registro_encontro' => 'Guarda.']);
+    $this->actingAs($this->admin)->put($endereco, ['presentes' => [$this->m2->id], 'registro_encontro' => 'Base.']);
 
     expect(CursoPresenca::count())->toBe(2);
     expect(CursoPresenca::where('matricula_id', $this->m1->id)->value('presente'))->toBeFalse();
@@ -108,7 +108,7 @@ test('aula sem data (online) não tem chamada: 404', function () {
 });
 
 test('detalhes do curso: encontros, presentes na última chamada e o "x de y" de cada inscrito', function () {
-    $this->actingAs($this->admin)->put(route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $this->encontro->id]), ['presentes' => [$this->m1->id]]);
+    $this->actingAs($this->admin)->put(route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $this->encontro->id]), ['presentes' => [$this->m1->id], 'registro_encontro' => 'Guarda.']);
 
     $this->actingAs($this->admin)->get(route('comando-geral.cursos.inscritos', $this->curso))
         ->assertInertia(fn ($tela) => $tela

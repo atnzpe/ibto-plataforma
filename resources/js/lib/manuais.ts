@@ -280,7 +280,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Minhas turmas": aparecem as turmas dos programas em que você é o instrutor.',
                     '"Fazer chamada": a data já vem com hoje (troque para corrigir um dia anterior).',
-                    'Marque quem estava e toque em "Salvar chamada". Dá para corrigir depois, sem duplicar.',
+                    'Marque quem estava, escreva "O que foi ministrado nesta aula" (obrigatório) e toque em "Salvar chamada". Dá para corrigir depois, sem duplicar.',
+                    'O que você escreve vai para o "Diário de aulas" no dossiê de cada aluno: a data, presente ou falta e o que foi visto, da aula mais recente para a mais antiga.',
                 ],
                 regras: [
                     'Na lista aparecem só os alunos em dia ou na carência; quem está com a mensalidade travada não aparece.',
@@ -310,7 +311,7 @@ export const MANUAIS: Manual[] = [
                 resumo: 'A chamada de cada encontro alimenta o dossiê do aluno e libera o certificado.',
                 passos: [
                     'No curso, abra "Inscritos" → "Encontros e chamada" → "Fazer a chamada".',
-                    'Marque quem veio e escreva "O que foi trabalhado no encontro" → "Salvar chamada".',
+                    'Marque quem veio e escreva "O que foi trabalhado no encontro" (obrigatório; vai para o dossiê dos alunos) → "Salvar chamada".',
                     'Em "Certificados", veja quem está apto (75% de presença e, se houver, todas as aulas gravadas assistidas) e emita.',
                     'Curso só gravado: o certificado sai sozinho quando o aluno marca a última aula; não precisa emitir.',
                 ],

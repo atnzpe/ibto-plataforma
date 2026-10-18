@@ -11,6 +11,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (diário de aulas)
+
+- Aulas regulares: ao fazer a chamada, o instrutor escreve "O que foi ministrado nesta aula" (obrigatório).
+- Cursos: "O que foi trabalhado no encontro" passa a ser obrigatório na chamada.
+- Meu dossiê → Aulas regulares: total de presenças e % de frequência, e o "Diário de aulas" (as 30 mais recentes: data, presente/falta e o que foi visto).
+
 ### Adicionado (conferência do comprovante)
 
 - Comprovante enviado: a página do curso e "Meus cursos" mostram "aguardando conferência · não precisa pagar de novo", com a data do envio.

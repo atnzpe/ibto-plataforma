@@ -136,7 +136,7 @@ export const TOURS: Record<string, PassoDoTour[]> = {
         {
             elemento: 'main h1',
             titulo: 'Chamada',
-            texto: 'Marque quem veio e escreva o que foi trabalhado no encontro. Isso vai para o dossiê de cada aluno.',
+            texto: 'Marque quem veio e escreva o que foi trabalhado no encontro (obrigatório). Isso vai para o dossiê de cada aluno.',
         },
     ],
     'cadastros/filiados/index': [
@@ -307,6 +307,11 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             elemento: 'main h1',
             titulo: 'Chamada',
             texto: 'A data já vem com hoje. Marque quem estava e toque em "Salvar chamada". Só aparecem os alunos em dia.',
+        },
+        {
+            elemento: '[data-tour="conteudo-aula"]',
+            titulo: 'O que foi ministrado',
+            texto: 'Obrigatório: escreva o que foi ensinado na aula. Vai para o diário do dossiê de cada aluno.',
         },
         {
             elemento: '[data-tour="salvar-chamada"]',
