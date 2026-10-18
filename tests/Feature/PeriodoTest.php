@@ -73,6 +73,6 @@ test('livro-caixa: totais e lista pelo período escolhido', function () {
             ->where('filtros.de', '2026-09-15')
             ->where('filtros.ate', '2026-10-15')
             ->has('lancamentos', 2)
-            ->where('totais.a_pagar_centavos', 100)
-            ->where('totais.saldo_centavos', -200));
+            ->where('cartoes.a_pagar', 100)
+            ->where('cartoes.saldo', -200));
 });
