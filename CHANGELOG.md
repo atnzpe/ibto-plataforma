@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (painel financeiro das aulas regulares)
+
+- Relatórios → "Aulas regulares (financeiro)" (17/10/2026), no molde do Cockpit do Dojo Manager: quem treina, previsto, recebido (com %), a receber, em atraso, a divisão IBTO/instrutor (já repassado e falta repassar), mês a mês, por programa e por instrutor. Filtros De/Até, programa, instrutor (recebedor), aluno (pagador) e situação; CSV auditado. Permissão nova `relatorio.aulas` (Administrador, Tecnologia e Instrutor; o instrutor vê só os programas dele).
+
 ### Alterado (tela de manutenção)
 
 - Tela de manutenção do IBTO (17/10/2026): durante o deploy, em vez da página genérica "503 Service Unavailable", aparece "Estamos atualizando a plataforma" com o emblema animado e 40 mensagens de treino (Sun Tzu, homem cinza, comunicação e mindfulness), em português, recarregando sozinha a cada 60 segundos; tudo embutido, para funcionar mesmo no meio da troca dos arquivos. Pedido do Gleyson: o emblema "respira" (parado para quem pede menos movimento) e uma de 30 mensagens de treino aparece, trocando a cada 15 segundos: A Arte da Guerra (Sun Tzu, tradução livre), mentalidade operacional e "homem cinza", treino e comunicação.

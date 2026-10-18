@@ -161,6 +161,39 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'Os relatórios que a sua permissão libera. Em cada um: filtro De/Até, CSV e PDF com a marca do IBTO. Toda exportação fica registrada.',
         },
     ],
+    // Painel financeiro das aulas regulares (17/10/2026).
+    'relatorios/aulas-regulares': [
+        {
+            elemento: 'main h1',
+            titulo: 'Aulas regulares (financeiro)',
+            texto: 'Quem treina, quanto estava previsto, quanto já entrou, quanto falta e quanto atrasou. Sem filtro, o ano atual.',
+        },
+        {
+            elemento: '[data-tour="filtros-aulas"]',
+            titulo: 'Filtros',
+            texto: 'Escolha o programa, o instrutor (quem recebe o repasse), a situação, ou busque o aluno (quem paga) por parte do nome.',
+        },
+        {
+            elemento: '[data-tour="cartoes-aulas"]',
+            titulo: 'Onde estamos',
+            texto: 'Previsto = soma das mensalidades que vencem no período. Recebido = Pix já confirmado. A receber = no prazo. Em atraso = venceu e não foi pago.',
+        },
+        {
+            elemento: '[data-tour="divisao-aulas"]',
+            titulo: 'Divisão do dinheiro',
+            texto: 'Quanto fica com o IBTO e quanto vai para os instrutores, quanto já foi repassado e quanto falta repassar.',
+        },
+        {
+            elemento: '[data-tour="alunos-aulas"]',
+            titulo: 'Quem treina',
+            texto: 'Cada aluno com o programa, a turma, a mensalidade e se está em dia, na carência ou com as aulas travadas.',
+        },
+        {
+            elemento: '[data-tour="csv-aulas"]',
+            titulo: 'Exportar',
+            texto: 'O CSV traz uma linha por mensalidade, com os mesmos filtros da tela. A exportação fica registrada na auditoria.',
+        },
+    ],
     // Meu painel (#79).
     'meu-painel': [
         {

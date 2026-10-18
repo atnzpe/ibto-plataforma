@@ -170,7 +170,7 @@ class AppServiceProvider extends ServiceProvider
 
         // "relatorios.acessar" (#73): abrir o módulo de relatórios. Passa quem tem pelo menos
         // UMA permissão de relatório (cada relatório confere a sua no controlador).
-        Gate::define('relatorios.acessar', fn (User $usuario): bool => collect(['relatorio.filiados', 'relatorio.cursos', 'relatorio.frequencia', 'relatorio.financeiro', 'relatorio.auditoria'])
+        Gate::define('relatorios.acessar', fn (User $usuario): bool => collect(['relatorio.filiados', 'relatorio.cursos', 'relatorio.frequencia', 'relatorio.financeiro', 'relatorio.auditoria', 'relatorio.aulas'])
             ->contains(fn (string $permissao) => $usuario->temPermissao($permissao)));
 
         // "painel.instrutor" (#79): abrir "Meu painel". Passa quem propõe cursos (instrutor)

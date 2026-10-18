@@ -4,8 +4,8 @@
  */
 import { Head, Link } from '@inertiajs/react';
 
-/** Um relatório disponível. */
-type Item = { chave: string; titulo: string; descricao: string };
+/** Um relatório disponível. href: o endereço da tela (o painel das aulas tem tela própria). */
+type Item = { chave: string; titulo: string; descricao: string; href: string };
 
 /**
  * @param relatorios Os relatórios liberados para esta pessoa.
@@ -34,7 +34,7 @@ export default function RelatoriosIndex({
                     {relatorios.map((relatorio) => (
                         <li key={relatorio.chave}>
                             <Link
-                                href={`/relatorios/${relatorio.chave}`}
+                                href={relatorio.href}
                                 className="flex h-full min-h-24 flex-col gap-1 rounded-md border border-border p-4 text-sm transition-colors hover:border-[#6b5d3a] focus-visible:outline-2"
                             >
                                 <strong className="text-base">
