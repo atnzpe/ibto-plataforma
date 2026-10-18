@@ -33,6 +33,10 @@ export type MatriculaDaPessoa = {
     valor_cheio_centavos?: number | null;
     desconto_centavos?: number;
     tem_comprovante: boolean;
+    // Quando o comprovante chegou (ex.: '18/10/2026 09:30'); null = ainda não enviou.
+    comprovante_enviado_em: string | null;
+    // O motivo da última recusa do comprovante; null = nunca recusado.
+    comprovante_recusa_motivo: string | null;
     // Só quando aguardando pagamento (ver App\Support\DadosPagamento). Campos vazios = não cadastrados.
     pagamento: DadosParaPagar | null;
     // Pix copia e cola + QR code (#83): só com chave Pix cadastrada e valor a pagar.
@@ -279,6 +283,35 @@ export default function QuadroMatricula({
                     <p className="text-sm font-semibold">
                         Vaga reservada · aguardando pagamento
                     </p>
+
+                    {/* Comprovante JÁ ENVIADO (18/10/2026): aguardando conferência; não pagar de novo. */}
+                    {matricula.tem_comprovante && (
+                        <p
+                            role="status"
+                            className="rounded-lg border border-emerald-700/40 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+                        >
+                            <strong>Comprovante recebido</strong>
+                            {matricula.comprovante_enviado_em &&
+                                ` em ${matricula.comprovante_enviado_em}`}
+                            . Aguardando a conferência do IBTO.{' '}
+                            <strong>Não precisa pagar de novo.</strong> Você
+                            recebe um e-mail quando a matrícula for confirmada.
+                        </p>
+                    )}
+
+                    {/* Comprovante RECUSADO: o motivo e o pedido de enviar outro (a vaga segue reservada). */}
+                    {!matricula.tem_comprovante &&
+                        matricula.comprovante_recusa_motivo && (
+                            <p
+                                role="alert"
+                                className="rounded-lg border border-red-700/40 bg-red-50 px-3 py-2 text-sm text-red-900"
+                            >
+                                <strong>Comprovante não aceito:</strong>{' '}
+                                {matricula.comprovante_recusa_motivo}. A sua
+                                vaga continua reservada; envie outro comprovante
+                                abaixo.
+                            </p>
+                        )}
 
                     {/* Pix copia e cola com QR code (#83): o jeito mais fácil, já com o valor exato. */}
                     {matricula.pix && matricula.pagamento && (

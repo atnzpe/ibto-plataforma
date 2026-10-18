@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (conferência do comprovante)
+
+- Comprovante enviado: a página do curso e "Meus cursos" mostram "aguardando conferência · não precisa pagar de novo", com a data do envio.
+- Comando Geral → Matrículas: "Recusar o comprovante" com motivo, sem cancelar a matrícula; o aluno recebe o motivo por e-mail e envia outro.
+
 ### Corrigido (entrar e sair)
 
 - "Sair" funciona com um clique (antes o navegador bloqueava a ida ao site por CORS e era preciso clicar duas vezes).

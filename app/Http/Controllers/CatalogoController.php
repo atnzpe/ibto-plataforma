@@ -434,6 +434,9 @@ class CatalogoController extends Controller
             'valor_cheio_centavos' => $matricula->valor_cheio_centavos,
             'desconto_centavos' => $matricula->desconto_centavos,
             'tem_comprovante' => $matricula->comprovante !== null,
+            // Quando o comprovante chegou (ex.: '18/10/2026 09:30') e a última recusa, se houve.
+            'comprovante_enviado_em' => $matricula->comprovante !== null ? $matricula->comprovante_enviado_em?->format('d/m/Y H:i') : null,
+            'comprovante_recusa_motivo' => $matricula->comprovante_recusa_motivo,
             'pagamento' => $pagamento,
             // Pix copia e cola + QR code (#83), com o valor exato e o identificador da
             // matrícula; só quando há chave Pix cadastrada e algo a pagar.

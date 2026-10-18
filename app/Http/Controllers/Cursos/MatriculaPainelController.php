@@ -21,10 +21,12 @@ use App\Models\Auditoria;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\FinFormaPagamento;
+use App\Notifications\ComprovanteRecusado;
 use App\Support\Periodo;
 use App\Support\PixCopiaECola;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -83,6 +85,9 @@ class MatriculaPainelController extends Controller
             'motivo_cancelamento' => $matricula->motivo_cancelamento,
             // Link do comprovante (rota protegida), ou null.
             'comprovante_url' => $matricula->comprovante !== null ? route('matriculas.comprovante.ver', $matricula->id) : null,
+            // Quando o comprovante chegou e a última recusa (18/10/2026).
+            'comprovante_enviado_em' => $matricula->comprovante_enviado_em?->format('d/m/Y H:i'),
+            'comprovante_recusa_motivo' => $matricula->comprovante_recusa_motivo,
             'lancamento_id' => $matricula->lancamento_id,
         ]);
 
@@ -195,5 +200,36 @@ class MatriculaPainelController extends Controller
             : '';
 
         return back()->with('sucesso', "Matrícula nº {$matricula->id} cancelada; a vaga foi liberada.{$lembrete}");
+    }
+
+    /**
+     * RECUSA O COMPROVANTE (18/10/2026): ilegível, valor diferente, de outra pessoa...
+     * A matrícula continua aguardando (a vaga segue reservada); o arquivo é apagado,
+     * o motivo fica gravado e o aluno recebe um e-mail para enviar outro.
+     *
+     * @param  Request  $request  Ex.: motivo='Comprovante ilegível'
+     * @param  CursoMatricula  $matricula  A do endereço.
+     * @return RedirectResponse Volta para a lista com o resultado.
+     */
+    public function recusarComprovante(Request $request, CursoMatricula $matricula): RedirectResponse
+    {
+        $dados = $request->validate(['motivo' => ['required', 'string', 'max:500']], [
+            'motivo.required' => 'Explique ao aluno por que o comprovante não foi aceito.',
+        ]);
+
+        // Só dá para recusar um comprovante que existe, numa matrícula que ainda aguarda.
+        if ($matricula->situacao !== SituacaoMatricula::AguardandoPagamento || $matricula->comprovante === null) {
+            return back()->withErrors(['matricula' => 'Esta matrícula não tem comprovante aguardando conferência. (código COMPROVANTE_NAO_AGUARDANDO)']);
+        }
+
+        // Apaga o arquivo recusado (disco privado) e grava o motivo.
+        Storage::disk('local')->delete($matricula->comprovante);
+        $matricula->forceFill(['comprovante' => null, 'comprovante_recusado_em' => now(), 'comprovante_recusa_motivo' => trim($dados['motivo'])])->save();
+
+        Auditoria::registrar('COMPROVANTE_RECUSADO', ['matricula_id' => $matricula->id, 'curso_id' => $matricula->curso_id]);
+        // O aluno fica sabendo por e-mail (e vê o motivo na página do curso).
+        $matricula->usuario->notify(new ComprovanteRecusado($matricula->load('curso')));
+
+        return back()->with('sucesso', "Comprovante da matrícula nº {$matricula->id} recusado. O aluno recebe um e-mail para enviar outro; a vaga continua reservada.");
     }
 }

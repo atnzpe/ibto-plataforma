@@ -15,7 +15,12 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { formatarReais } from '@/lib/dinheiro';
 import { dataBr } from '@/pages/catalogo/index';
-import { cancelar, ficha, index } from '@/routes/comando-geral/matriculas';
+import {
+    cancelar,
+    ficha,
+    index,
+    recusarComprovante,
+} from '@/routes/comando-geral/matriculas';
 
 /** Uma matrícula na lista. */
 type MatriculaLista = {
@@ -36,6 +41,10 @@ type MatriculaLista = {
     motivo_cancelamento: string | null;
     // Link protegido do comprovante, ou null (ainda não enviado).
     comprovante_url: string | null;
+    // Quando o comprovante chegou (ex.: '18/10/2026 09:30'); null = sem comprovante.
+    comprovante_enviado_em: string | null;
+    // O motivo da última recusa do comprovante; null = nunca recusado.
+    comprovante_recusa_motivo: string | null;
     // Receita no livro-caixa (referência do pagamento), ou null.
     lancamento_id: number | null;
 };
@@ -122,6 +131,27 @@ export default function MatriculasPainel({
         }
         router.post(
             cancelar(matricula.id).url,
+            { motivo },
+            { preserveScroll: true },
+        );
+    };
+
+    /**
+     * Recusa o comprovante (ilegível, valor errado...) sem cancelar a matrícula:
+     * pergunta o motivo, que vai por e-mail ao aluno; a vaga segue reservada.
+     *
+     * @param matricula A matrícula com o comprovante.
+     */
+    const recusar = (matricula: MatriculaLista) => {
+        const motivo = window.prompt(
+            `Recusar o comprovante da matrícula nº ${matricula.id}? O aluno recebe o motivo por e-mail e envia outro. Escreva o motivo:`,
+        );
+        // Fechou a janela ou deixou em branco: não recusa.
+        if (motivo === null || motivo.trim() === '') {
+            return;
+        }
+        router.post(
+            recusarComprovante(matricula.id).url,
             { motivo },
             { preserveScroll: true },
         );
@@ -312,17 +342,40 @@ export default function MatriculasPainel({
                                 {matricula.situacao ===
                                     'aguardando_pagamento' &&
                                     (matricula.comprovante_url ? (
-                                        <a
-                                            href={matricula.comprovante_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="underline underline-offset-4"
-                                        >
-                                            Ver o comprovante
-                                        </a>
+                                        <span className="flex flex-wrap gap-x-3 gap-y-1">
+                                            <a
+                                                href={matricula.comprovante_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="underline underline-offset-4"
+                                            >
+                                                Ver o comprovante
+                                            </a>
+                                            {matricula.comprovante_enviado_em && (
+                                                <span className="text-muted-foreground">
+                                                    enviado em{' '}
+                                                    {
+                                                        matricula.comprovante_enviado_em
+                                                    }
+                                                </span>
+                                            )}
+                                            {/* Recusar sem cancelar: o aluno envia outro. */}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    recusar(matricula)
+                                                }
+                                                className="min-h-11 text-red-800 underline underline-offset-4 dark:text-red-300"
+                                                aria-label={`Recusar o comprovante da matrícula nº ${matricula.id}`}
+                                            >
+                                                Recusar o comprovante
+                                            </button>
+                                        </span>
                                     ) : (
                                         <span className="text-amber-800 dark:text-amber-200">
-                                            Comprovante ainda não enviado.
+                                            {matricula.comprovante_recusa_motivo
+                                                ? `Comprovante recusado (${matricula.comprovante_recusa_motivo}); aguardando outro.`
+                                                : 'Comprovante ainda não enviado.'}
                                         </span>
                                     ))}
                                 {/* Referência do pagamento no financeiro. */}

@@ -27,6 +27,10 @@ type MeuCurso = {
     data_inicio: string | null;
     situacao: 'aguardando_pagamento' | 'confirmada';
     situacao_rotulo: string;
+    // true = o comprovante já foi enviado e aguarda a conferência do IBTO.
+    comprovante_enviado: boolean;
+    // true = o último comprovante foi recusado; é preciso enviar outro.
+    comprovante_recusado: boolean;
     // PROGRESSO das aulas (só na confirmada com aulas), ou null.
     // Ex.: { assistidas: 3, total: 10, percentual: 30, continuar_id: 34 }
     progresso: {
@@ -359,10 +363,15 @@ export default function MeusCursos({
                                                         meu.curso_id,
                                                     )}
                                                 >
-                                                    {meu.situacao ===
+                                                    {/* Aguardando: enviou o comprovante → conferência; recusado → enviar outro; senão, pagar. */}
+                                                    {meu.situacao !==
                                                     'aguardando_pagamento'
-                                                        ? 'Pagar e enviar o comprovante'
-                                                        : 'Ver o curso'}
+                                                        ? 'Ver o curso'
+                                                        : meu.comprovante_enviado
+                                                          ? 'Comprovante enviado · aguardando conferência'
+                                                          : meu.comprovante_recusado
+                                                            ? 'Comprovante recusado · enviar outro'
+                                                            : 'Pagar e enviar o comprovante'}
                                                 </Link>
                                             </Button>
                                         )}

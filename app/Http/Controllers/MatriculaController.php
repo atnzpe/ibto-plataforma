@@ -88,12 +88,13 @@ class MatriculaController extends Controller
         if ($matricula->comprovante !== null) {
             $disco->delete($matricula->comprovante);
         }
-        $matricula->forceFill(['comprovante' => $caminho])->save();
+        // Guarda a hora do envio e limpa a recusa anterior (o comprovante novo volta para a fila de conferência).
+        $matricula->forceFill(['comprovante' => $caminho, 'comprovante_enviado_em' => now(), 'comprovante_recusado_em' => null, 'comprovante_recusa_motivo' => null])->save();
 
         Auditoria::registrar('COMPROVANTE_ENVIADO', ['matricula_id' => $matricula->id, 'curso_id' => $matricula->curso_id]);
 
         return to_route('catalogo.curso', $matricula->curso_id)
-            ->with('sucesso', 'Comprovante enviado! O IBTO confere e confirma a sua matrícula.');
+            ->with('sucesso', 'Comprovante enviado! Agora é só aguardar: o IBTO confere e confirma a sua matrícula. Não precisa pagar de novo.');
     }
 
     /**

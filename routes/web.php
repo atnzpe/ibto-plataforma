@@ -280,6 +280,8 @@ Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])
         Route::get('{matricula}', 'ficha')->whereNumber('matricula')->name('ficha');
         Route::post('{matricula}/confirmar', 'confirmar')->name('confirmar');
         Route::post('{matricula}/cancelar', 'cancelar')->name('cancelar');
+        // Recusar o comprovante sem cancelar (18/10/2026): o aluno envia outro.
+        Route::post('{matricula}/recusar-comprovante', 'recusarComprovante')->name('recusar-comprovante');
     });
 
 // Arquivos das aulas (#39): apostila e vídeo enviado. Com login; quem pode ver
