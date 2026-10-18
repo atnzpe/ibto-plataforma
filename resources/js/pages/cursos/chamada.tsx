@@ -199,12 +199,15 @@ export default function Chamada({
                                     className="text-sm font-medium"
                                 >
                                     O que foi trabalhado no encontro
+                                    (obrigatório; vai para o dossiê dos alunos)
                                 </label>
                                 <textarea
                                     id="registro_encontro"
                                     name="registro_encontro"
                                     rows={4}
+                                    minLength={3}
                                     maxLength={2000}
+                                    required
                                     defaultValue={aula.registro_encontro ?? ''}
                                     placeholder="Ex.: guarda, base, quedas e defesa contra agarre."
                                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"

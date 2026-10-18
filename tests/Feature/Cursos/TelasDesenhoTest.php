@@ -39,7 +39,7 @@ test('página do curso: a situação de cada aula para o matriculado e as vagas 
     // Chamada do encontro 1 com o aluno presente; o encontro 2 ainda sem chamada.
     $this->actingAs($this->admin)->put(
         route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $this->encontro1->id]),
-        ['presentes' => [$this->matricula->id]],
+        ['presentes' => [$this->matricula->id], 'registro_encontro' => 'Guarda e base.'],
     );
     // A aula online marcada como assistida.
     app(SalaDeAula::class)->marcar($this->online, $this->aluno, true);
@@ -63,7 +63,7 @@ test('Meus cursos: o resumo do dossiê traz o certificado e as presenças, sem o
     foreach ([$this->encontro1, $this->encontro2] as $encontro) {
         $this->actingAs($this->admin)->put(
             route('comando-geral.cursos.chamada.update', ['curso' => $this->curso->id, 'aula' => $encontro->id]),
-            ['presentes' => [$this->matricula->id]],
+            ['presentes' => [$this->matricula->id], 'registro_encontro' => 'Guarda e base.'],
         );
     }
     app(SalaDeAula::class)->marcar($this->online, $this->aluno, true);

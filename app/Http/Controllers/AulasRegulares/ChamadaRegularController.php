@@ -61,6 +61,8 @@ class ChamadaRegularController extends Controller
             'turma' => ['id' => $turma->id, 'nome' => $turma->nome, 'horario' => $turma->horarioPorExtenso(), 'programa' => $turma->programa->titulo],
             'data' => $data,
             'feita' => $aula?->chamada_feita_em !== null,
+            // O que foi ministrado nesta aula (vazio = ainda não registrado).
+            'conteudo' => $aula->conteudo ?? '',
             // A lista: as assinaturas da turma liberadas (em dia ou na carência); só o nome.
             'alunos' => $this->liberadas($turma)->map(fn (Assinatura $a) => [
                 'assinatura_id' => $a->id,
@@ -81,6 +83,11 @@ class ChamadaRegularController extends Controller
             'data' => ['required', 'date', 'before_or_equal:today'],
             'presentes' => ['array'],
             'presentes.*' => ['integer'],
+            // Obrigatório (18/10/2026): o que foi ministrado vai para o dossiê de cada aluno.
+            'conteudo' => ['required', 'string', 'min:3', 'max:2000'],
+        ], [
+            'conteudo.required' => 'Escreva o que foi ministrado nesta aula (vai para o dossiê dos alunos).',
+            'conteudo.min' => 'Descreva o que foi ministrado com pelo menos 3 letras.',
         ]);
         $presentes = array_map('intval', $dados['presentes'] ?? []);
         // Só as assinaturas liberadas desta turma entram (um número de fora é ignorado).
@@ -88,7 +95,7 @@ class ChamadaRegularController extends Controller
 
         DB::transaction(function () use ($turma, $dados, $presentes, $liberadas): void {
             $aula = ProgramaAula::where('turma_id', $turma->id)->whereDate('data', $dados['data'])->first() ?? new ProgramaAula;
-            $aula->forceFill(['turma_id' => $turma->id, 'data' => $dados['data'], 'chamada_feita_em' => now()])->save();
+            $aula->forceFill(['turma_id' => $turma->id, 'data' => $dados['data'], 'conteudo' => trim($dados['conteudo']), 'chamada_feita_em' => now()])->save();
 
             foreach ($liberadas as $assinaturaId) {
                 $presenca = ProgramaPresenca::where('aula_id', $aula->id)->where('assinatura_id', $assinaturaId)->first() ?? new ProgramaPresenca;

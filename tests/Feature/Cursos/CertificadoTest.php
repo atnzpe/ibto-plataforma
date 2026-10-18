@@ -44,6 +44,7 @@ function chamadas($teste, int $encontros, int $presente): void
     foreach ($teste->encontros->take($encontros) as $indice => $aula) {
         $teste->actingAs($teste->admin)->put(route('comando-geral.cursos.chamada.update', ['curso' => $teste->curso->id, 'aula' => $aula->id]), [
             'presentes' => $indice < $presente ? [$teste->matricula->id] : [],
+            'registro_encontro' => 'Guarda e base.',
         ]);
     }
 }

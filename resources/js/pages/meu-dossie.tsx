@@ -102,7 +102,13 @@ export default function MeuDossie({
     aulas_regulares?: {
         programa: string;
         situacao: string;
+        // Totais de todas as aulas com chamada; percentual null = nenhuma aula ainda.
+        presencas: number;
+        aulas: number;
+        percentual: number | null;
         meses: { mes: string; presencas: number; aulas: number }[];
+        // O diário (18/10/2026): as aulas mais recentes primeiro, com o que foi ministrado.
+        diario: { data: string; presente: boolean; conteudo: string | null }[];
     }[];
 }) {
     // Os três números do resumo, na ordem em que aparecem.
@@ -386,6 +392,14 @@ export default function MeuDossie({
                                         · {a.situacao}
                                     </span>
                                 </p>
+                                {/* Total: presenças de todas as aulas com chamada (ex.: "18 de 20 aulas · 90%"). */}
+                                {a.aulas > 0 && (
+                                    <p>
+                                        {a.presencas} de {a.aulas} aulas
+                                        {a.percentual !== null &&
+                                            ` · ${a.percentual}% de frequência`}
+                                    </p>
+                                )}
                                 {a.meses.length === 0 ? (
                                     <p className="text-muted-foreground">
                                         Nenhuma chamada registrada ainda.
@@ -403,6 +417,40 @@ export default function MeuDossie({
                                             </li>
                                         ))}
                                     </ul>
+                                )}
+                                {/* Diário: o que foi visto em cada aula, da mais recente para a mais antiga. */}
+                                {a.diario.length > 0 && (
+                                    <details className="mt-1">
+                                        <summary className="min-h-11 cursor-pointer py-2 font-medium">
+                                            Diário de aulas ({a.diario.length}{' '}
+                                            mais recentes)
+                                        </summary>
+                                        <ol className="flex flex-col gap-2">
+                                            {a.diario.map((aula) => (
+                                                <li
+                                                    key={aula.data}
+                                                    className="rounded-md border px-3 py-2"
+                                                >
+                                                    {/* Presença ESCRITA (não só cor). */}
+                                                    <p className="font-medium">
+                                                        {aula.data
+                                                            .split('-')
+                                                            .reverse()
+                                                            .join('/')}{' '}
+                                                        ·{' '}
+                                                        {aula.presente
+                                                            ? 'presente'
+                                                            : 'falta'}
+                                                    </p>
+                                                    {aula.conteudo && (
+                                                        <p className="whitespace-pre-line text-muted-foreground">
+                                                            {aula.conteudo}
+                                                        </p>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </details>
                                 )}
                             </article>
                         ))}

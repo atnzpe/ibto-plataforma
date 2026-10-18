@@ -43,7 +43,7 @@ function chamadaDoDossie($teste, int $indice, bool $presente, ?string $trabalhad
 {
     $teste->actingAs($teste->admin)->put(
         route('comando-geral.cursos.chamada.update', ['curso' => $teste->curso->id, 'aula' => $teste->encontros[$indice]->id]),
-        ['presentes' => $presente ? [$teste->matricula->id] : [], 'registro_encontro' => $trabalhado],
+        ['presentes' => $presente ? [$teste->matricula->id] : [], 'registro_encontro' => $trabalhado ?? 'Revisão.'],
     );
 }
 

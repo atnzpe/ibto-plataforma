@@ -41,8 +41,8 @@ test('o instrutor vê a turma e a lista só com quem está em dia', function () 
 
 test('salvar a chamada grava a presença, não duplica ao corrigir e vai para o dossiê', function () {
     $hoje = today()->toDateString();
-    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id]])->assertSessionHasNoErrors();
-    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id]]);
+    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id], 'conteudo' => 'Defesa contra estrangulamento.'])->assertSessionHasNoErrors();
+    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id], 'conteudo' => 'Defesa contra estrangulamento.']);
 
     expect(ProgramaPresenca::count())->toBe(1)->and(ProgramaPresenca::sole()->presente)->toBeTrue();
 
@@ -58,4 +58,18 @@ test('outro instrutor recebe 403 e data futura é recusada', function () {
     $this->actingAs($outro)->get(route('aulas.chamada', $this->turma))->assertForbidden();
 
     $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => today()->addDay()->toDateString()])->assertSessionHasErrors('data');
+});
+
+test('o conteúdo da aula é obrigatório e vai para o diário do dossiê', function () {
+    $hoje = today()->toDateString();
+    // Sem dizer o que foi ministrado: não salva.
+    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id]])->assertSessionHasErrors('conteudo');
+
+    $this->actingAs($this->instrutor)->post(route('aulas.chamada.salvar', $this->turma), ['data' => $hoje, 'presentes' => [$this->assinaturaEmDia->id], 'conteudo' => 'Quedas e rolamentos.'])->assertSessionHasNoErrors();
+
+    $this->actingAs($this->emDia)->get(route('meu-dossie'))->assertInertia(fn ($tela) => $tela
+        ->where('aulas_regulares.0.presencas', 1)
+        ->where('aulas_regulares.0.percentual', 100)
+        ->where('aulas_regulares.0.diario.0.conteudo', 'Quedas e rolamentos.')
+        ->where('aulas_regulares.0.diario.0.presente', true));
 });
