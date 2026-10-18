@@ -1,0 +1,55 @@
+# LIGHTHOUSE NA HOMOLOGAÇÃO (#74, 18/10/2026): depois de cada deploy, o Google
+# Lighthouse mede as telas PÚBLICAS da plataforma no celular e confere as notas
+# mínimas da issue #74:
+# - acessibilidade, SEO e boas práticas ≥ 95 (abaixo disso, o job fica vermelho);
+# - desempenho ≥ 90 no celular (só AVISO: depende também da hospedagem).
+# A homologação é "não indexar" de propósito (APP_INDEXAVEL=false), então a
+# auditoria "is-crawlable" fica fora da nota de SEO (ver lighthouserc.json).
+# O relatório completo fica nos "Artifacts" do job (não vai para servidor externo).
+# Rodar à mão: Actions → "Lighthouse homologação" → Run workflow.
+name: Lighthouse homologação
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Deploy homologação']
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    # Depois do deploy, só se ele deu certo (ou quando alguém roda à mão).
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Baixar o código (só o lighthouserc.json)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Logo depois do deploy a plataforma mostra a tela de manutenção (503) até a tarefa
+      # agendada tirar a placa (até ~15 min). Espera ela voltar antes de medir.
+      - name: Esperar a plataforma sair da manutenção
+        run: |
+          for tentativa in $(seq 1 60); do
+            if curl --silent --fail --max-time 20 https://cursos-homolog.ib-to.org/api/saude > /dev/null; then
+              echo "No ar (tentativa $tentativa)."
+              exit 0
+            fi
+            echo "Ainda em manutenção; nova tentativa em 30 s ($tentativa/60)."
+            sleep 30
+          done
+          echo "A plataforma não voltou em 30 minutos." && exit 1
+
+      # A máquina do GitHub (ubuntu-latest) já vem com Node e npx.
+      - name: Medir com o Lighthouse e conferir as notas
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.json
+
+      - name: Guardar o relatório
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-lighthouse
+          path: .lighthouseci/
+          retention-days: 14
