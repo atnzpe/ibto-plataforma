@@ -12,6 +12,10 @@ import {
     TOURS,
     temTour,
 } from '../../resources/js/lib/tours';
+import {
+    TELAS_SEM_TOUR,
+    telaTemTour,
+} from '../../resources/js/lib/tours-telas';
 
 // Finge uma tela onde TODOS os elementos existem.
 const tudoExiste = () => true;
@@ -61,22 +65,10 @@ describe('abreSozinho', () => {
 });
 
 // AUDITORIA "NÍVEL MILITAR" (17/10/2026): TODA tela da plataforma tem tour, menos
-// as da lista abaixo, cada uma com o motivo. Tela nova sem tour reprova a CI.
-const SEM_TOUR: Record<string, string> = {
-    // Antes do login, sem menu nem botão "?": a tela é um formulário só.
-    'auth/cadastro-em-analise': 'antes do login',
-    'auth/confirm-password': 'antes do login',
-    'auth/convite': 'antes do login',
-    'auth/forgot-password': 'antes do login',
-    'auth/login': 'antes do login',
-    'auth/register': 'antes do login',
-    'auth/reset-password': 'antes do login',
-    'auth/two-factor-challenge': 'antes do login',
-    'auth/verify-email': 'antes do login',
-    // Páginas de impressão (sem menu): o papel não tem balão.
-    'certificados/ver': 'página de impressão',
-    'relatorios/imprimir': 'página de impressão',
-};
+// as da lista TELAS_SEM_TOUR (lib/tours-telas.ts), cada uma com o motivo. Tela nova
+// sem tour reprova a CI. (18/10/2026: a lista mudou para o código, porque o "?" a usa
+// sem baixar os textos dos tours.)
+const SEM_TOUR = TELAS_SEM_TOUR;
 
 describe('cobertura do tour (toda tela)', () => {
     test('toda tela em resources/js/pages tem tour (ou está na lista SEM_TOUR com motivo)', () => {
@@ -93,6 +85,8 @@ describe('cobertura do tour (toda tela)', () => {
 
         // A mensagem do erro lista as telas que faltam (para quem for corrigir).
         expect(semTour).toEqual([]);
+        // A lista curta (que decide o "?") e a dos textos combinam em TODA tela.
+        telas.forEach((tela) => expect(telaTemTour(tela)).toBe(temTour(tela)));
     });
 });
 

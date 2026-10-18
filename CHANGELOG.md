@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Desempenho (#74)
+
+- Os textos dos tours e a biblioteca dos balões (driver.js) só são baixados quando o tour abre: o arquivo principal da tela caiu de 83,8 KB para 71,8 KB (comprimido). O botão "?" usa a lista curta de lib/tours-telas.ts.
+
 ### Corrigido (achados do Lighthouse)
 
 - Privacidade: o campo da versão do texto cobria a versão da plataforma e quebrava o aviso do console (erro "reading 'versao'"); agora se chama versao_politica.

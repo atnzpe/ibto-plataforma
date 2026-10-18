@@ -10,14 +10,15 @@
  * Os balões são da biblioteca driver.js (MIT). Os textos vêm de lib/tours.ts,
  * que são textos FIXOS do código: nenhum texto digitado por usuário entra no
  * balão (o driver.js desenha o texto como HTML, então isso importa).
+ * Desempenho (18/10/2026, Lighthouse): os textos e o driver.js só são baixados
+ * quando o tour vai ABRIR; para mostrar o "?", basta a lista curta de
+ * lib/tours-telas.ts.
  * Teclado: setas avançam/voltam e Esc fecha.
  */
 import { router, usePage } from '@inertiajs/react';
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
 import { CircleHelp } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
-import { abreSozinho, passosDaTela, temTour } from '@/lib/tours';
+import { deveAbrirSozinho, telaTemTour } from '@/lib/tours-telas';
 
 // Os dados do tour que o servidor manda para toda tela com login (HandleInertiaRequests).
 type DadosDoTour = { ativo: boolean; vistos: string[] } | null;
@@ -40,9 +41,16 @@ export function TourGuiado() {
     const ultimaAberta = useRef<string | null>(null);
 
     /**
-     * Abre o tour da tela atual.
+     * Abre o tour da tela atual. Baixa os textos e a biblioteca dos balões só agora
+     * (na primeira vez; depois o navegador já tem guardado).
      */
-    const abrir = useCallback(() => {
+    const abrir = useCallback(async () => {
+        const [{ driver }, { passosDaTela }] = await Promise.all([
+            import('driver.js'),
+            import('@/lib/tours'),
+            // O visual dos balões vem junto (só quando o tour abre).
+            import('driver.js/dist/driver.css'),
+        ]);
         // Primeiro tour da vida da pessoa: entra a apresentação do menu, idioma e conta.
         const primeiroTour = (dados?.vistos.length ?? 0) === 0;
         const passos = passosDaTela(
@@ -98,7 +106,10 @@ export function TourGuiado() {
         if (new URLSearchParams(window.location.search).get('tour') !== '1') {
             return;
         }
-        const relogio = window.setTimeout(abrir, ESPERA_PARA_ABRIR_MS);
+        const relogio = window.setTimeout(
+            () => void abrir(),
+            ESPERA_PARA_ABRIR_MS,
+        );
 
         // Saiu da tela antes do tempo: cancela a abertura.
         return () => window.clearTimeout(relogio);
@@ -110,26 +121,29 @@ export function TourGuiado() {
         if (
             !dados ||
             ultimaAberta.current === tela ||
-            !abreSozinho(tela, dados.ativo, dados.vistos)
+            !deveAbrirSozinho(tela, dados.ativo, dados.vistos)
         ) {
             return;
         }
         ultimaAberta.current = tela;
-        const relogio = window.setTimeout(abrir, ESPERA_PARA_ABRIR_MS);
+        const relogio = window.setTimeout(
+            () => void abrir(),
+            ESPERA_PARA_ABRIR_MS,
+        );
 
         // Saiu da tela antes do tempo: cancela a abertura.
         return () => window.clearTimeout(relogio);
     }, [abrir, dados, tela]);
 
     // Tela sem tour: sem botão.
-    if (!temTour(tela)) {
+    if (!telaTemTour(tela)) {
         return null;
     }
 
     return (
         <button
             type="button"
-            onClick={abrir}
+            onClick={() => void abrir()}
             data-tour="ajuda"
             // aria-label: o leitor de tela fala o nome do botão (o "?" sozinho não diz nada).
             aria-label="Ajuda: ver o tour desta tela"
