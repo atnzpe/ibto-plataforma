@@ -79,6 +79,9 @@ class MeusCursosController extends Controller
                 'data_inicio' => $matricula->curso->data_inicio?->toDateString(),
                 'situacao' => $matricula->situacao->value,
                 'situacao_rotulo' => $matricula->situacao->rotulo(),
+                // Comprovante (18/10/2026): já enviado (aguardando conferência) ou recusado (enviar outro).
+                'comprovante_enviado' => $matricula->comprovante !== null,
+                'comprovante_recusado' => $matricula->comprovante === null && $matricula->comprovante_recusado_em !== null,
                 // Código do certificado VÁLIDO (#44), para "Ver certificado"; null = não tem.
                 'certificado' => $matricula->certificado?->valido() ? $matricula->certificado->codigo : null,
                 // PROGRESSO das aulas (14/10/2026), só na matrícula confirmada:

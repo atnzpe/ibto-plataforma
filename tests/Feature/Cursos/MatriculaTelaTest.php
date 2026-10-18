@@ -14,7 +14,9 @@ use App\Models\CursoMatricula;
 use App\Models\PagamentoConfig;
 use App\Models\Papel;
 use App\Models\User;
+use App\Notifications\ComprovanteRecusado;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -126,4 +128,49 @@ test('sem chave Pix cadastrada, não há código (a tela orienta pelo suporte)',
 
     $this->actingAs($this->aluno)->get(route('catalogo.curso', $this->curso))
         ->assertInertia(fn ($tela) => $tela->where('matricula.pix', null));
+});
+
+test('comprovante enviado: a tela avisa "aguardando conferência" e o aluno não pode se inscrever de novo', function () {
+    $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
+    $matricula = CursoMatricula::firstOrFail();
+    $this->actingAs($this->aluno)->post(route('matriculas.comprovante', $matricula), ['comprovante' => UploadedFile::fake()->create('pix.pdf', 100, 'application/pdf')]);
+
+    expect($matricula->fresh()->comprovante_enviado_em)->not->toBeNull();
+    $this->actingAs($this->aluno)->get(route('catalogo.curso', $this->curso->id))
+        ->assertInertia(fn ($tela) => $tela->where('matricula.tem_comprovante', true)->whereNot('matricula.comprovante_enviado_em', null));
+    $this->actingAs($this->aluno)->get(route('meus-cursos'))
+        ->assertInertia(fn ($tela) => $tela->where('cursos.0.comprovante_enviado', true));
+
+    // Tentar se inscrever de novo não cria outra matrícula (a vaga já é dele).
+    $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
+    expect(CursoMatricula::count())->toBe(1);
+});
+
+test('o Comando Geral recusa o comprovante: arquivo apagado, motivo gravado, e-mail ao aluno e vaga mantida', function () {
+    Notification::fake();
+    $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
+    $matricula = CursoMatricula::firstOrFail();
+    $this->actingAs($this->aluno)->post(route('matriculas.comprovante', $matricula), ['comprovante' => UploadedFile::fake()->create('pix.pdf', 100, 'application/pdf')]);
+    $caminho = $matricula->fresh()->comprovante;
+
+    $admin = User::factory()->create();
+    $admin->papeis()->attach(Papel::where('slug', 'administrador')->value('id'));
+    // Sem motivo: recusado.
+    $this->actingAs($admin)->post(route('comando-geral.matriculas.recusar-comprovante', $matricula), ['motivo' => ''])->assertSessionHasErrors('motivo');
+    $this->actingAs($admin)->post(route('comando-geral.matriculas.recusar-comprovante', $matricula), ['motivo' => 'Comprovante ilegível'])->assertSessionHasNoErrors();
+
+    $matricula->refresh();
+    expect($matricula->comprovante)->toBeNull()
+        ->and($matricula->comprovante_recusa_motivo)->toBe('Comprovante ilegível')
+        ->and($matricula->situacao)->toBe(SituacaoMatricula::AguardandoPagamento);
+    Storage::disk('local')->assertMissing($caminho);
+    Notification::assertSentTo($this->aluno, ComprovanteRecusado::class);
+
+    // O aluno vê o motivo; ao mandar outro, a recusa some.
+    $this->actingAs($this->aluno)->get(route('meus-cursos'))->assertInertia(fn ($tela) => $tela->where('cursos.0.comprovante_recusado', true));
+    $this->actingAs($this->aluno)->post(route('matriculas.comprovante', $matricula), ['comprovante' => UploadedFile::fake()->create('pix2.pdf', 100, 'application/pdf')]);
+    expect($matricula->fresh()->comprovante_recusa_motivo)->toBeNull();
+
+    // Aluno comum não recusa comprovante (sem a permissão).
+    $this->actingAs($this->aluno)->post(route('comando-geral.matriculas.recusar-comprovante', $matricula), ['motivo' => 'x'])->assertForbidden();
 });

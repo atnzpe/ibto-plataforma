@@ -24,6 +24,9 @@ use Illuminate\Support\Carbon;
  * @property SituacaoMatricula $situacao
  * @property int $valor_centavos
  * @property string|null $comprovante
+ * @property Carbon|null $comprovante_enviado_em Quando chegou o último comprovante (18/10/2026).
+ * @property Carbon|null $comprovante_recusado_em A última recusa do comprovante, se houve.
+ * @property string|null $comprovante_recusa_motivo Ex.: 'Comprovante ilegível'.
  * @property int|null $lancamento_id
  * @property int|null $confirmada_por
  * @property Carbon|null $confirmada_em
@@ -60,6 +63,8 @@ class CursoMatricula extends Model
             'valor_cheio_centavos' => 'integer',
             'desconto_centavos' => 'integer',
             'confirmada_em' => 'datetime',
+            'comprovante_enviado_em' => 'datetime',
+            'comprovante_recusado_em' => 'datetime',
             'cancelada_em' => 'datetime',
         ];
     }
