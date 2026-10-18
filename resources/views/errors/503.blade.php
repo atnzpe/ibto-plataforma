@@ -6,15 +6,16 @@
     página genérica "503 Service Unavailable", que parecia erro e assustava quem testa.
 
     Pedido do Gleyson: a espera vira um momento de treino. O emblema "respira" (pulso
-    suave) e uma de 30 mensagens aparece, trocando a cada 15 segundos:
+    suave) e uma de 40 mensagens aparece, trocando a cada 15 segundos:
     - A Arte da Guerra (Sun Tzu, domínio público): tradução livre do IBTO, com a fonte;
     - mentalidade operacional e "homem cinza" (textos próprios do IBTO);
-    - treino e comunicação (textos próprios do IBTO, sem copiar livros com direitos autorais).
+    - treino e comunicação (textos próprios do IBTO, sem copiar livros com direitos autorais);
+    - mindfulness: exercícios curtos de respiração, calma e foco (textos próprios do IBTO).
     Tudo embutido (estilo, textos e script), sem os arquivos do front: no meio do deploy
     eles podem estar sendo trocados. A página se recarrega sozinha a cada 60 segundos.
 --}}
 @php
-    // As 30 mensagens: [texto, fonte]. Fonte vazia = texto do IBTO.
+    // As 40 mensagens: [texto, fonte]. Fonte vazia = texto do IBTO.
     $mensagens = [
         // A Arte da Guerra (Sun Tzu), em tradução livre do IBTO.
         ['Conheça o adversário e conheça a si mesmo: em cem combates, você não correrá perigo.', 'Sun Tzu, A Arte da Guerra'],
@@ -49,6 +50,17 @@
         ['Fale pouco, com calma e voz firme. Em tensão, a sua calma contagia.', ''],
         ['Pergunte o nome e use o nome: as pessoas cooperam com quem as reconhece.', ''],
         ['Disciplina é fazer o certo também quando ninguém está olhando.', ''],
+        // Mindfulness (atenção plena): exercícios curtos de calma e foco (textos do IBTO).
+        ['Pare por um instante: sinta os pés no chão e o peso do corpo na cadeira.', ''],
+        ['Respire pelo nariz contando até quatro e solte pela boca contando até seis. Repita três vezes.', ''],
+        ['Nomeie em silêncio cinco coisas que você vê, quatro que ouve e três que sente na pele.', ''],
+        ['Solte os ombros, relaxe a mandíbula e afaste a língua do céu da boca. Tensão gasta energia.', ''],
+        ['Perceba o pensamento que está passando agora. Não brigue com ele: só observe e volte à respiração.', ''],
+        ['Atenção plena é estar inteiro no que você faz: no treino, na conversa, na espera.', ''],
+        ['Antes de reagir, respire uma vez. Esse segundo é a diferença entre reação e decisão.', ''],
+        ['Feche os olhos por três respirações e escute o som mais distante que conseguir.', ''],
+        ['Ansiedade olha para o futuro; o treino acontece agora. Traga a mente de volta para este minuto.', ''],
+        ['Termine esta espera com uma intenção simples para o resto do dia. Uma só.', ''],
     ];
     // A primeira mensagem já vem sorteada do servidor (funciona mesmo sem JavaScript).
     $primeira = $mensagens[array_rand($mensagens)];

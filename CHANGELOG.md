@@ -13,7 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Alterado (tela de manutenção)
 
-- Tela de manutenção do IBTO (17/10/2026): durante o deploy, em vez da página genérica "503 Service Unavailable", aparece "Estamos atualizando a plataforma" com o emblema, em português, recarregando sozinha a cada 60 segundos; tudo embutido, para funcionar mesmo no meio da troca dos arquivos. Pedido do Gleyson: o emblema "respira" (parado para quem pede menos movimento) e uma de 30 mensagens de treino aparece, trocando a cada 15 segundos: A Arte da Guerra (Sun Tzu, tradução livre), mentalidade operacional e "homem cinza", treino e comunicação.
+- Tela de manutenção do IBTO (17/10/2026): durante o deploy, em vez da página genérica "503 Service Unavailable", aparece "Estamos atualizando a plataforma" com o emblema animado e 40 mensagens de treino (Sun Tzu, homem cinza, comunicação e mindfulness), em português, recarregando sozinha a cada 60 segundos; tudo embutido, para funcionar mesmo no meio da troca dos arquivos. Pedido do Gleyson: o emblema "respira" (parado para quem pede menos movimento) e uma de 30 mensagens de treino aparece, trocando a cada 15 segundos: A Arte da Guerra (Sun Tzu, tradução livre), mentalidade operacional e "homem cinza", treino e comunicação.
 
 ### Adicionado (manual e tour em nível militar)
 
