@@ -80,7 +80,7 @@ class CarregarConteudoPiloto extends Command
             'chamada' => 'Técnica · Disciplina · Sobrevivência · Missão. Evolua com quem vive o real.',
             'descricao' => "Instrutor com 1 ano de experiência de combate, em ativa na Ucrânia, com formação no Exército Ucraniano e no Exército Espanhol.\n\n"
                 ."Conteúdo do curso:\n- CQB (combate em ambiente urbano)\n- Mata (patrulha e movimentação)\n- Reconhecimento\n- Infiltração\n- Progressão em ambiente simulado\n- Franqueamento\n- Simulação de emboscada\n- EOD (explosivos e contramedidas)\n\n"
-                ."Dois dias de duração. Vagas limitadas.\n\nInscrições e dúvidas pelo grupo do WhatsApp: https://chat.whatsapp.com/EEU0gfqvVXA1CuCJiINWVj",
+                ."Dois dias de duração. Vagas limitadas.\n\nInscrições e dúvidas pelo WhatsApp do curso (o link do grupo é passado pelo IBTO).",
             'area_atuacao_id' => $this->area(['tát', 'tat', 'tiro', 'arma']),
             'modalidade' => 'presencial',
             'acesso' => 'aberto',

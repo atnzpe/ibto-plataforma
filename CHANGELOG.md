@@ -11,6 +11,18 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (licença provisória)
+
+- Arquivo LICENSE: repositório público só para leitura, todos os direitos reservados ao IBTO até a diretoria escolher a licença aberta (#85).
+
+### Alterado (menu lateral em grupos)
+
+- O menu lateral agora é organizado por assunto: Início, Minha área, Ensino, Pessoas, Financeiro, Comunicação e Cadastros. Cada grupo abre e fecha (a escolha fica guardada no navegador); o grupo da tela aberta já vem aberto; grupo de um item só aparece sem título.
+
+### Segurança (preparação para o repositório público)
+
+- Saiu do código o link de convite do grupo de WhatsApp de um curso, e uma migração tira o mesmo link da descrição já gravada no banco. Teste do catálogo usa número de WhatsApp falso.
+
 ### Alterado (economia de minutos do GitHub Actions)
 
 - A CI roda uma vez por envio na PR (antes, duas); no deploy, pula os testes de navegador (já rodaram na PR); o Lighthouse roda só à mão ou toda segunda (antes, depois de cada deploy, esperando até 30 min).

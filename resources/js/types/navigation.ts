@@ -11,4 +11,7 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    // O grupo do menu lateral (18/10/2026): 'inicio', 'minha', 'ensino', 'pessoas',
+    // 'financeiro', 'comunicacao' ou 'cadastros'. Sem grupo: entra em "Plataforma".
+    grupo?: string;
 };
