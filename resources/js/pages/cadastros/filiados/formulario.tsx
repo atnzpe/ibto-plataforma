@@ -18,6 +18,8 @@ import type { FotoDoFiliado } from '@/components/foto-filiado';
 // Quadro da anuidade na ficha (#37 + #59).
 import QuadroAnuidadeFiliado from '@/components/financeiro/quadro-anuidade';
 import type { QuadroAnuidade } from '@/components/financeiro/quadro-anuidade';
+// Certificado de graduação na ficha (#46, parte 2).
+import QuadroGraduacao from '@/components/cadastros/quadro-graduacao';
 import { convite, index } from '@/routes/cadastros/filiados';
 
 /** Os dados do filiado na edição. */
@@ -62,6 +64,7 @@ const classeSelect =
  * @param ufs As 27 siglas de estado.
  * @param categorias As 5 categorias (funções). Ex.: [{ valor: 'instrutor', rotulo: 'Instrutor' }]
  * @param anuidade O quadro da anuidade (só na edição, para quem vê o financeiro), ou null.
+ * @param graduacao O quadro do certificado de graduação (só para quem gerencia os filiados), ou null.
  * @returns A tela do formulário.
  */
 export default function FiliadoFormularioTela({
@@ -72,6 +75,7 @@ export default function FiliadoFormularioTela({
     ufs,
     categorias,
     anuidade = null,
+    graduacao = null,
 }: {
     filiado: FiliadoFormulario | null;
     equipes: Opcao[];
@@ -80,6 +84,7 @@ export default function FiliadoFormularioTela({
     ufs: string[];
     categorias: { valor: string; rotulo: string }[];
     anuidade?: QuadroAnuidade | null;
+    graduacao?: React.ComponentProps<typeof QuadroGraduacao>['quadro'] | null;
 }) {
     // Mensagem da última ação (ex.: "Convite reenviado."), ou null; e os erros
     // gerais da página (ex.: errors.anuidade, a regra da anuidade com código).
@@ -160,6 +165,18 @@ export default function FiliadoFormularioTela({
                         erro={
                             (errors as Record<string, string> | undefined)
                                 ?.anuidade
+                        }
+                    />
+                )}
+
+                {/* Certificado de graduação (#46): só na edição e só para quem gerencia os filiados. */}
+                {editando && graduacao && (
+                    <QuadroGraduacao
+                        filiadoId={filiado.id}
+                        quadro={graduacao}
+                        erro={
+                            (errors as Record<string, string> | undefined)
+                                ?.graduacao
                         }
                     />
                 )}

@@ -77,6 +77,7 @@ export default function MeuDossie({
     certificados,
     cursos,
     aulas_regulares = [],
+    graduacoes = [],
 }: {
     pessoa: {
         nome: string;
@@ -98,6 +99,15 @@ export default function MeuDossie({
         valido: boolean;
     }[];
     cursos: CursoDossie[];
+    // Certificados de graduação (#46, parte 2), o mais novo primeiro.
+    graduacoes?: {
+        codigo: string;
+        numero_serie: string;
+        condicao: string;
+        nivel: string;
+        emitido_em: string;
+        valido: boolean;
+    }[];
     // Aulas regulares (#80): por programa, a situação e a frequência dos últimos meses.
     aulas_regulares?: {
         programa: string;
@@ -174,7 +184,7 @@ export default function MeuDossie({
                     ))}
                 </section>
 
-                {/* Graduação: o nível atual (o histórico chega com a #46). */}
+                {/* Graduação: o nível atual e os certificados de graduação (#46). */}
                 <section
                     aria-labelledby="t-graduacao"
                     className="flex flex-col gap-2"
@@ -190,6 +200,30 @@ export default function MeuDossie({
                               ? 'Seu nível ainda não foi registrado. Fale com o administrador da sua equipe.'
                               : `Nível atual: ${pessoa.nivel}`}
                     </p>
+                    {/* Certificados de graduação, com o link para imprimir (situação escrita). */}
+                    {graduacoes.map((graduacao) => (
+                        <p
+                            key={graduacao.codigo}
+                            className="flex flex-col gap-1 rounded-lg border border-border p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <span>
+                                <strong>{graduacao.condicao}</strong> ·{' '}
+                                {graduacao.nivel} · {graduacao.emitido_em} · nº{' '}
+                                {graduacao.numero_serie}
+                                {!graduacao.valido && ' · CANCELADO'}
+                            </span>
+                            {graduacao.valido && (
+                                <a
+                                    href={`/graduacoes/${graduacao.codigo}`}
+                                    target="_blank"
+                                    rel="noopener"
+                                    className="min-h-11 content-center underline underline-offset-4"
+                                >
+                                    Ver / imprimir o certificado
+                                </a>
+                            )}
+                        </p>
+                    ))}
                 </section>
 
                 {/* Certificados: válidos e cancelados (o cancelado aparece riscado e escrito). */}

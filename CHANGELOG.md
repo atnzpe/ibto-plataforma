@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (certificado de graduação, #46)
+
+- Certificado de graduação no modelo institucional do Mestre Eduardo: emitido na ficha do filiado (textos sugeridos pelo nível e pelas áreas), número de série GR + ano + ordem + letra do nível + via, QR code com a validação pública (nome abreviado), cancelamento com motivo e a lista no Meu dossiê para imprimir.
+
 ### Adicionado (licença provisória)
 
 - Arquivo LICENSE: repositório público só para leitura, todos os direitos reservados ao IBTO até a diretoria escolher a licença aberta (#85).

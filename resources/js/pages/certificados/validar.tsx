@@ -3,6 +3,8 @@
  * que recebeu o certificado) confere pelo código. Mostra só o necessário:
  * curso, datas, carga horária e o NOME ABREVIADO (LGPD). Código inventado:
  * "não encontrado". Cancelado: aviso em destaque (deixa de valer).
+ * Desde 18/10/2026 (#46, parte 2) atende também o certificado de GRADUAÇÃO
+ * (condição, nível e número de série), pelo mesmo formato de código.
  * Tem também a caixa para digitar outro código.
  */
 import { Head, router } from '@inertiajs/react';
@@ -12,12 +14,14 @@ import { validar } from '@/routes/certificados';
 
 /**
  * @param codigo O código consultado. Ex.: 'IBTO-7K2M-9QXA'
- * @param certificado O que achou, ou null (não encontrado).
+ * @param certificado O certificado de curso que achou, ou null.
+ * @param graduacao O certificado de graduação que achou, ou null.
  * @returns A tela da validação.
  */
 export default function ValidarCertificado({
     codigo,
     certificado,
+    graduacao = null,
 }: {
     codigo: string;
     certificado: {
@@ -26,6 +30,15 @@ export default function ValidarCertificado({
         curso: string;
         carga_horaria: number | null;
         concluido_em: string;
+        emitido_em: string;
+        cancelado_em: string | null;
+    } | null;
+    graduacao?: {
+        valido: boolean;
+        nome: string;
+        condicao: string;
+        nivel: string;
+        numero_serie: string;
         emitido_em: string;
         cancelado_em: string | null;
     } | null;
@@ -43,7 +56,7 @@ export default function ValidarCertificado({
                 </h1>
 
                 {/* Resultado, com o estado ESCRITO (não só cor). */}
-                {certificado === null && (
+                {certificado === null && graduacao === null && (
                     <p
                         role="alert"
                         className="rounded-xl border border-red-700/40 bg-red-50 p-4 text-red-900"
@@ -84,6 +97,40 @@ export default function ValidarCertificado({
                             <dd>{dataBr(certificado.concluido_em)}</dd>
                             <dt className="font-medium">Emitido em</dt>
                             <dd>{dataBr(certificado.emitido_em)}</dd>
+                        </dl>
+                        <p className="text-xs">
+                            O nome aparece abreviado para proteger os dados da
+                            pessoa (LGPD).
+                        </p>
+                    </section>
+                )}
+
+                {/* Certificado de GRADUAÇÃO (#46): condição, nível e número de série. */}
+                {graduacao !== null && (
+                    <section
+                        aria-label="Resultado da validação"
+                        className={`flex flex-col gap-3 rounded-xl border p-5 ${graduacao.valido ? 'border-green-700/40 bg-green-50 text-green-950' : 'border-red-700/40 bg-red-50 text-red-950'}`}
+                    >
+                        <strong className="text-lg">
+                            {graduacao.valido
+                                ? '✓ Certificado de graduação VÁLIDO'
+                                : `✗ Certificado de graduação CANCELADO em ${dataBr(graduacao.cancelado_em ?? '')}`}
+                        </strong>
+                        <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+                            <dt className="font-medium">Código</dt>
+                            <dd className="font-mono">{codigo}</dd>
+                            <dt className="font-medium">Número de série</dt>
+                            <dd className="font-mono">
+                                {graduacao.numero_serie}
+                            </dd>
+                            <dt className="font-medium">Nome</dt>
+                            <dd>{graduacao.nome}</dd>
+                            <dt className="font-medium">Condição</dt>
+                            <dd>{graduacao.condicao}</dd>
+                            <dt className="font-medium">Nível</dt>
+                            <dd>{graduacao.nivel}</dd>
+                            <dt className="font-medium">Emitido em</dt>
+                            <dd>{dataBr(graduacao.emitido_em)}</dd>
                         </dl>
                         <p className="text-xs">
                             O nome aparece abreviado para proteger os dados da

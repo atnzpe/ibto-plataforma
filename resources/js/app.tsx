@@ -33,6 +33,9 @@ void createInertiaApp({
             // Relatório para imprimir ou salvar em PDF (#73): página limpa, sem menu.
             case name === 'relatorios/imprimir':
                 return null;
+            // Certificado de graduação para imprimir (#46, parte 2): página limpa.
+            case name === 'graduacoes/ver':
+                return null;
             // Carteirinha (#46): a validação pública na vitrine; a minha, página limpa para imprimir.
             case name === 'carteirinha/validar':
                 return VitrineLayout;
