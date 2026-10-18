@@ -49,7 +49,9 @@ test('a lista vem na ordem da hierarquia, não em ordem alfabética', function (
             ->where('niveis.0.nome', 'Praticante')
             ->where('niveis.1.nome', 'Monitor I')
             ->where('niveis.3.nome', 'Instrutor I')
-            ->where('niveis.12.nome', 'Instrutor Expert V'));
+            ->where('niveis.12.nome', 'Instrutor Expert V')
+            // Os 13 já existem: nada faltando (a tela esconde o "Novo nível").
+            ->where('faltando', 0));
 });
 
 test('usuário que não é administrador recebe 403', function () {

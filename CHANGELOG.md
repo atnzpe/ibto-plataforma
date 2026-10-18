@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (níveis)
+
+- Cadastros → Níveis: com os 13 níveis da hierarquia já cadastrados, o botão "Novo nível" some e a tela explica que não é preciso cadastrar nada (para tirar um nível de uso, desative).
+
 ### Adicionado (filtros dos relatórios)
 
 - Relatórios com filtros robustos: por dimensão (equipe, modalidade, área, situação, instrutor) e por coluna de texto, busca livre, e modo analítico ou sintético (somado pelo campo escolhido). CSV e PDF exportam o mesmo filtro, e a auditoria guarda os filtros usados.
