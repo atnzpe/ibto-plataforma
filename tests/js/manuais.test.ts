@@ -77,6 +77,7 @@ describe('conteúdo dos manuais', () => {
             '/financeiro/lancamentos': 'financeiro/lancamentos/index',
             // Relatórios (#73).
             '/relatorios': 'relatorios/index',
+            '/relatorios/aulas-regulares': 'relatorios/aulas-regulares',
             // Meu painel (#79).
             '/meu-painel': 'meu-painel',
             // Venda de fotos (#90).

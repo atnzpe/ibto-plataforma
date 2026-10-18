@@ -11,6 +11,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (painel financeiro das aulas regulares)
+
+- Meu painel: "Minha saúde financeira" (cursos + aulas: já recebi, pendente de repasse, a vencer e total a receber) e "Aulas regulares que ministro", por programa.
+
+- Relatórios → "Aulas regulares (financeiro)" (17/10/2026), no molde do Cockpit do Dojo Manager: quem treina, previsto, recebido (com %), a receber, em atraso, a divisão IBTO/instrutor (já repassado e falta repassar), mês a mês, por programa e por instrutor. Filtros De/Até, programa, instrutor (recebedor), aluno (pagador) e situação; CSV auditado. Permissão nova `relatorio.aulas` (Administrador, Tecnologia e Instrutor; o instrutor vê só os programas dele).
+
 ### Corrigido (tela de manutenção)
 
 - O emblema da tela de manutenção aparece recortado em círculo, sem o fundo quadrado escuro da imagem.

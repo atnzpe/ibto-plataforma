@@ -46,10 +46,17 @@ class RelatorioController extends Controller
     {
         $disponiveis = array_values(array_filter(self::todos(), fn (Relatorio $relatorio) => $request->user()->temPermissao($relatorio->permissao())));
         // Ninguém chega aqui sem pelo menos um relatório (o menu esconde); mesmo assim, 403.
-        abort_if($disponiveis === [], 403);
+        abort_if($disponiveis === [] && ! $request->user()->temPermissao('relatorio.aulas'), 403);
+
+        $itens = array_map(fn (Relatorio $relatorio) => ['chave' => $relatorio->chave(), 'titulo' => $relatorio->titulo(), 'descricao' => $relatorio->descricao(), 'href' => '/relatorios/'.$relatorio->chave()], $disponiveis);
+        // O painel das aulas regulares (17/10/2026) tem tela própria, com mais filtros;
+        // entra na lista só para quem tem a permissão dele.
+        if ($request->user()->temPermissao('relatorio.aulas')) {
+            $itens[] = ['chave' => 'aulas-regulares', 'titulo' => 'Aulas regulares (financeiro)', 'descricao' => 'Quem treina, previsto, recebido, a receber, em atraso e a divisão IBTO/instrutor.', 'href' => '/relatorios/aulas-regulares'];
+        }
 
         return Inertia::render('relatorios/index', [
-            'relatorios' => array_map(fn (Relatorio $relatorio) => ['chave' => $relatorio->chave(), 'titulo' => $relatorio->titulo(), 'descricao' => $relatorio->descricao()], $disponiveis),
+            'relatorios' => $itens,
         ]);
     }
 

@@ -7,6 +7,7 @@
  * Dados INVENTADOS.
  */
 
+use App\Actions\AulasRegulares\Assinaturas;
 use App\Actions\Cursos\Matriculas;
 use App\Enums\SituacaoCurso;
 use App\Models\Curso;
@@ -14,6 +15,7 @@ use App\Models\CursoModulo;
 use App\Models\CursoPresenca;
 use App\Models\FinFormaPagamento;
 use App\Models\Papel;
+use App\Models\Programa;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 
@@ -72,4 +74,25 @@ test('quem não é instrutor nem admin de equipe recebe 403; o CSV sai para o in
     $resposta = $this->actingAs($this->instrutor)->get(route('meu-painel.csv'));
     $resposta->assertOk();
     expect($resposta->streamedContent())->toContain('Combate Corpo a Corpo')->toContain('400,00');
+});
+
+test('aulas regulares que ministro e a saúde financeira (cursos + aulas) aparecem no painel', function () {
+    // Programa do instrutor: R$ 100,00/mês, 20% do IBTO. Um aluno pagou; outro não.
+    $programa = Programa::create(['titulo' => 'Krav Maga', 'modalidade' => 'presencial', 'valor_mensal_centavos' => 10000, 'percentual_ibto' => 20, 'dia_vencimento' => 10, 'ativo' => true, 'so_filiados' => false, 'instrutor_id' => $this->instrutor->id]);
+    $acoes = app(Assinaturas::class);
+    $pago = $acoes->assinar($programa, User::factory()->create());
+    $acoes->confirmarPagamento($pago->pagamentos()->sole(), today()->toDateString(), (int) FinFormaPagamento::where('nome', 'PIX')->value('id'));
+    $acoes->assinar($programa, User::factory()->create());
+
+    $this->actingAs($this->instrutor)->get(route('meu-painel'))
+        ->assertInertia(fn ($tela) => $tela
+            ->where('aulas.programas.0.nome', 'Krav Maga')
+            ->where('aulas.alunos', 2)
+            // Ninguém foi repassado ainda: recebido 0.
+            ->where('saude.recebido_centavos', 0)
+            // Pendente: 2 × R$ 200,00 (cursos) + R$ 80,00 (aula paga) = R$ 480,00.
+            ->where('saude.pendente_centavos', 48000)
+            // A vencer: a parte dele na mensalidade ainda não paga (R$ 80,00).
+            ->where('saude.a_vencer_centavos', 8000)
+            ->where('saude.total_a_receber_centavos', 56000));
 });
