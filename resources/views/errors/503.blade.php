@@ -91,7 +91,9 @@
             }
             main { max-width: 34rem; }
             /* O emblema "respira": cresce e brilha devagar (4 s por ciclo). */
-            img { width: 112px; height: 112px; animation: respira 4s ease-in-out infinite; }
+            /* Recorte redondo: a imagem do emblema tem fundo quadrado escuro; o círculo
+               esconde os cantos e acompanha o formato do brasão. */
+            img { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; animation: respira 4s ease-in-out infinite; }
             @keyframes respira {
                 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(201, 189, 148, 0)); }
                 50% { transform: scale(1.06); filter: drop-shadow(0 0 18px rgba(201, 189, 148, 0.45)); }
