@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (economia de minutos do GitHub Actions)
+
+- A CI roda uma vez por envio na PR (antes, duas); no deploy, pula os testes de navegador (já rodaram na PR); o Lighthouse roda só à mão ou toda segunda (antes, depois de cada deploy, esperando até 30 min).
+
 ### Alterado (LGPD, #47)
 
 - Política de privacidade aprovada pela diretoria: versão 1.0 de 18/10/2026 (sai o aviso de rascunho). Com LGPD_EXIGIR_ACEITE=true no .env, todos aceitam a versão 1.0 no próximo acesso; o encarregado de dados vem de LGPD_ENCARREGADO.

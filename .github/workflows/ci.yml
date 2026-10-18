@@ -1,4 +1,6 @@
-# CI da plataforma: a cada push e PR roda lint, tipos, testes e build.
+# CI da plataforma: a cada PR roda lint, tipos, testes e build.
+# ECONOMIA DE MINUTOS (18/10/2026, 90% da cota usada): roda UMA vez por envio na PR
+# (antes rodava duas: pelo push na branch e pela PR). Branch sem PR não roda.
 # Usa o mesmo PHP (8.3) e o mesmo banco (Percona Server 5.7.44) da HostGator,
 # para que uma migration ou um recurso de linguagem incompatível falhe aqui,
 # e não no servidor.
@@ -7,8 +9,6 @@ name: CI
 on:
   # Na main quem chama a CI é o deploy (deploy-homologacao.yml), antes de
   # publicar; assim ela não roda duas vezes no mesmo commit.
-  push:
-    branches-ignore: [main]
   pull_request:
   workflow_dispatch:
   workflow_call:
@@ -134,9 +134,17 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
 
       # Navegador para a auditoria de acessibilidade (#74): o Chromium do Playwright.
+      # Só na PR: no deploy (workflow_call) as mesmas telas já passaram pelo axe na PR.
       - name: Navegador dos testes de acessibilidade (Chromium)
+        if: github.event_name != 'workflow_call'
         run: bunx playwright install --with-deps chromium
 
-      # Inclui tests/Browser: as telas abrem no Chromium e passam pelo axe (WCAG).
+      # Na PR: tudo, incluindo tests/Browser (as telas no Chromium, pelo axe/WCAG).
       - name: Testes do PHP (Pest, no Percona 5.7) e acessibilidade (axe)
+        if: github.event_name != 'workflow_call'
         run: php artisan test
+
+      # No deploy: só os testes sem navegador (mais rápido; o axe já rodou na PR).
+      - name: Testes do PHP (Pest, no Percona 5.7), sem navegador
+        if: github.event_name == 'workflow_call'
+        run: php artisan test tests/Feature tests/Unit
