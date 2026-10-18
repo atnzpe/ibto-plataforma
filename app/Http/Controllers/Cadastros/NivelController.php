@@ -25,9 +25,16 @@ class NivelController extends Controller
      */
     public function index(): Response
     {
+        // A hierarquia é FECHADA (18/10/2026): Praticante + Monitor I–II + Instrutor I–V +
+        // Instrutor Expert I–V = 13 níveis, todos criados pela migração. Conta quantos
+        // ainda faltam (só falta algum se alguém apagou direto no banco).
+        $possiveis = array_sum(array_map(fn (CategoriaNivel $categoria) => max(1, $categoria->grauMaximo()), CategoriaNivel::cases()));
+
         return Inertia::render('cadastros/niveis/index', [
             'niveis' => Nivel::emOrdem(Nivel::all())
                 ->map(fn (Nivel $nivel) => $this->paraTela($nivel)),
+            // 0 = a hierarquia está completa: a tela esconde o "Novo nível" e explica.
+            'faltando' => max(0, $possiveis - Nivel::count()),
         ]);
     }
 
