@@ -260,6 +260,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Meu painel": no topo, os totais do período (inscritos, comparecimento, a receber, recebido, certificados).',
                     'Troque o período em "De" e "Até" (sem filtro: o ano atual). Curso gravado, sem data, aparece sempre.',
+                    '"Minha saúde financeira" junta cursos e aulas regulares: o que você já recebeu, o que o aluno já pagou e falta o IBTO repassar, o que ainda vai vencer e o total a receber.',
+                    '"Aulas regulares que ministro" mostra cada programa seu (ex.: Krav Maga): alunos pagantes, mensalidades previstas, pagas, em atraso, a sua parte, o que já foi repassado e o que falta.',
                     'Cada cartão mostra um curso: confirmados, aguardando Pix, cancelados, comparecimento, a receber, recebido e certificados (com os aptos ainda sem certificado).',
                     '"Exportar CSV" baixa os mesmos números para abrir no Excel ou no Google Planilhas.',
                 ],
@@ -649,6 +651,31 @@ export const MANUAIS: Manual[] = [
                     'Uma permissão por relatório (tela de Permissões). Auditoria: só a Tecnologia. O admin de equipe vê os filiados da equipe dele; o instrutor, a frequência dos cursos dele.',
                 ],
                 tela: { endereco: '/relatorios', nome: 'Relatórios' },
+            },
+            {
+                id: 'relatorio-aulas-regulares',
+                titulo: 'Aulas regulares (financeiro)',
+                resumo: 'Quem treina, previsto, recebido, a receber, em atraso e a divisão IBTO/instrutor, com filtros e CSV.',
+                passos: [
+                    'Menu "Relatórios" → "Aulas regulares (financeiro)".',
+                    'Troque o período em "De" e "Até" (conta o VENCIMENTO da mensalidade; sem filtro: o ano atual).',
+                    'Filtre por programa (ex.: Krav Maga), por instrutor (quem recebe o repasse), pela situação ou busque o aluno (quem paga) por parte do nome e clique em "Buscar".',
+                    'Leia os cartões: Previsto, Recebido (com o % do previsto), A receber (no prazo) e Em atraso. A barra colorida mostra o mesmo: verde recebido, dourado a receber, vermelho em atraso.',
+                    'Em "Divisão: IBTO e instrutores": a parte de cada um no que já entrou, o que já foi repassado ao instrutor e o que falta repassar.',
+                    '"Mês a mês", "Por programa" e "Por instrutor" mostram de onde viemos e para onde vamos; "Quem treina" lista os alunos e se estão em dia.',
+                    '"Exportar CSV" baixa uma linha por mensalidade, com os mesmos filtros.',
+                ],
+                regras: [
+                    'A divisão usa o percentual do IBTO cadastrado no programa (padrão: 20% IBTO e 80% instrutor).',
+                    '"Já repassado" = o repasse ao instrutor teve baixa no livro-caixa (Financeiro → Lançamentos, categoria Instrutores).',
+                    'Mensalidade de assinatura cancelada não entra no previsto.',
+                    'O Comando Geral e a Tecnologia veem todos os programas; o instrutor vê só os dele. Só aparece o nome do aluno (sem CPF, telefone ou endereço).',
+                    'Toda exportação fica registrada na auditoria.',
+                ],
+                tela: {
+                    endereco: '/relatorios/aulas-regulares',
+                    nome: 'Aulas regulares (financeiro)',
+                },
             },
             {
                 id: 'venda-fotos',

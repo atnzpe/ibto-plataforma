@@ -64,7 +64,8 @@ test('cada relatório pede a sua permissão; o índice mostra só os liberados',
     $this->actingAs($this->admin)->get(route('relatorios.show', 'auditoria'))->assertForbidden();
     $this->actingAs($this->tecnologia)->get(route('relatorios.show', 'auditoria'))->assertOk();
     $this->actingAs($this->admin)->get(route('relatorios.index'))
-        ->assertInertia(fn ($tela) => $tela->has('relatorios', 4));
+        // 4 do módulo + o painel das aulas regulares (17/10/2026).
+        ->assertInertia(fn ($tela) => $tela->has('relatorios', 5));
 
     // Aluno sem nenhum relatório: 403 no módulo inteiro. Relatório que não existe: 404.
     $this->actingAs(User::factory()->create())->get(route('relatorios.index'))->assertForbidden();

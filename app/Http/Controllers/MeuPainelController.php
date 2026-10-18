@@ -12,6 +12,8 @@
  * - Filtro De/Até (regra da casa) pela data de início do curso; curso sem data
  *   (gravado) aparece sempre. Sem filtro: o ano atual.
  * - Exportar CSV (para planilha); o PDF entra com o módulo de relatórios (#73).
+ * - 17/10/2026: as AULAS REGULARES que a pessoa ministra (por programa) e a SAÚDE
+ *   FINANCEIRA dela (cursos + aulas): recebido, pendente de repasse, a vencer e total.
  */
 
 namespace App\Http\Controllers;
@@ -25,6 +27,7 @@ use App\Models\CursoMatricula;
 use App\Models\CursoPresenca;
 use App\Models\FinLancamento;
 use App\Models\User;
+use App\Relatorios\PainelAulasRegulares;
 use App\Support\Periodo;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,9 +51,30 @@ class MeuPainelController extends Controller
         $periodo = $this->periodo($request);
         $linhas = $this->cursos($request->user(), $periodo)->map(fn (Curso $curso) => $this->indicadores($curso))->values();
 
+        // AULAS REGULARES QUE A PESSOA MINISTRA (17/10/2026): só os programas em que ela é o
+        // instrutor (mesmo quem vê tudo no relatório vê aqui só o próprio dinheiro).
+        $aulas = (new PainelAulasRegulares($periodo, $request->user(), soOsMeus: true))->montar();
+        $somaAulas = $aulas['totais'];
+
         return Inertia::render('meu-painel', [
             'periodo' => $periodo->paraTela(),
             'cursos' => $linhas,
+            'aulas' => [
+                'programas' => $aulas['por_programa'],
+                'alunos' => $somaAulas['alunos'],
+                'alunos_em_dia' => $somaAulas['alunos_em_dia'],
+            ],
+            // SAÚDE FINANCEIRA (17/10/2026): cursos + aulas regulares, só a parte da pessoa.
+            // - recebido: o IBTO já pagou (repasse com baixa);
+            // - pendente: o aluno já pagou, falta o IBTO repassar;
+            // - a_vencer: mensalidades ainda não pagas pelos alunos (no prazo ou em atraso);
+            // - total: tudo o que ainda vai entrar (pendente + a vencer).
+            'saude' => [
+                'recebido_centavos' => (int) $linhas->sum('recebido_centavos') + $somaAulas['repassado'],
+                'pendente_centavos' => (int) $linhas->sum('a_receber_centavos') + $somaAulas['a_repassar'],
+                'a_vencer_centavos' => $somaAulas['instrutor_previsto'] - $somaAulas['instrutor_recebido'],
+                'total_a_receber_centavos' => (int) $linhas->sum('a_receber_centavos') + $somaAulas['a_repassar'] + $somaAulas['instrutor_previsto'] - $somaAulas['instrutor_recebido'],
+            ],
             // Totais do período (somas simples; o comparecimento total é a média ponderada).
             'totais' => [
                 'inscritos' => $linhas->sum('confirmados') + $linhas->sum('aguardando'),

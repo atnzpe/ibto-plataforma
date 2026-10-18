@@ -9,6 +9,7 @@ use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\AulasRegulares\AulasController;
 use App\Http\Controllers\AulasRegulares\ChamadaRegularController;
 use App\Http\Controllers\AulasRegulares\MensalidadeController;
+use App\Http\Controllers\AulasRegulares\PainelAulasController;
 use App\Http\Controllers\AulasRegulares\ProgramaController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
@@ -570,6 +571,10 @@ Route::middleware(['auth', 'verified', 'can:painel.instrutor'])->group(function 
 // própria permissão no controlador (relatorio.filiados, relatorio.cursos...).
 Route::middleware(['auth', 'verified', 'can:relatorios.acessar'])->prefix('relatorios')->name('relatorios.')->group(function () {
     Route::get('/', [RelatorioController::class, 'index'])->name('index');
+    // Painel financeiro das aulas regulares (17/10/2026). O hífen no endereço evita
+    // confusão com a rota {chave} abaixo (que só aceita letras).
+    Route::get('aulas-regulares', [PainelAulasController::class, 'index'])->name('aulas-regulares');
+    Route::get('aulas-regulares/csv', [PainelAulasController::class, 'csv'])->middleware('throttle:20,1')->name('aulas-regulares.csv');
     Route::get('{chave}', [RelatorioController::class, 'show'])->whereAlpha('chave')->name('show');
     Route::get('{chave}/csv', [RelatorioController::class, 'csv'])->whereAlpha('chave')->middleware('throttle:20,1')->name('csv');
     Route::get('{chave}/imprimir', [RelatorioController::class, 'imprimir'])->whereAlpha('chave')->middleware('throttle:20,1')->name('imprimir');
