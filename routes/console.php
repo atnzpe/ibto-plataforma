@@ -27,6 +27,12 @@ Schedule::command('queue:work --stop-when-empty --tries=3 --backoff=60 --max-tim
     ->everyMinute()
     ->withoutOverlapping();
 
+// Aulas regulares (#80): todo dia às 06:00, gera a mensalidade de quem vence em até
+// 3 dias e manda o aviso por e-mail (a fila envia no minuto seguinte).
+Schedule::command('aulas:gerar-mensalidades')
+    ->dailyAt('06:00')
+    ->withoutOverlapping();
+
 // Venda de fotos (#90): uma vez por dia, apaga as fotos dos álbuns que já expiraram
 // (guarda os pedidos e o financeiro). Saúde e tamanho do servidor.
 Schedule::command('fotos:expirar')

@@ -2,7 +2,9 @@ import VersaoNoAr from '@/components/versao-no-ar';
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarClock,
     ContactRound,
+    Dumbbell,
     Gauge,
     GraduationCap,
     Images,
@@ -87,6 +89,12 @@ const mainNavItems: NavItem[] = [
         href: catalogo(),
         icon: BookOpen,
     },
+    // Aulas regulares (#80): Krav Maga, Kapap... com mensalidade; dentro, o atalho "Minhas aulas".
+    {
+        title: 'Aulas regulares',
+        href: '/aulas',
+        icon: Dumbbell,
+    },
 ];
 
 // Itens dos cadastros de apoio (#37), cada um com a permissão que ele pede (#36).
@@ -113,6 +121,20 @@ const cadastrosNavItems: (NavItem & {
         title: 'Matrículas',
         href: matriculasAdmin(),
         icon: ClipboardCheck,
+        permissao: 'pagamentos_confirmar',
+    },
+    // Aulas regulares (#80): os programas e as turmas (quem cuida dos cursos).
+    {
+        title: 'Programas (aulas regulares)',
+        href: '/comando-geral/programas',
+        icon: Dumbbell,
+        permissao: 'cursos_gerenciar',
+    },
+    // Mensalidades (#80): conferir o Pix e confirmar (o mesmo de quem confirma as matrículas).
+    {
+        title: 'Mensalidades',
+        href: '/comando-geral/mensalidades',
+        icon: CalendarClock,
         permissao: 'pagamentos_confirmar',
     },
     // Dados para pagamento (#41): PIX e conta do IBTO e a chave "por curso".

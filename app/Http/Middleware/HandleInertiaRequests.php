@@ -49,6 +49,9 @@ class HandleInertiaRequests extends Middleware
         'carteirinha.ver',
         // Fotos dos eventos (#90): o item aparece enquanto a loja de fotos estiver ligada.
         'fotos.eventos',
+        // Aulas regulares (#80): "Aulas regulares" para quem entrou; "Programas" para quem cuida dos cursos.
+        'aulas.ver',
+        'cursos.gerenciar',
     ];
 
     /**
