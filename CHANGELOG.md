@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Segurança (#74)
+
+- Cabeçalhos de segurança em toda resposta: nosniff, anti-clickjacking (X-Frame-Options e frame-ancestors), Referrer-Policy, Permissions-Policy (câmera, microfone, localização e pagamento bloqueados), Cross-Origin-Opener-Policy, HSTS de 1 ano em HTTPS e política de conteúdo (CSP: scripts só da plataforma e da VLibras, vídeos só do YouTube, sem plugins, formulários só para a própria plataforma). `SEGURANCA_CSP=false` no .env desliga só a CSP, se algo externo deixar de carregar.
+
 ### Alterado (anuidade e cursos exclusivos)
 
 - Curso exclusivo para filiados exige também a anuidade do ano em dia (#37): o filiado vencido não se inscreve (código MATRICULA_ANUIDADE_PENDENTE) e perde o acesso às aulas desses cursos até pagar. Ano isento (2026) conta como em dia.

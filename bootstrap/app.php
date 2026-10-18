@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\BloquearCadastroNaoAprovado;
 use App\Http\Middleware\BloquearContaDesativada;
+use App\Http\Middleware\CabecalhosDeSeguranca;
 use App\Http\Middleware\ExigirAceitePolitica;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -31,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Identificador do pedido (#74): em TODA rota (telas e API), antes de tudo, para
         // as linhas de log do pedido inteiro levarem o mesmo código.
         $middleware->prepend(IdentificadorDoPedido::class);
+        // Cabeçalhos de segurança (#74, 18/10/2026): em TODA resposta (telas, API, erros).
+        $middleware->append(CabecalhosDeSeguranca::class);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
