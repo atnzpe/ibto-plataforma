@@ -24,6 +24,7 @@ export const TELAS_SEM_TOUR: Record<string, string> = {
     // Páginas de impressão (sem menu): o papel não tem balão.
     'certificados/ver': 'página de impressão',
     'relatorios/imprimir': 'página de impressão',
+    'graduacoes/ver': 'página de impressão',
 };
 
 /**

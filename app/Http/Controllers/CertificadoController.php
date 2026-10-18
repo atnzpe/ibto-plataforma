@@ -20,6 +20,7 @@ use App\Exceptions\RegraCurso;
 use App\Models\Curso;
 use App\Models\CursoCertificado;
 use App\Models\CursoMatricula;
+use App\Models\GraduacaoCertificado;
 use App\Support\QrCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,6 +153,8 @@ class CertificadoController extends Controller
     {
         // Aceita minúsculas e espaços (como a pessoa digitar).
         $certificado = CursoCertificado::where('codigo', strtoupper(trim($codigo)))->first();
+        // Não é de curso? Pode ser um certificado de GRADUAÇÃO (#46, parte 2): mesmo formato de código.
+        $graduacao = $certificado === null ? GraduacaoCertificado::where('codigo', strtoupper(trim($codigo)))->first() : null;
 
         return Inertia::render('certificados/validar', [
             'codigo' => strtoupper(trim($codigo)),
@@ -164,6 +167,16 @@ class CertificadoController extends Controller
                 'concluido_em' => $certificado->concluido_em->toDateString(),
                 'emitido_em' => $certificado->emitido_em->toDateString(),
                 'cancelado_em' => $certificado->cancelado_em?->toDateString(),
+            ],
+            // Certificado de graduação (só o necessário: nome abreviado, condição, nível, série e datas).
+            'graduacao' => $graduacao === null ? null : [
+                'valido' => $graduacao->valido(),
+                'nome' => $graduacao->nomeAbreviado(),
+                'condicao' => $graduacao->condicao,
+                'nivel' => $graduacao->nivel,
+                'numero_serie' => $graduacao->numero_serie,
+                'emitido_em' => $graduacao->emitido_em->toDateString(),
+                'cancelado_em' => $graduacao->cancelado_em?->toDateString(),
             ],
             // noindex (#74): a validação mostra o nome (abreviado) do aluno e não deve ir para o Google.
         ])->withViewData(['noindex' => true]);

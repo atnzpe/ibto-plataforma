@@ -24,6 +24,7 @@ use App\Http\Controllers\Cadastros\FiliadoAnonimizarController;
 use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\FiliadoFotoController;
+use App\Http\Controllers\Cadastros\GraduacaoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
 use App\Http\Controllers\CarteirinhaController;
@@ -201,6 +202,14 @@ Route::middleware(['auth', 'verified'])
             ->middleware(['can:filiados.gerenciar', 'throttle:5,1'])
             ->name('filiados.anonimizar');
 
+        // Certificado de graduação (#46, parte 2): emitir e cancelar (filiados.gerenciar, no controlador).
+        Route::post('filiados/{filiado}/graduacao', [GraduacaoController::class, 'store'])
+            ->middleware(['can:filiados.acessar', 'throttle:20,1'])
+            ->name('filiados.graduacao');
+        Route::post('graduacoes/{certificado}/cancelar', [GraduacaoController::class, 'cancelar'])
+            ->middleware(['can:filiados.acessar', 'throttle:20,1'])
+            ->name('graduacoes.cancelar');
+
         // Reenviar o convite por e-mail (#37, F3), no formulário de edição.
         Route::post('filiados/{filiado}/convite', [FiliadoController::class, 'reenviarConvite'])
             ->middleware(['can:filiados.acessar', 'throttle:6,1'])
@@ -316,6 +325,10 @@ Route::middleware(['auth', 'verified', 'throttle:20,1'])
         Route::post('matriculas/{matricula}/desistir', 'desistir')->name('matriculas.desistir');
     });
 
+// O certificado de GRADUAÇÃO para imprimir (#46, parte 2): o dono ou quem gerencia os filiados.
+Route::middleware(['auth', 'verified'])
+    ->get('graduacoes/{codigo}', [GraduacaoController::class, 'ver'])
+    ->name('graduacoes.ver');
 // O certificado para imprimir / salvar em PDF (#44): com login; o dono ou quem vê os inscritos.
 Route::middleware(['auth', 'verified'])
     ->get('certificados/{codigo}', [CertificadoController::class, 'ver'])

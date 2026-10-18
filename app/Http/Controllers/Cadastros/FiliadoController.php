@@ -173,6 +173,8 @@ class FiliadoController extends Controller
             ...$this->opcoes($this->equipeLimitada($request)),
             // Quadro da anuidade (#37 + #59), ou null para quem não vê o financeiro.
             'anuidade' => FiliadoAnuidadeController::quadro($filiado, $request->user()),
+            // Certificado de graduação (#46, parte 2): sugestão dos textos e os já emitidos; null para quem não gerencia.
+            'graduacao' => GraduacaoController::quadro($filiado, $request),
         ]);
     }
 

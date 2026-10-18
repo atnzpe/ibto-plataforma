@@ -22,6 +22,7 @@ use App\Models\CursoAula;
 use App\Models\CursoCertificado;
 use App\Models\CursoMatricula;
 use App\Models\CursoPresenca;
+use App\Models\GraduacaoCertificado;
 use App\Models\User;
 use App\Services\SalaDeAula;
 use App\Support\FrequenciaRegular;
@@ -99,6 +100,16 @@ class MeuDossieController extends Controller
             'cursos' => $cursos,
             // Aulas regulares (#80): a frequência mês a mês em cada programa (sem certificado).
             'aulas_regulares' => FrequenciaRegular::doUsuario($usuario),
+            // Certificados de GRADUAÇÃO (#46, parte 2): os do filiado, o mais novo primeiro.
+            'graduacoes' => $filiado === null ? [] : array_values(GraduacaoCertificado::where('filiado_id', $filiado->id)->orderByDesc('id')->get()
+                ->map(fn (GraduacaoCertificado $certificado): array => [
+                    'codigo' => $certificado->codigo,
+                    'numero_serie' => $certificado->numero_serie,
+                    'condicao' => $certificado->condicao,
+                    'nivel' => $certificado->nivel,
+                    'emitido_em' => $certificado->emitido_em->format('d/m/Y'),
+                    'valido' => $certificado->valido(),
+                ])->all()),
         ]);
     }
 

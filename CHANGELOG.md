@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (certificado de graduação, #46)
+
+- Certificado de graduação no modelo institucional do Mestre Eduardo: emitido na ficha do filiado (textos sugeridos pelo nível e pelas áreas), número de série GR + ano + ordem + letra do nível + via, QR code com a validação pública (nome abreviado), cancelamento com motivo e a lista no Meu dossiê para imprimir.
+
 ### Alterado (LGPD, #47)
 
 - Política de privacidade aprovada pela diretoria: versão 1.0 de 18/10/2026 (sai o aviso de rascunho). Com LGPD_EXIGIR_ACEITE=true no .env, todos aceitam a versão 1.0 no próximo acesso; o encarregado de dados vem de LGPD_ENCARREGADO.

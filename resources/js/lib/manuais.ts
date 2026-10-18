@@ -480,6 +480,24 @@ export const MANUAIS: Manual[] = [
                 },
             },
             {
+                id: 'certificado-graduacao',
+                titulo: 'Certificado de graduação',
+                resumo: 'O certificado oficial do nível do filiado (modelo do Mestre Eduardo), com número de série e QR code de validação.',
+                passos: [
+                    'Menu "Pessoas" → "Filiados" → abra a ficha do filiado.',
+                    'No quadro "Certificado de graduação", confira os textos: "Na condição de" (ex.: Instrutor de Krav Maga), "Nível" (ex.: Nível Expert - [E]), abrangência e local. Eles vêm do nível e das áreas do filiado; ajuste se precisar.',
+                    'Clique em "Emitir certificado de graduação". O número de série (ex.: GR20260034E0) e o QR code saem sozinhos.',
+                    '"Ver / imprimir" abre a folha A4 para imprimir ou salvar em PDF. O filiado também imprime pelo Meu dossiê.',
+                    'Emitiu errado? "Cancelar" com o motivo: a validação pública passa a mostrar "cancelado" e o certificado continua no histórico.',
+                ],
+                regras: [
+                    'Número de série: GR + ano da emissão + ordem do registro do filiado + letra do nível (P, M, I ou E) + via (0 na primeira). Se a ordem se repetir entre dois filiados, entra a UF no fim.',
+                    'A validação pública (pelo QR) mostra só o nome abreviado, a condição, o nível, o número de série e a data (LGPD).',
+                    'Cada certificado é a "foto" do dia: se o nível mudar, emita um novo; o antigo continua no histórico.',
+                ],
+                tela: { endereco: '/cadastros/filiados', nome: 'Filiados' },
+            },
+            {
                 id: 'financeiro',
                 titulo: 'Financeiro (livro-caixa)',
                 resumo: 'Receitas e despesas do IBTO, a receber e a pagar.',
