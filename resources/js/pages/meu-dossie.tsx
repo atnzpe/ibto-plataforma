@@ -76,6 +76,7 @@ export default function MeuDossie({
     resumo,
     certificados,
     cursos,
+    aulas_regulares = [],
 }: {
     pessoa: {
         nome: string;
@@ -95,6 +96,12 @@ export default function MeuDossie({
         valido: boolean;
     }[];
     cursos: CursoDossie[];
+    // Aulas regulares (#80): por programa, a situação e a frequência dos últimos meses.
+    aulas_regulares?: {
+        programa: string;
+        situacao: string;
+        meses: { mes: string; presencas: number; aulas: number }[];
+    }[];
 }) {
     // Os três números do resumo, na ordem em que aparecem.
     const numeros = [
@@ -350,6 +357,52 @@ export default function MeuDossie({
                         </article>
                     ))}
                 </section>
+
+                {/* Aulas regulares (#80): a frequência mês a mês (sem certificado). Só aparece para quem assina. */}
+                {aulas_regulares.length > 0 && (
+                    <section
+                        aria-labelledby="t-aulas-regulares"
+                        className="flex flex-col gap-3"
+                    >
+                        <h2
+                            id="t-aulas-regulares"
+                            className="text-lg font-semibold"
+                        >
+                            Aulas regulares
+                        </h2>
+                        {aulas_regulares.map((a) => (
+                            <article
+                                key={a.programa}
+                                className="flex flex-col gap-2 rounded-md border p-4 text-sm"
+                            >
+                                <p className="font-medium">
+                                    {a.programa}{' '}
+                                    <span className="font-normal text-muted-foreground">
+                                        · {a.situacao}
+                                    </span>
+                                </p>
+                                {a.meses.length === 0 ? (
+                                    <p className="text-muted-foreground">
+                                        Nenhuma chamada registrada ainda.
+                                    </p>
+                                ) : (
+                                    <ul className="flex flex-wrap gap-2">
+                                        {a.meses.map((m) => (
+                                            <li
+                                                key={m.mes}
+                                                className="rounded-md border px-3 py-2"
+                                            >
+                                                {/* Ex.: "2026-10: 7 de 8 aulas". */}
+                                                {m.mes}: {m.presencas} de{' '}
+                                                {m.aulas} aulas
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </article>
+                        ))}
+                    </section>
+                )}
             </div>
         </>
     );

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
 use App\Http\Controllers\AulasRegulares\AulasController;
+use App\Http\Controllers\AulasRegulares\ChamadaRegularController;
 use App\Http\Controllers\AulasRegulares\MensalidadeController;
 use App\Http\Controllers\AulasRegulares\ProgramaController;
 use App\Http\Controllers\Blog\AlbumController;
@@ -607,4 +608,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('aulas/{programa}/assinar', [AulasController::class, 'assinar'])->whereNumber('programa')->middleware('throttle:10,1')->name('aulas.assinar');
     Route::get('minhas-aulas', [AulasController::class, 'minhas'])->name('aulas.minhas');
     Route::post('minhas-aulas/{assinatura}/cancelar', [AulasController::class, 'cancelar'])->name('aulas.cancelar');
+    // Chamada (#80): o instrutor do programa (ou o Comando Geral); cada ação confere "programa.instrutor".
+    Route::get('minhas-turmas', [ChamadaRegularController::class, 'turmas'])->name('aulas.turmas');
+    Route::get('minhas-turmas/{turma}/chamada', [ChamadaRegularController::class, 'mostrar'])->name('aulas.chamada');
+    Route::post('minhas-turmas/{turma}/chamada', [ChamadaRegularController::class, 'salvar'])->middleware('throttle:30,1')->name('aulas.chamada.salvar');
 });

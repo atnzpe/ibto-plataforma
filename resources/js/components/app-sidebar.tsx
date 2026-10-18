@@ -130,6 +130,13 @@ const cadastrosNavItems: (NavItem & {
         icon: Dumbbell,
         permissao: 'cursos_gerenciar',
     },
+    // Minhas turmas (#80): a chamada das aulas regulares (instrutor e admin de equipe; o Comando Geral vê todas).
+    {
+        title: 'Minhas turmas',
+        href: '/minhas-turmas',
+        icon: ClipboardCheck,
+        permissao: 'painel_instrutor',
+    },
     // Mensalidades (#80): conferir o Pix e confirmar (o mesmo de quem confirma as matrículas).
     {
         title: 'Mensalidades',

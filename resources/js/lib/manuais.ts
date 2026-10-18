@@ -271,6 +271,21 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/meu-painel', nome: 'Meu painel' },
             },
             {
+                id: 'chamada-aulas-regulares',
+                titulo: 'Chamada das aulas regulares',
+                resumo: 'Nas aulas com mensalidade (Krav Maga, Kapap...), a chamada vira a frequência do dossiê.',
+                passos: [
+                    'Menu "Minhas turmas": aparecem as turmas dos programas em que você é o instrutor.',
+                    '"Fazer chamada": a data já vem com hoje (troque para corrigir um dia anterior).',
+                    'Marque quem estava e toque em "Salvar chamada". Dá para corrigir depois, sem duplicar.',
+                ],
+                regras: [
+                    'Na lista aparecem só os alunos em dia ou na carência; quem está com a mensalidade travada não aparece.',
+                    'A frequência do mês vai para o dossiê de cada aluno (aula regular não tem certificado).',
+                ],
+                tela: { endereco: '/minhas-turmas', nome: 'Minhas turmas' },
+            },
+            {
                 id: 'fotos-do-curso',
                 titulo: 'Fotos do curso (você é o responsável)',
                 resumo: 'O instrutor cuida das fotos do curso dele; o Comando Geral confere e publica.',

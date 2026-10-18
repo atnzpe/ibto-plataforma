@@ -71,6 +71,7 @@ describe('conteúdo dos manuais', () => {
             // Aulas regulares (#80): ainda sem tour próprio.
             '/aulas': '',
             '/comando-geral/programas': '',
+            '/minhas-turmas': '',
             '/comando-geral': 'comando-geral',
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',

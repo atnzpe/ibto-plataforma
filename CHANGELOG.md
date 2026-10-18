@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (chamada das aulas regulares)
+
+- Chamada das aulas regulares (#80, fecha a issue): "Minhas turmas" mostra ao instrutor as turmas dos programas dele (o Comando Geral vê todas); a chamada lista só os alunos em dia ou na carência, aceita corrigir um dia anterior sem duplicar e recusa data futura; a frequência mês a mês aparece no Meu dossiê, na seção "Aulas regulares".
+
 ### Corrigido (compra de fotos)
 
 - A recusa da compra de fotos agora diz o motivo certo (teste do Gleyson, 17/10/2026): `FOTOS_DO_PROPRIO_FOTOGRAFO` quando quem compra é o fotógrafo do álbum, e `FOTOS_SO_DA_TURMA` só quando a pessoa não é da turma do curso; antes, os dois casos davam a mesma mensagem.
