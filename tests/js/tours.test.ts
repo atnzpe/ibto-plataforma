@@ -4,6 +4,8 @@
  * Rodam sem navegador: `bun test tests/js`.
  */
 import { describe, expect, test } from 'bun:test';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import {
     abreSozinho,
     passosDaTela,
@@ -44,8 +46,8 @@ describe('passosDaTela', () => {
         expect(passos[0].elemento).toBeUndefined();
     });
 
-    test('tela sem tour: nenhum passo', () => {
-        expect(passosDaTela('settings/profile', true, tudoExiste)).toEqual([]);
+    test('tela sem tour (a de entrar, sem menu): nenhum passo', () => {
+        expect(passosDaTela('auth/login', true, tudoExiste)).toEqual([]);
     });
 });
 
@@ -54,7 +56,43 @@ describe('abreSozinho', () => {
         expect(abreSozinho('meus-cursos', true, [])).toBe(true);
         expect(abreSozinho('meus-cursos', true, ['meus-cursos'])).toBe(false);
         expect(abreSozinho('meus-cursos', false, [])).toBe(false);
-        expect(abreSozinho('settings/profile', true, [])).toBe(false);
+        expect(abreSozinho('auth/login', true, [])).toBe(false);
+    });
+});
+
+// AUDITORIA "NÍVEL MILITAR" (17/10/2026): TODA tela da plataforma tem tour, menos
+// as da lista abaixo, cada uma com o motivo. Tela nova sem tour reprova a CI.
+const SEM_TOUR: Record<string, string> = {
+    // Antes do login, sem menu nem botão "?": a tela é um formulário só.
+    'auth/cadastro-em-analise': 'antes do login',
+    'auth/confirm-password': 'antes do login',
+    'auth/convite': 'antes do login',
+    'auth/forgot-password': 'antes do login',
+    'auth/login': 'antes do login',
+    'auth/register': 'antes do login',
+    'auth/reset-password': 'antes do login',
+    'auth/two-factor-challenge': 'antes do login',
+    'auth/verify-email': 'antes do login',
+    // Páginas de impressão (sem menu): o papel não tem balão.
+    'certificados/ver': 'página de impressão',
+    'relatorios/imprimir': 'página de impressão',
+};
+
+describe('cobertura do tour (toda tela)', () => {
+    test('toda tela em resources/js/pages tem tour (ou está na lista SEM_TOUR com motivo)', () => {
+        const pasta = join(import.meta.dir, '../../resources/js/pages');
+        const telas = readdirSync(pasta, { recursive: true })
+            .map(String)
+            .filter((arquivo) => arquivo.endsWith('.tsx'))
+            .map((arquivo) =>
+                arquivo.replaceAll('\\', '/').replace(/\.tsx$/, ''),
+            );
+        const semTour = telas.filter(
+            (tela) => !(tela in TOURS) && !(tela in SEM_TOUR),
+        );
+
+        // A mensagem do erro lista as telas que faltam (para quem for corrigir).
+        expect(semTour).toEqual([]);
     });
 });
 

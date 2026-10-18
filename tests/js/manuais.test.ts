@@ -64,14 +64,13 @@ describe('conteúdo dos manuais', () => {
             '/cursos': 'catalogo/index',
             '/meus-cursos': 'meus-cursos',
             '/meu-dossie': 'meu-dossie',
-            // Minha carteirinha (#46): página de impressão, sem menu e sem tour.
-            '/minha-carteirinha': '',
-            // Fotos dos eventos (#90): ainda sem tour próprio.
-            '/fotos': '',
-            // Aulas regulares (#80): ainda sem tour próprio.
-            '/aulas': '',
-            '/comando-geral/programas': '',
-            '/minhas-turmas': '',
+            '/minha-carteirinha': 'carteirinha/minha',
+            '/fotos': 'fotos/index',
+            // Aulas regulares (#80).
+            '/aulas': 'aulas-regulares/index',
+            '/comando-geral/programas': 'aulas-regulares/admin/index',
+            '/minhas-turmas': 'aulas-regulares/turmas',
+            '/comando-geral/mensalidades': 'aulas-regulares/admin/mensalidades',
             '/comando-geral': 'comando-geral',
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',
@@ -89,8 +88,13 @@ describe('conteúdo dos manuais', () => {
             '/cadastros/equipes': 'cadastros/equipes/index',
             '/admin/usuarios': 'admin/usuarios/index',
             '/comando-geral/blog': 'blog-admin/index',
-            '/comando-geral/pagamento': '',
-            '/admin/permissoes': '',
+            '/comando-geral/pagamento': 'cursos/pagamento',
+            '/admin/permissoes': 'admin/permissoes',
+            '/comando-geral/galeria': 'galeria-admin/index',
+            '/cadastros/areas-atuacao': 'cadastros/areas-atuacao/index',
+            '/cadastros/niveis': 'cadastros/niveis/index',
+            '/settings/meus-dados': 'settings/meus-dados',
+            '/settings/profile': 'settings/profile',
             '/admin/solicitacoes': 'admin/solicitacoes/index',
         };
         for (const manual of MANUAIS) {
@@ -100,13 +104,54 @@ describe('conteúdo dos manuais', () => {
                 }
                 expect(secao.tela.endereco.startsWith('/')).toBe(true);
                 expect(secao.tela.endereco in telaDoEndereco).toBe(true);
-                const tela = telaDoEndereco[secao.tela.endereco];
-                // Tela sem tour ('' na tabela) abre normalmente, só sem os balões.
-                if (tela !== '') {
-                    expect(tela in TOURS).toBe(true);
-                }
+                // Nível militar (17/10/2026): toda tela citada no manual TEM tour (sem exceção).
+                expect(telaDoEndereco[secao.tela.endereco] in TOURS).toBe(true);
             }
         }
+    });
+
+    // Nível militar (17/10/2026): TODO item do menu lateral tem uma seção no manual que
+    // aponta para ele ("Mostrar na tela"). Item novo no menu sem manual reprova a CI.
+    test('todo item do menu tem uma seção no manual', () => {
+        const menu = [
+            '/meus-cursos',
+            '/meu-dossie',
+            '/cursos',
+            '/aulas',
+            '/comando-geral',
+            '/comando-geral/cursos',
+            '/comando-geral/matriculas',
+            '/comando-geral/programas',
+            '/minhas-turmas',
+            '/comando-geral/mensalidades',
+            '/comando-geral/pagamento',
+            '/comando-geral/blog',
+            '/comando-geral/galeria',
+            '/cadastros/areas-atuacao',
+            '/cadastros/niveis',
+            '/cadastros/equipes',
+            '/cadastros/filiados',
+            '/financeiro/lancamentos',
+            '/financeiro/cupons',
+            '/minha-carteirinha',
+            '/relatorios',
+            '/meu-painel',
+            '/fotos',
+            '/comando-geral/fotos',
+            '/fotografo',
+            '/admin/solicitacoes',
+            '/admin/usuarios',
+            '/admin/permissoes',
+        ];
+        const noManual = new Set(
+            MANUAIS.flatMap((manual) =>
+                manual.secoes.map((secao) => secao.tela?.endereco),
+            ),
+        );
+        const faltam = menu.filter((endereco) => !noManual.has(endereco));
+
+        // A mensagem do erro lista os itens do menu que faltam no manual.
+        expect(faltam).toEqual([]);
     });
 
     test('nenhum texto tem HTML', () => {

@@ -121,6 +121,7 @@ export default function ChamadaRegular({
                                 </fieldset>
                                 <Button
                                     disabled={processing}
+                                    data-tour="salvar-chamada"
                                     className="min-h-11 self-start"
                                 >
                                     Salvar chamada

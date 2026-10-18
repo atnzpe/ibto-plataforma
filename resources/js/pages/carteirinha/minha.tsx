@@ -9,6 +9,7 @@
  * código do QR, caso a foto da carteirinha tenha vazado.
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { TourGuiado } from '@/components/tour-guiado';
 
 /** Os dados da carteirinha da própria pessoa. */
 type MinhaCarteirinha = {
@@ -72,6 +73,8 @@ export default function MinhaCarteirinha({
                     >
                         Voltar à plataforma
                     </Link>
+                    {/* O "?" do tour (17/10/2026): esta página não tem menu, então o botão fica aqui. */}
+                    <TourGuiado />
                     <button
                         type="button"
                         onClick={() => window.print()}
