@@ -45,3 +45,6 @@ yarn-error.log
 
 # Gerado pelo deploy (commit publicado); ver docs/publicacao-homologacao.md
 /VERSAO_DEPLOY
+
+# Capturas de tela dos testes no navegador (#74): geradas quando um teste falha.
+/tests/Browser/Screenshots

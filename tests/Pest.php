@@ -18,6 +18,12 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+// Testes no NAVEGADOR de verdade (#74, 18/10/2026): o Pest abre as telas no
+// Chromium (Playwright) e roda a auditoria de acessibilidade (axe).
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Browser');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

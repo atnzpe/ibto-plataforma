@@ -133,5 +133,10 @@ jobs:
       - name: Análise do PHP (PHPStan)
         run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
 
-      - name: Testes do PHP (Pest, no Percona 5.7)
+      # Navegador para a auditoria de acessibilidade (#74): o Chromium do Playwright.
+      - name: Navegador dos testes de acessibilidade (Chromium)
+        run: bunx playwright install --with-deps chromium
+
+      # Inclui tests/Browser: as telas abrem no Chromium e passam pelo axe (WCAG).
+      - name: Testes do PHP (Pest, no Percona 5.7) e acessibilidade (axe)
         run: php artisan test

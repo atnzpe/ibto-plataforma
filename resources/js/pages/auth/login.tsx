@@ -3,6 +3,8 @@
  * "Esqueci minha senha" e o de criar conta. Também aceita a chave de acesso
  * (passkey) pelo componente PasskeyVerify. Textos em português (tradução das
  * telas do kit do Laravel, 14/10/2026, antes do piloto).
+ * Acessibilidade (18/10/2026, auditoria axe): sem tabindex forçado; a ordem do
+ * teclado é a ordem natural da tela (quem usa leitor de tela não se perde).
  */
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -61,7 +63,6 @@ export default function Login({
                                     name="email"
                                     required
                                     autoFocus
-                                    tabIndex={1}
                                     autoComplete="email"
                                     placeholder="seu-email@exemplo.com"
                                 />
@@ -76,7 +77,6 @@ export default function Login({
                                         <TextLink
                                             href={request()}
                                             className="ml-auto text-sm"
-                                            tabIndex={5}
                                         >
                                             Esqueci minha senha
                                         </TextLink>
@@ -86,7 +86,6 @@ export default function Login({
                                     id="password"
                                     name="password"
                                     required
-                                    tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="Sua senha"
                                 />
@@ -95,11 +94,7 @@ export default function Login({
 
                             {/* Lembrar de mim: continua conectado neste aparelho por mais tempo. */}
                             <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
+                                <Checkbox id="remember" name="remember" />
                                 <Label htmlFor="remember">Lembrar de mim</Label>
                             </div>
 
@@ -107,7 +102,6 @@ export default function Login({
                             <Button
                                 type="submit"
                                 className="mt-4 w-full"
-                                tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
                             >
@@ -121,7 +115,7 @@ export default function Login({
                         {canRegister && (
                             <div className="text-center text-sm text-muted-foreground">
                                 Foi indicado ao IBTO?{' '}
-                                <TextLink href={register()} tabIndex={5}>
+                                <TextLink href={register()}>
                                     Pedir acesso
                                 </TextLink>
                             </div>

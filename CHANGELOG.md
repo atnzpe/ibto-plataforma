@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Acessibilidade (#74)
+
+- Auditoria automática de acessibilidade na CI: 15 telas (públicas, do aluno e do Comando Geral) abrem num navegador de verdade (Chromium) e passam pelo axe (regras WCAG); falha nova deixa a CI vermelha.
+- Telas de entrar e de pedir acesso sem tabindex forçado: a ordem do teclado é a ordem natural da tela.
+
 ### Adicionado (provas dos cursos, #43)
 
 - Provas de múltipla escolha por curso: o instrutor monta (título, nota mínima, tentativas e as perguntas com a alternativa certa) e vê quem fez, os aprovados, a média e a nota de cada aluno (só o registro).
