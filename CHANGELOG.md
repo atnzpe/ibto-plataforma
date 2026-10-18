@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Corrigido (compra de fotos)
+
+- A recusa da compra de fotos agora diz o motivo certo (teste do Gleyson, 17/10/2026): `FOTOS_DO_PROPRIO_FOTOGRAFO` quando quem compra é o fotógrafo do álbum, e `FOTOS_SO_DA_TURMA` só quando a pessoa não é da turma do curso; antes, os dois casos davam a mesma mensagem.
+
 ### Adicionado (página de pagamento)
 
 - Página de pagamento única `/pagar/<código>` (17/10/2026): cada cobrança (inscrição em curso, pedido de fotos e mensalidade de aula regular) ganha um código sorteado que nunca se repete (ULID); a página mostra o resumo, o valor, o vencimento, o Pix (QR, copia e cola e identificador do extrato) e a situação, que se atualiza sozinha e vira "Pagamento confirmado"; só o dono da cobrança ou o Comando Geral abre (os outros recebem "não encontrado"); o e-mail de aviso da mensalidade e "Minhas aulas" levam direto a ela. Na carteirinha, categoria e nível iguais aparecem uma vez só.
