@@ -78,6 +78,11 @@ class Matriculas
         if ($curso->acesso === AcessoCurso::Restrito && $usuario->filiado?->status !== 'ativo') {
             throw new RegraCurso('MATRICULA_SO_FILIADOS', 'Este curso é exclusivo para filiados ativos do IBTO.');
         }
+        // ...e com a ANUIDADE em dia (#37: "filiado vencido perde o acesso aos cursos
+        // restritos"). Ano isento (ex.: 2026) conta como em dia para todos.
+        if ($curso->acesso === AcessoCurso::Restrito && ! $usuario->filiado->anuidadeEmDia()) {
+            throw new RegraCurso('MATRICULA_ANUIDADE_PENDENTE', 'Este curso é exclusivo para filiados com a anuidade em dia. Regularize a anuidade com o IBTO e tente de novo.');
+        }
 
         // Pré-requisitos (#88): curso anterior, nível e tempo de filiado. Quem se inscreve sozinho
         // precisa cumprir todos; o IBTO pode matricular por exceção (com motivo, no

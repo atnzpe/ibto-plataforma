@@ -13,13 +13,17 @@ use App\Actions\Cursos\Matriculas;
 use App\Actions\Filiados\CriarFiliado;
 use App\Enums\SituacaoMatricula;
 use App\Exceptions\RegraCurso;
+use App\Models\Anuidade;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
 use App\Models\User;
 use App\Notifications\MatriculaConfirmada;
+use App\Services\Anuidades;
+use App\Services\LivroCaixa;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -165,4 +169,26 @@ test('matrícula confirmada abre a sala de aula; aguardando pagamento ainda não
 
     app(Matriculas::class)->confirmarPagamento($matricula, '2026-10-12', $this->pix);
     expect($aluno->fresh()->can('curso.conteudo', $curso))->toBeTrue();
+});
+
+test('curso "só filiados": com a anuidade do ano vencida, não entra nem assiste; pagou, volta (#37)', function () {
+    // O ano de hoje passa a cobrar anuidade (2026 é isento por padrão: aqui deixa de ser).
+    Anuidade::updateOrCreate(['ano' => today()->year], ['valor_centavos' => 9000, 'isenta' => false]);
+    $curso = cursoParaMatricula(['acesso' => 'restrito', 'valor_centavos' => 0]);
+    $filiado = app(CriarFiliado::class)->executar([
+        'nome' => 'Filiado Vencido', 'email' => 'vencido@ibto.test', 'cpf' => '529.982.247-25',
+        'nascimento' => '1990-05-20', 'municipio' => 'Recife', 'uf' => 'PE',
+    ]);
+
+    // Anuidade não paga: a inscrição é recusada com o código próprio.
+    expect(codigoDoErro(fn () => matricular($curso, $filiado->usuario)))->toBe('MATRICULA_ANUIDADE_PENDENTE');
+
+    // Paga a anuidade pelo caminho oficial (gera a receita no livro-caixa): passa a entrar e assistir.
+    $pagamento = app(Anuidades::class)->registrarPagamento($filiado, today()->year, today()->toDateString(), (int) FinFormaPagamento::where('nome', 'PIX')->value('id'));
+    expect(matricular($curso, $filiado->usuario)->situacao)->toBe(SituacaoMatricula::Confirmada);
+    expect(Gate::forUser($filiado->usuario)->allows('curso.conteudo', $curso))->toBeTrue();
+
+    // A receita da anuidade é ESTORNADA: o pagamento deixa de valer e o acesso ao conteúdo cai até pagar de novo.
+    app(LivroCaixa::class)->estornar(FinLancamento::findOrFail($pagamento->lancamento_id), 'Pix devolvido', today()->toDateString());
+    expect(Gate::forUser($filiado->usuario->fresh())->allows('curso.conteudo', $curso))->toBeFalse();
 });

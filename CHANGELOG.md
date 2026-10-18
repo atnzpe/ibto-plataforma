@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (anuidade e cursos exclusivos)
+
+- Curso exclusivo para filiados exige também a anuidade do ano em dia (#37): o filiado vencido não se inscreve (código MATRICULA_ANUIDADE_PENDENTE) e perde o acesso às aulas desses cursos até pagar. Ano isento (2026) conta como em dia.
+
 ### Alterado (níveis)
 
 - Cadastros → Níveis: com os 13 níveis da hierarquia já cadastrados, o botão "Novo nível" some e a tela explica que não é preciso cadastrar nada (para tirar um nível de uso, desative).

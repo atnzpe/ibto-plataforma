@@ -509,6 +509,7 @@ export const MANUAIS: Manual[] = [
                     'Na ficha do filiado, registre o pagamento da anuidade do ano.',
                 ],
                 regras: [
+                    'Curso exclusivo para filiados: só entra e assiste quem é filiado ativo E está com a anuidade do ano em dia. Vencido não se inscreve e perde o acesso às aulas desses cursos até pagar (ano isento conta como em dia para todos).',
                     '2026 é isento; em 2027 a anuidade é de R$ 90,00 (ano civil).',
                     'O pagamento gera a receita no livro-caixa; o estorno desfaz o "em dia".',
                 ],
