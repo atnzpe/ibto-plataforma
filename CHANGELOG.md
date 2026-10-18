@@ -11,6 +11,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Corrigido (entrar e sair)
+
+- "Sair" funciona com um clique (antes o navegador bloqueava a ida ao site por CORS e era preciso clicar duas vezes).
+- Depois do login, a plataforma só volta para a página guardada se a conta puder abri-la; senão, vai para o início (sem a tela 403).
+- Quem tem o papel de filiado, mas ainda não tem a ficha ligada à conta, vê "Filiado do IBTO · ficha de filiado ainda não ligada à conta", e não mais "Aluno do IBTO".
+
 ### Adicionado (painel financeiro das aulas regulares)
 
 - Meu painel: "Minha saúde financeira" (cursos + aulas: já recebi, pendente de repasse, a vencer e total a receber) e "Aulas regulares que ministro", por programa.

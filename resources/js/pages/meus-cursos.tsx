@@ -72,6 +72,8 @@ export default function MeusCursos({
     pessoa: {
         nome: string;
         filiado: boolean;
+        // true = tem o papel de filiado, mas a ficha ainda não está ligada à conta.
+        papel_filiado: boolean;
         registro: string | null;
         categoria: string | null;
         equipe: string | null;
@@ -120,7 +122,10 @@ export default function MeusCursos({
                                   ]
                                       .filter(Boolean)
                                       .join(' · ')
-                                : 'Aluno do IBTO'}
+                                : // Papel de filiado sem a ficha ligada: avisa, em vez de "Aluno".
+                                  pessoa.papel_filiado
+                                  ? 'Filiado do IBTO · ficha de filiado ainda não ligada à conta'
+                                  : 'Aluno do IBTO'}
                         </p>
                     </div>
                 </section>
