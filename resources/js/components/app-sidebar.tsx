@@ -75,23 +75,27 @@ import type { NavItem } from '@/types';
 const mainNavItems: NavItem[] = [
     {
         title: 'Meus cursos',
+        grupo: 'minha',
         href: meusCursos(),
         icon: LayoutGrid,
     },
     // Meu dossiê: graduação, certificados, cursos, presenças e o que foi trabalhado.
     {
         title: 'Meu dossiê',
+        grupo: 'minha',
         href: meuDossie(),
         icon: FileText,
     },
     {
         title: 'Catálogo de cursos',
+        grupo: 'minha',
         href: catalogo(),
         icon: BookOpen,
     },
     // Aulas regulares (#80): Krav Maga, Kapap... com mensalidade; dentro, o atalho "Minhas aulas".
     {
         title: 'Aulas regulares',
+        grupo: 'minha',
         href: '/aulas',
         icon: Dumbbell,
     },
@@ -105,6 +109,7 @@ const cadastrosNavItems: (NavItem & {
     // Painel "Comando Geral" (#59 / #45): primeiro da lista, para a equipe do IBTO.
     {
         title: 'Comando Geral',
+        grupo: 'inicio',
         href: comandoGeral(),
         icon: Gauge,
         permissao: 'comando_geral_ver',
@@ -112,6 +117,7 @@ const cadastrosNavItems: (NavItem & {
     // Cursos (#39 / #40): Comando Geral e quem propõe (instrutor, admin de equipe).
     {
         title: 'Cursos',
+        grupo: 'ensino',
         href: cursosAdmin(),
         icon: GraduationCap,
         permissao: 'cursos_acessar',
@@ -119,6 +125,7 @@ const cadastrosNavItems: (NavItem & {
     // Matrículas (#41): quem confirma os pagamentos PIX (secretaria/tesouraria).
     {
         title: 'Matrículas',
+        grupo: 'ensino',
         href: matriculasAdmin(),
         icon: ClipboardCheck,
         permissao: 'pagamentos_confirmar',
@@ -126,6 +133,7 @@ const cadastrosNavItems: (NavItem & {
     // Aulas regulares (#80): os programas e as turmas (quem cuida dos cursos).
     {
         title: 'Programas (aulas regulares)',
+        grupo: 'ensino',
         href: '/comando-geral/programas',
         icon: Dumbbell,
         permissao: 'cursos_gerenciar',
@@ -133,6 +141,7 @@ const cadastrosNavItems: (NavItem & {
     // Minhas turmas (#80): a chamada das aulas regulares (instrutor e admin de equipe; o Comando Geral vê todas).
     {
         title: 'Minhas turmas',
+        grupo: 'ensino',
         href: '/minhas-turmas',
         icon: ClipboardCheck,
         permissao: 'painel_instrutor',
@@ -140,6 +149,7 @@ const cadastrosNavItems: (NavItem & {
     // Mensalidades (#80): conferir o Pix e confirmar (o mesmo de quem confirma as matrículas).
     {
         title: 'Mensalidades',
+        grupo: 'ensino',
         href: '/comando-geral/mensalidades',
         icon: CalendarClock,
         permissao: 'pagamentos_confirmar',
@@ -147,6 +157,7 @@ const cadastrosNavItems: (NavItem & {
     // Dados para pagamento (#41): PIX e conta do IBTO e a chave "por curso".
     {
         title: 'Dados para pagamento',
+        grupo: 'financeiro',
         href: pagamentoAdmin(),
         icon: Landmark,
         permissao: 'pagamentos_configurar',
@@ -154,6 +165,7 @@ const cadastrosNavItems: (NavItem & {
     // Blog (#61): notícias e eventos, com fotos e vídeos.
     {
         title: 'Blog',
+        grupo: 'comunicacao',
         href: blogAdmin(),
         icon: Newspaper,
         permissao: 'blog_publicar',
@@ -161,24 +173,28 @@ const cadastrosNavItems: (NavItem & {
     // Galeria de eventos (#61, B2): álbuns de fotos.
     {
         title: 'Galeria de eventos',
+        grupo: 'comunicacao',
         href: galeriaAdmin(),
         icon: Images,
         permissao: 'blog_publicar',
     },
     {
         title: 'Áreas de atuação',
+        grupo: 'cadastros',
         href: areasAtuacao(),
         icon: Tags,
         permissao: 'cadastros_areas',
     },
     {
         title: 'Níveis',
+        grupo: 'cadastros',
         href: niveis(),
         icon: Medal,
         permissao: 'cadastros_niveis',
     },
     {
         title: 'Equipes',
+        grupo: 'pessoas',
         href: equipes(),
         icon: Users,
         permissao: 'cadastros_equipes',
@@ -186,6 +202,7 @@ const cadastrosNavItems: (NavItem & {
     // Filiados (#37): registro da carteirinha + conta do app.
     {
         title: 'Filiados',
+        grupo: 'pessoas',
         href: filiados(),
         icon: ContactRound,
         permissao: 'filiados_acessar',
@@ -193,6 +210,7 @@ const cadastrosNavItems: (NavItem & {
     // Financeiro (#59): livro-caixa (contas a receber e a pagar).
     {
         title: 'Financeiro',
+        grupo: 'financeiro',
         href: financeiro(),
         icon: Wallet,
         permissao: 'financeiro_ver',
@@ -200,6 +218,7 @@ const cadastrosNavItems: (NavItem & {
     // Cupons de desconto (#89): criar e cuidar dos cupons (Comando Geral e Tecnologia).
     {
         title: 'Cupons',
+        grupo: 'financeiro',
         href: '/financeiro/cupons',
         icon: TicketPercent,
         permissao: 'cupons_gerenciar',
@@ -207,6 +226,7 @@ const cadastrosNavItems: (NavItem & {
     // Minha carteirinha (#46): o cartão do filiado com o QR code, para imprimir.
     {
         title: 'Minha carteirinha',
+        grupo: 'minha',
         href: '/minha-carteirinha',
         icon: IdCard,
         permissao: 'carteirinha_ver',
@@ -214,6 +234,7 @@ const cadastrosNavItems: (NavItem & {
     // Relatórios (#73): cada pessoa vê só os relatórios que a permissão dela libera.
     {
         title: 'Relatórios',
+        grupo: 'financeiro',
         href: '/relatorios',
         icon: FileChartColumn,
         permissao: 'relatorios_acessar',
@@ -221,6 +242,7 @@ const cadastrosNavItems: (NavItem & {
     // Meu painel (#79): inscritos, comparecimento e valores dos cursos do instrutor ou da equipe.
     {
         title: 'Meu painel',
+        grupo: 'minha',
         href: '/meu-painel',
         icon: ChartColumn,
         permissao: 'painel_instrutor',
@@ -229,6 +251,7 @@ const cadastrosNavItems: (NavItem & {
     // Aparece enquanto a loja de fotos estiver ligada.
     {
         title: 'Fotos dos eventos',
+        grupo: 'minha',
         href: '/fotos',
         icon: Camera,
         permissao: 'fotos_eventos',
@@ -236,6 +259,7 @@ const cadastrosNavItems: (NavItem & {
     // Venda de fotos (#90): interruptor, álbuns e pedidos (Comando Geral).
     {
         title: 'Venda de fotos',
+        grupo: 'comunicacao',
         href: '/comando-geral/fotos',
         icon: Camera,
         permissao: 'fotos_gerenciar',
@@ -243,6 +267,7 @@ const cadastrosNavItems: (NavItem & {
     // Fotógrafo (#90): os álbuns dele, o envio das fotos e o financeiro dele.
     {
         title: 'Meus álbuns de fotos',
+        grupo: 'minha',
         href: '/fotografo',
         icon: Images,
         permissao: 'fotos_vender',
@@ -250,6 +275,7 @@ const cadastrosNavItems: (NavItem & {
     // Solicitações de cadastro (#84; grupo fechado): aprovar ou recusar quem pediu acesso.
     {
         title: 'Solicitações de cadastro',
+        grupo: 'pessoas',
         href: '/admin/solicitacoes',
         icon: UserCheck,
         permissao: 'cadastros_aprovar',
@@ -257,6 +283,7 @@ const cadastrosNavItems: (NavItem & {
     // Administração (#36): papéis de cada pessoa.
     {
         title: 'Usuários',
+        grupo: 'pessoas',
         href: usuariosAdmin(),
         icon: UserCog,
         permissao: 'usuarios_gerenciar',
@@ -264,6 +291,7 @@ const cadastrosNavItems: (NavItem & {
     // Administração (#36): grade de papéis × permissões.
     {
         title: 'Permissões',
+        grupo: 'pessoas',
         href: permissoesAdmin(),
         icon: KeyRound,
         permissao: 'permissoes_gerenciar',

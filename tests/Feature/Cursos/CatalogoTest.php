@@ -25,7 +25,7 @@ function cursoNoBanco(SituacaoCurso $situacao, array $troca = []): Curso
         'titulo' => 'Combate Corpo a Corpo', 'modalidade' => 'presencial', 'acesso' => 'aberto',
         'valor_centavos' => 25000, 'data_inicio' => '2026-10-10', 'local' => 'Recife',
         'material_incluso' => 'Certificado, Camisa do evento , ,E muito mais',
-        'contato_whatsapp' => '(81) 99162-3046', 'instrutor_nome' => 'Trinca',
+        'contato_whatsapp' => '(81) 99999-0000', 'instrutor_nome' => 'Trinca',
         'instrutor_especialidade' => 'Especialista em artes marciais', 'chamada' => 'Treinamento para a vida real.',
         ...$troca,
     ]);
@@ -67,7 +67,7 @@ test('página do curso: instrutor do cartaz, materiais em lista, WhatsApp em lin
             ->where('curso.instrutor_especialidade', 'Especialista em artes marciais')
             // Vírgulas e espaços sobrando não viram selos vazios.
             ->where('curso.materiais', ['Certificado', 'Camisa do evento', 'E muito mais'])
-            ->where('curso.whatsapp_url', 'https://wa.me/5581991623046')
+            ->where('curso.whatsapp_url', 'https://wa.me/5581999990000')
             ->where('curso.previa', false)
             ->where('logado', false));
 });
