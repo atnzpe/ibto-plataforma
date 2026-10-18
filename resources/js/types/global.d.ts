@@ -46,6 +46,9 @@ declare module '@inertiajs/core' {
                 carteirinha_ver: boolean;
                 // Fotos dos eventos (#90): a loja de fotos está ligada.
                 fotos_eventos: boolean;
+                // Aulas regulares (#80): ver os programas (todo mundo que entrou) e cuidar deles.
+                aulas_ver: boolean;
+                cursos_gerenciar: boolean;
             };
             // A versão no ar (#75): back (número e commit), front (build) e banco (versão e última migration).
             versao: {

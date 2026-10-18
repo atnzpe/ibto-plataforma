@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\UsuarioAcaoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AjudaController;
 use App\Http\Controllers\AreaAtuacaoImagemController;
+use App\Http\Controllers\AulasRegulares\AulasController;
+use App\Http\Controllers\AulasRegulares\MensalidadeController;
+use App\Http\Controllers\AulasRegulares\ProgramaController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
 use App\Http\Controllers\Blog\FotoDesfoqueController;
@@ -579,3 +582,24 @@ Route::middleware(['auth', 'throttle:10,1'])->group(function () {
 });
 // Passaporte (#81): troca o código do QR se ele vazou (no máximo 3 trocas por hora).
 Route::middleware(['auth', 'verified', 'throttle:3,60'])->post('minha-carteirinha/trocar-codigo', [CarteirinhaController::class, 'trocarCodigo'])->name('carteirinha.trocar-codigo');
+
+// AULAS REGULARES POR ASSINATURA (#80): Krav Maga, Kapap, Combate corpo a corpo...
+// Comando Geral: programas e turmas (cursos.gerenciar) e as mensalidades (pagamentos.confirmar).
+Route::middleware(['auth', 'verified', 'can:cursos.gerenciar'])->prefix('comando-geral')->name('comando-geral.')->group(function () {
+    Route::resource('programas', ProgramaController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::post('programas/{programa}/turmas', [ProgramaController::class, 'salvarTurma'])->name('programas.turmas.store');
+    Route::put('turmas-regulares/{turma}', [ProgramaController::class, 'atualizarTurma'])->name('programas.turmas.update');
+});
+Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])->prefix('comando-geral/mensalidades')->name('comando-geral.mensalidades.')->group(function () {
+    Route::get('/', [MensalidadeController::class, 'index'])->name('index');
+    Route::post('{pagamento}/confirmar', [MensalidadeController::class, 'confirmar'])->name('confirmar');
+    Route::post('assinaturas/{assinatura}/cancelar', [MensalidadeController::class, 'cancelar'])->name('cancelar');
+});
+// Aluno (com login; o IBTO é fechado): os programas, assinar, Minhas aulas e cancelar.
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('aulas', [AulasController::class, 'index'])->name('aulas.index');
+    Route::get('aulas/{programa}', [AulasController::class, 'show'])->whereNumber('programa')->name('aulas.show');
+    Route::post('aulas/{programa}/assinar', [AulasController::class, 'assinar'])->whereNumber('programa')->middleware('throttle:10,1')->name('aulas.assinar');
+    Route::get('minhas-aulas', [AulasController::class, 'minhas'])->name('aulas.minhas');
+    Route::post('minhas-aulas/{assinatura}/cancelar', [AulasController::class, 'cancelar'])->name('aulas.cancelar');
+});

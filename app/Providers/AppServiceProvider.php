@@ -144,6 +144,8 @@ class AppServiceProvider extends ServiceProvider
         // "fotos.eventos" (#90, 17/10/2026): ter o item "Fotos dos eventos" no menu,
         // enquanto a loja de fotos estiver ligada. Quem vê cada álbum continua sendo a turma.
         Gate::define('fotos.eventos', fn (User $usuario): bool => VendaFotos::ligada());
+        // "aulas.ver" (#80): o item "Aulas regulares" no menu, para quem entrou (filiado ou aluno indicado).
+        Gate::define('aulas.ver', fn (User $usuario): bool => true);
 
         // FOTOS DO CURSO PELO INSTRUTOR (Mestre Eduardo, 17/10/2026: "o responsável pelas
         // fotos é sempre o instrutor do curso").

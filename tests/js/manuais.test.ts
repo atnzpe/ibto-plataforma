@@ -68,6 +68,9 @@ describe('conteúdo dos manuais', () => {
             '/minha-carteirinha': '',
             // Fotos dos eventos (#90): ainda sem tour próprio.
             '/fotos': '',
+            // Aulas regulares (#80): ainda sem tour próprio.
+            '/aulas': '',
+            '/comando-geral/programas': '',
             '/comando-geral': 'comando-geral',
             '/comando-geral/cursos': 'cursos/index',
             '/comando-geral/matriculas': 'cursos/matriculas',

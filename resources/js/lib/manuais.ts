@@ -162,6 +162,23 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/fotos', nome: 'Fotos dos eventos' },
             },
             {
+                id: 'aulas-regulares',
+                titulo: 'Aulas regulares (mensalidade)',
+                resumo: 'Krav Maga, Kapap e outras aulas contínuas, presenciais ou online, pagas por mês.',
+                passos: [
+                    'Menu "Aulas regulares": escolha o programa e abra "Ver e assinar".',
+                    'Escolha a turma (dias e horário) e toque em "Assinar".',
+                    'Em "Minhas aulas", pague o Pix copia e cola da mensalidade. Quando o IBTO confirmar, a situação muda para "Em dia" e o link da sala ao vivo aparece.',
+                    'Todo mês, 3 dias antes do vencimento, chega um e-mail e a nova mensalidade aparece em "Minhas aulas".',
+                ],
+                regras: [
+                    'Depois do vencimento, o acesso continua por mais 5 dias. Passado esse prazo, só as aulas daquele programa ficam travadas até o pagamento; a carteirinha e o resto da plataforma não mudam.',
+                    'Aula regular não tem certificado: a frequência vai para o seu dossiê.',
+                    'Alguns programas são exclusivos para filiados.',
+                ],
+                tela: { endereco: '/aulas', nome: 'Aulas regulares' },
+            },
+            {
                 id: 'carteirinha',
                 titulo: 'Minha carteirinha',
                 resumo: 'A carteirinha de filiado com QR code, para imprimir ou guardar em PDF.',
@@ -573,6 +590,26 @@ export const MANUAIS: Manual[] = [
                 tela: {
                     endereco: '/comando-geral/fotos',
                     nome: 'Venda de fotos',
+                },
+            },
+            {
+                id: 'programas-aulas',
+                titulo: 'Programas de aulas regulares e mensalidades',
+                resumo: 'Cadastre os programas (Krav Maga, Kapap...) e confirme as mensalidades pelo Pix.',
+                passos: [
+                    '"Programas (aulas regulares)" → "Novo programa": título, modalidade, instrutor, mensalidade em reais, parte do IBTO (padrão 20%), vagas, dia do vencimento e se é só para filiados.',
+                    'Depois de salvar, cadastre as turmas: dias da semana, horário, local (presencial) ou link da sala (online: Meet, Zoom, Teams ou YouTube).',
+                    '"Mensalidades": confira o Pix no extrato pelo identificador (ex.: IBTOAUL42) e toque em "Confirmar". A receita e a parte do instrutor entram no livro-caixa.',
+                    'Na mesma tela, a lista das assinaturas mostra quem está em dia, na carência ou travado, com o botão "Cancelar".',
+                ],
+                regras: [
+                    'A mensalidade é gerada sozinha 3 dias antes do vencimento, com aviso por e-mail.',
+                    'Carência de 5 dias depois do vencimento; depois, só as aulas do programa travam.',
+                    'Desative o programa em vez de apagar: o histórico de pagamentos e frequência fica guardado.',
+                ],
+                tela: {
+                    endereco: '/comando-geral/programas',
+                    nome: 'Programas (aulas regulares)',
                 },
             },
             {
