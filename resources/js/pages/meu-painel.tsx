@@ -38,6 +38,28 @@ type Totais = {
     comparecimento: number | null;
 };
 
+/** Os números de um programa de aulas regulares que a pessoa ministra (centavos). */
+type LinhaPrograma = {
+    nome: string;
+    alunos: number;
+    previsto: number;
+    recebido: number;
+    a_receber: number;
+    atrasado: number;
+    instrutor_previsto: number;
+    instrutor_recebido: number;
+    repassado: number;
+    a_repassar: number;
+};
+
+/** A saúde financeira da pessoa: cursos + aulas regulares, só a parte dela (centavos). */
+type Saude = {
+    recebido_centavos: number;
+    pendente_centavos: number;
+    a_vencer_centavos: number;
+    total_a_receber_centavos: number;
+};
+
 /**
  * @param periodo O período do filtro. Ex.: { de: '2026-01-01', ate: '2026-12-31' }
  * @param cursos Os números de cada curso.
@@ -48,11 +70,52 @@ export default function MeuPainel({
     periodo,
     cursos,
     totais,
+    aulas,
+    saude,
 }: {
     periodo: { de: string; ate: string };
     cursos: LinhaCurso[];
     totais: Totais;
+    aulas: {
+        programas: LinhaPrograma[];
+        alunos: number;
+        alunos_em_dia: number;
+    };
+    saude: Saude;
 }) {
+    // A saúde financeira em 4 cartões: o que entrou, o que falta e o total.
+    const cartoesSaude = [
+        {
+            rotulo: 'Já recebi',
+            valor: formatarReais(saude.recebido_centavos),
+            dica: 'repassado pelo IBTO (cursos e aulas)',
+        },
+        {
+            rotulo: 'Pendente de repasse',
+            valor: formatarReais(saude.pendente_centavos),
+            dica: 'o aluno já pagou; falta o IBTO repassar',
+        },
+        {
+            rotulo: 'A vencer',
+            valor: formatarReais(saude.a_vencer_centavos),
+            dica: 'sua parte nas mensalidades ainda não pagas',
+        },
+        {
+            rotulo: 'Total a receber',
+            valor: formatarReais(saude.total_a_receber_centavos),
+            dica: 'pendente + a vencer',
+        },
+    ];
+    // As linhas de cada cartão de programa: rótulo e valor (centavos).
+    const linhasPrograma = (programa: LinhaPrograma) =>
+        [
+            ['Mensalidades previstas', programa.previsto],
+            ['Já pagas pelos alunos', programa.recebido],
+            ['Em atraso', programa.atrasado],
+            ['Minha parte prevista', programa.instrutor_previsto],
+            ['Já repassado a mim', programa.repassado],
+            ['Falta repassar', programa.a_repassar],
+        ] as const;
     // Os cartões do topo: o que importa primeiro.
     const destaques = [
         {
@@ -97,8 +160,9 @@ export default function MeuPainel({
                             Meu painel
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Os números dos seus cursos (ou da sua equipe) no
-                            período. Sem dados pessoais dos alunos.
+                            Os seus cursos e aulas regulares (ou os da sua
+                            equipe) no período, e quanto você já recebeu e ainda
+                            tem a receber. Sem dados pessoais dos alunos.
                         </p>
                     </div>
                     <Button
@@ -122,6 +186,84 @@ export default function MeuPainel({
                     }
                 />
 
+                {/* Saúde financeira (17/10/2026): a visão do dinheiro da pessoa. */}
+                <section
+                    aria-labelledby="titulo-saude"
+                    data-tour="saude-financeira"
+                >
+                    <h2
+                        id="titulo-saude"
+                        className="mb-2 text-base font-semibold"
+                    >
+                        Minha saúde financeira
+                    </h2>
+                    <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        {cartoesSaude.map((cartao) => (
+                            <li
+                                key={cartao.rotulo}
+                                className="flex flex-col gap-1 rounded-md border border-border p-4"
+                            >
+                                <span className="text-xs text-muted-foreground">
+                                    {cartao.rotulo}
+                                </span>
+                                <span className="text-xl font-semibold [overflow-wrap:anywhere]">
+                                    {cartao.valor}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {cartao.dica}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+
+                {/* Aulas regulares que a pessoa ministra (só aparece para quem tem programa). */}
+                {aulas.programas.length > 0 && (
+                    <section aria-labelledby="titulo-aulas">
+                        <h2
+                            id="titulo-aulas"
+                            className="mb-2 text-base font-semibold"
+                        >
+                            Aulas regulares que ministro
+                        </h2>
+                        <p className="mb-2 text-sm text-muted-foreground">
+                            {aulas.alunos} alunos · {aulas.alunos_em_dia} em dia
+                        </p>
+                        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {aulas.programas.map((programa) => (
+                                <li
+                                    key={programa.nome}
+                                    className="flex flex-col gap-2 rounded-md border border-border p-4 text-sm"
+                                >
+                                    <strong>{programa.nome}</strong>
+                                    <span className="text-muted-foreground">
+                                        {programa.alunos} alunos pagantes no
+                                        período
+                                    </span>
+                                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1">
+                                        {linhasPrograma(programa).map(
+                                            ([rotulo, valor]) => (
+                                                <div
+                                                    key={rotulo}
+                                                    className="contents"
+                                                >
+                                                    <dt className="text-muted-foreground">
+                                                        {rotulo}
+                                                    </dt>
+                                                    <dd>
+                                                        {formatarReais(valor)}
+                                                    </dd>
+                                                </div>
+                                            ),
+                                        )}
+                                    </dl>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
+                <h2 className="text-base font-semibold">Cursos</h2>
                 <ul
                     className="grid grid-cols-2 gap-3 lg:grid-cols-5"
                     aria-label="Totais do período"

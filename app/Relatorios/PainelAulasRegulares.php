@@ -42,6 +42,7 @@ class PainelAulasRegulares
     /**
      * @param  Periodo  $periodo  De/Até (pelo vencimento da mensalidade).
      * @param  User  $usuario  Quem pediu: sem "relatorio.financeiro", vê só os programas dele.
+     * @param  bool  $soOsMeus  true = só os programas da pessoa (Meu painel).
      * @param  array{programa?: int|null, instrutor?: int|null, pagador?: string|null, situacao?: string|null}  $filtros
      *                                                                                                                    Ex.: ['programa' => 3, 'pagador' => 'Silva', 'situacao' => 'atrasado'].
      */
@@ -49,6 +50,9 @@ class PainelAulasRegulares
         private readonly Periodo $periodo,
         private readonly User $usuario,
         private readonly array $filtros = [],
+        // true = só os programas em que a pessoa é o instrutor, mesmo que ela veja tudo
+        // (usado no "Meu painel": cada um vê o próprio dinheiro).
+        private readonly bool $soOsMeus = false,
     ) {}
 
     /**
@@ -56,7 +60,7 @@ class PainelAulasRegulares
      */
     public function veTudo(): bool
     {
-        return $this->usuario->temPermissao('relatorio.financeiro');
+        return ! $this->soOsMeus && $this->usuario->temPermissao('relatorio.financeiro');
     }
 
     /**

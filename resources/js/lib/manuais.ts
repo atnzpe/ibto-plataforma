@@ -260,6 +260,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Meu painel": no topo, os totais do período (inscritos, comparecimento, a receber, recebido, certificados).',
                     'Troque o período em "De" e "Até" (sem filtro: o ano atual). Curso gravado, sem data, aparece sempre.',
+                    '"Minha saúde financeira" junta cursos e aulas regulares: o que você já recebeu, o que o aluno já pagou e falta o IBTO repassar, o que ainda vai vencer e o total a receber.',
+                    '"Aulas regulares que ministro" mostra cada programa seu (ex.: Krav Maga): alunos pagantes, mensalidades previstas, pagas, em atraso, a sua parte, o que já foi repassado e o que falta.',
                     'Cada cartão mostra um curso: confirmados, aguardando Pix, cancelados, comparecimento, a receber, recebido e certificados (com os aptos ainda sem certificado).',
                     '"Exportar CSV" baixa os mesmos números para abrir no Excel ou no Google Planilhas.',
                 ],

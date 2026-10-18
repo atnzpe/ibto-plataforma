@@ -201,6 +201,11 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             titulo: 'Meu painel',
             texto: 'Os números dos seus cursos (ou da sua equipe): inscritos, comparecimento, a receber, recebido e certificados. Troque o período em De/Até e exporte em CSV.',
         },
+        {
+            elemento: '[data-tour="saude-financeira"]',
+            titulo: 'Minha saúde financeira',
+            texto: 'Cursos e aulas regulares juntos: o que você já recebeu, o que o aluno já pagou e falta o IBTO repassar, o que ainda vai vencer e o total a receber.',
+        },
     ],
     // Venda de fotos (#90).
     'fotos/admin/index': [
