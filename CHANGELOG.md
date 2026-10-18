@@ -13,6 +13,8 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado (vínculos do livro-caixa)
 
+- Financeiro com filtros robustos: período pelo vencimento ou pelo pagamento; situação, tipo de movimento, categoria, forma, papel da pessoa, equipe, curso, programa, modalidade, pessoa (nome ou e-mail), código e faixa de valor. Cartões que respondem ao filtro (recebido, a receber, pago, a pagar e saldo em caixa); modo analítico ou sintético (por pessoa, categoria, movimento, curso, equipe, mês ou forma); CSV e PDF com o mesmo filtro, registrados na auditoria.
+
 - Cada lançamento guarda a quem se refere: a pessoa (na receita, quem pagou; no repasse, o instrutor ou o fotógrafo que recebe), o curso e o programa de aulas regulares. Os lançamentos antigos foram preenchidos pela origem; estornos e saldos herdam os vínculos. É a base dos filtros por pessoa, papel, curso e equipe no Financeiro.
 
 ### Adicionado (diário de aulas)

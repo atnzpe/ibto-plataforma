@@ -481,7 +481,11 @@ export const MANUAIS: Manual[] = [
                 titulo: 'Financeiro (livro-caixa)',
                 resumo: 'Receitas e despesas do IBTO, a receber e a pagar.',
                 passos: [
-                    '"Financeiro" → "Lançamentos": filtre por período (De/Até), tipo e situação.',
+                    '"Financeiro": filtre por período (De/Até) e escolha se ele conta pela data de VENCIMENTO ou de PAGAMENTO.',
+                    'Os cartões (Recebido, A receber, Pago, A pagar e Saldo em caixa) somam SÓ o que está no filtro.',
+                    '"Filtros avançados": situação, tipo de movimento, categoria, forma, papel da pessoa, equipe, curso, programa, modalidade, pessoa (nome ou e-mail), código (nº do lançamento, da matrícula ou do pagamento) e faixa de valor → "Aplicar". "Limpar filtros" volta ao período.',
+                    'Quanto pagar a cada fotógrafo ou instrutor: Papel = Fotógrafo (ou Instrutor), Modo = Sintético, Somar por = Pessoa. A coluna "A pagar" é o que falta repassar a cada um.',
+                    '"Exportar CSV" e "PDF / imprimir" levam exatamente o que está na tela (analítico ou sintético).',
                     'Novo lançamento: descrição, valor, vencimento, categoria e forma; pode ser parcelado.',
                     'Recebeu ou pagou? "Dar baixa" (total ou parcial).',
                     'Errou um lançamento pago? "Estornar" com o motivo.',
@@ -490,6 +494,7 @@ export const MANUAIS: Manual[] = [
                     'Valores são guardados em centavos: nada de erro de arredondamento.',
                     'Lançamento pago nunca muda nem some; corrige-se com estorno, para o histórico contar a verdade.',
                     'Toda movimentação vai para a auditoria (quem, quando, antes e depois).',
+                    'A pessoa de cada lançamento: na receita, quem pagou (o aluno); no repasse, quem recebe (instrutor ou fotógrafo). A descrição continua sem nome (LGPD).',
                 ],
                 tela: {
                     endereco: '/financeiro/lancamentos',
