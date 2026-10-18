@@ -10,6 +10,7 @@
 use App\Enums\SituacaoMatricula;
 use App\Models\CursoCertificado;
 use App\Models\CursoMatricula;
+use App\Models\FotoAlbumVenda;
 use App\Models\PagamentoConfig;
 use App\Models\PedidoFoto;
 use App\Models\User;
@@ -50,6 +51,16 @@ test('a conta ganha os papéis, a ficha sem dado pessoal e dados em todos os mó
     // Fotos: ela comprou (1 pago + 1 aguardando) e vendeu (1 pago).
     expect(PedidoFoto::where('user_id', $conta->id)->pluck('situacao')->sort()->values()->all())->toBe(['aguardando_pagamento', 'pago'])
         ->and(PedidoFoto::whereHas('album', fn ($a) => $a->where('fotografo_id', $conta->id))->where('situacao', 'pago')->count())->toBe(1);
+});
+
+test('a conta completa consegue comprar mais fotos no álbum em que é compradora', function () {
+    $this->artisan('plataforma:conta-completa', ['email' => 'conta.completa@ibto.test'])->assertSuccessful();
+    $conta = $this->conta->fresh();
+    $album = FotoAlbumVenda::where('titulo', 'like', '%(você compra)')->sole();
+    $livre = $album->fotos()->orderByDesc('id')->value('id');
+
+    $this->actingAs($conta)->post(route('fotos.comprar', $album), ['fotos' => [$livre]])
+        ->assertSessionHasNoErrors();
 });
 
 test('conta que não existe: não cria e devolve erro', function () {

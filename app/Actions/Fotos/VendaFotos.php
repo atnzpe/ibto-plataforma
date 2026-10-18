@@ -83,7 +83,12 @@ class VendaFotos
         if (! self::ligada()) {
             throw new RegraCurso('VENDA_FOTOS_DESLIGADA', 'A venda de fotos não está ativa no momento.');
         }
-        if (! self::podeVer($album, $usuario) || $album->fotografo_id === $usuario->id) {
+        // O fotógrafo do álbum não compra as próprias fotos (mensagem própria, para não confundir).
+        if ($album->fotografo_id === $usuario->id) {
+            throw new RegraCurso('FOTOS_DO_PROPRIO_FOTOGRAFO', 'Você é o fotógrafo deste álbum: não dá para comprar as próprias fotos.');
+        }
+        // Não é da turma (matrícula confirmada no curso) nem do Comando Geral: não compra.
+        if (! self::podeVer($album, $usuario)) {
             throw new RegraCurso('FOTOS_SO_DA_TURMA', 'As fotos deste evento são só para quem fez o curso.');
         }
 
