@@ -33,8 +33,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CabecalhosDeSeguranca
 {
-    /** Endereços da VLibras (widget de Libras do governo). */
-    private const VLIBRAS = 'https://vlibras.gov.br https://*.vlibras.gov.br';
+    /**
+     * Endereços da VLibras (widget de Libras do governo). O widget também baixa
+     * arquivos do repositório oficial no jsDelivr (mesma lista do .htaccess do site).
+     */
+    private const VLIBRAS = 'https://vlibras.gov.br https://*.vlibras.gov.br https://cdn.jsdelivr.net/gh/spbgovbr-vlibras/';
 
     /**
      * Acrescenta os cabeçalhos na resposta.

@@ -19,7 +19,8 @@ test('toda resposta sai com os cabeçalhos de segurança', function () {
     expect($resposta->headers->get('Content-Security-Policy'))
         ->toContain("object-src 'none'")
         ->toContain("frame-ancestors 'self'")
-        ->toContain('https://vlibras.gov.br');
+        ->toContain('https://vlibras.gov.br')
+        ->toContain('https://cdn.jsdelivr.net/gh/spbgovbr-vlibras/');
     // Em http (computador local), sem HSTS.
     $resposta->assertHeaderMissing('Strict-Transport-Security');
 });
