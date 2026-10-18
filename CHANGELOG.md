@@ -11,6 +11,14 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (menu lateral em grupos)
+
+- O menu lateral agora é organizado por assunto: Início, Minha área, Ensino, Pessoas, Financeiro, Comunicação e Cadastros. Cada grupo abre e fecha (a escolha fica guardada no navegador); o grupo da tela aberta já vem aberto; grupo de um item só aparece sem título.
+
+### Segurança (preparação para o repositório público)
+
+- Saiu do código o link de convite do grupo de WhatsApp de um curso, e uma migração tira o mesmo link da descrição já gravada no banco. Teste do catálogo usa número de WhatsApp falso.
+
 ### Alterado (LGPD, #47)
 
 - Política de privacidade aprovada pela diretoria: versão 1.0 de 18/10/2026 (sai o aviso de rascunho). Com LGPD_EXIGIR_ACEITE=true no .env, todos aceitam a versão 1.0 no próximo acesso; o encarregado de dados vem de LGPD_ENCARREGADO.
