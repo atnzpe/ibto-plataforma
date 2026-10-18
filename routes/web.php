@@ -62,6 +62,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Middleware\MarcarTelaOffline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // PÁGINA INICIAL da plataforma (14/10/2026): não existe mais a tela "Em
 // construção". Quem entrou vai para a página inicial dele (o /dashboard decide:
@@ -82,6 +83,14 @@ Route::get('/', function (Request $request) {
         return to_route('catalogo.index');
     }
 
+    // Pedido feito por dentro da tela (Inertia, ex.: o botão "Sair"): o navegador não pode
+    // seguir para outro domínio por XHR (bloqueio de CORS, o "Sair" precisava de 2 cliques).
+    // Inertia::location pede à tela que troque a página INTEIRA para o site.
+    if ($request->header('X-Inertia') !== null) {
+        return Inertia::location($site);
+    }
+
+    // Visita normal (digitou o endereço ou clicou num link): redireciona direto.
     return redirect()->away($site);
 })->name('home');
 

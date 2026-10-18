@@ -56,6 +56,9 @@ class MeusCursosController extends Controller
                 'nome' => $usuario->name,
                 // Só filiado tem registro, equipe e categoria.
                 'filiado' => $filiado !== null,
+                // Tem o PAPEL de filiado, mas a ficha (registro, equipe) ainda não está ligada à
+                // conta (ex.: papel dado à mão em Usuários). A tela mostra "Filiado" e avisa.
+                'papel_filiado' => $filiado === null && $usuario->papeis()->where('slug', 'filiado')->exists(),
                 'registro' => $filiado?->registro,
                 'categoria' => $filiado?->categoria?->rotulo(),
                 'equipe' => $filiado?->equipe?->nome,

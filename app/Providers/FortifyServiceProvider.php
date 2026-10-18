@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Enums\StatusEquipe;
+use App\Http\Responses\LoginResponse;
 use App\Models\Equipe;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LoginResponse as RespostaDoLogin;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -51,6 +53,9 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        // Depois do login (17/10/2026): volta à página guardada só se a conta puder abri-la
+        // (evita o 403 de quem entra com outra conta); senão, o início do papel dela.
+        $this->app->singleton(RespostaDoLogin::class, LoginResponse::class);
     }
 
     /**
