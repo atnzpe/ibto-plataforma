@@ -20,8 +20,9 @@ class AvisoMensalidade extends Notification implements ShouldQueue
     /**
      * @param  string  $programa  O nome do programa. Ex.: 'Krav Maga online'.
      * @param  string  $vence  A data do vencimento. Ex.: '10/11/2026'.
+     * @param  string|null  $link  A página de pagamento /pagar/<código> (17/10/2026); null = "Minhas aulas".
      */
-    public function __construct(public readonly string $programa, public readonly string $vence) {}
+    public function __construct(public readonly string $programa, public readonly string $vence, public readonly ?string $link = null) {}
 
     /**
      * Por onde o aviso sai: só e-mail.
@@ -42,8 +43,9 @@ class AvisoMensalidade extends Notification implements ShouldQueue
             ->subject('IBTO — mensalidade de '.$this->programa.' vence em '.$this->vence)
             ->greeting('Olá!')
             ->line('A mensalidade das aulas de **'.$this->programa.'** vence em '.$this->vence.'.')
-            ->line('O Pix copia e cola já está disponível em "Minhas aulas". Depois do vencimento, o acesso às aulas continua por mais 5 dias.')
-            ->action('Abrir Minhas aulas', url('/minhas-aulas'))
+            ->line('O Pix copia e cola já está disponível. Depois do vencimento, o acesso às aulas continua por mais 5 dias.')
+            // O botão leva direto à página de pagamento desta mensalidade (ou a "Minhas aulas").
+            ->action('Pagar a mensalidade', $this->link ?? url('/minhas-aulas'))
             ->line('Se você já pagou, desconsidere esta mensagem.');
     }
 }

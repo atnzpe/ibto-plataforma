@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (página de pagamento)
+
+- Página de pagamento única `/pagar/<código>` (17/10/2026): cada cobrança (inscrição em curso, pedido de fotos e mensalidade de aula regular) ganha um código sorteado que nunca se repete (ULID); a página mostra o resumo, o valor, o vencimento, o Pix (QR, copia e cola e identificador do extrato) e a situação, que se atualiza sozinha e vira "Pagamento confirmado"; só o dono da cobrança ou o Comando Geral abre (os outros recebem "não encontrado"); o e-mail de aviso da mensalidade e "Minhas aulas" levam direto a ela. Na carteirinha, categoria e nível iguais aparecem uma vez só.
+
 ### Adicionado (aulas regulares #80)
 
 - Aulas regulares por assinatura (#80): o Comando Geral cadastra programas (Krav Maga, Kapap, Combate corpo a corpo...) com instrutor, mensalidade, divisão IBTO/instrutor (padrão 20/80), vagas, dia de vencimento e "só filiados", e as turmas (dias, horário, local ou link da sala de Meet/Zoom/Teams/YouTube); filiado e aluno indicado assinam em "Aulas regulares" e pagam pelo Pix em "Minhas aulas" (a tela se atualiza sozinha quando o IBTO confirma); a mensalidade é gerada 3 dias antes do vencimento, com aviso por e-mail; carência de 5 dias e depois só as aulas do programa travam (carteirinha e passaporte não mudam); confirmar lança a receita "Aulas regulares" e o repasse ao instrutor; o link da sala só aparece com o acesso liberado. A chamada e a frequência no dossiê vêm na próxima entrega.

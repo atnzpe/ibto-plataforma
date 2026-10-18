@@ -54,6 +54,7 @@ use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\MeuDossieController;
 use App\Http\Controllers\MeuPainelController;
 use App\Http\Controllers\MeusCursosController;
+use App\Http\Controllers\PagarController;
 use App\Http\Controllers\PrivacidadeController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\SitemapController;
@@ -595,6 +596,10 @@ Route::middleware(['auth', 'verified', 'can:pagamentos.confirmar'])->prefix('com
     Route::post('{pagamento}/confirmar', [MensalidadeController::class, 'confirmar'])->name('confirmar');
     Route::post('assinaturas/{assinatura}/cancelar', [MensalidadeController::class, 'cancelar'])->name('cancelar');
 });
+// PÁGINA DE PAGAMENTO ÚNICA (17/10/2026): /pagar/<código que nunca se repete>, para
+// inscrição, fotos e mensalidade. Só o dono da cobrança ou o Comando Geral abre.
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->get('pagar/{codigo}', [PagarController::class, 'show'])->name('pagar.show');
+
 // Aluno (com login; o IBTO é fechado): os programas, assinar, Minhas aulas e cancelar.
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('aulas', [AulasController::class, 'index'])->name('aulas.index');

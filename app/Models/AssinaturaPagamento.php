@@ -8,6 +8,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TemCodigoDePagamento;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -23,9 +24,13 @@ use Illuminate\Support\Carbon;
  * @property int|null $lancamento_id
  * @property int|null $confirmado_por
  * @property-read Assinatura $assinatura
+ * @property string|null $codigo_pagamento Código único da página /pagar/<código> (17/10/2026).
  */
 class AssinaturaPagamento extends Model
 {
+    // Código único da cobrança e o link /pagar/<código> (17/10/2026).
+    use TemCodigoDePagamento;
+
     protected $table = 'assinatura_pagamentos';
 
     /**

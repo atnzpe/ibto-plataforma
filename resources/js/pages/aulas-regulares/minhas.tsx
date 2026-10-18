@@ -25,6 +25,8 @@ type MinhaAssinatura = {
         referencia: string;
         valor_centavos: number;
         vence_em: string;
+        // A página de pagamento única (/pagar/<código>), para abrir ou mandar por WhatsApp.
+        link_pagamento: string;
         pix: (PixDaMatricula & { favorecido: string; chave: string }) | null;
     } | null;
 };
@@ -144,6 +146,13 @@ export default function MinhasAulas({
                                     Depois do Pix, o IBTO confere e confirma; a
                                     situação acima muda sozinha.
                                 </p>
+                                {/* A página de pagamento desta mensalidade (o mesmo link do e-mail de aviso). */}
+                                <Link
+                                    href={a.em_aberto.link_pagamento}
+                                    className="inline-flex min-h-11 items-center self-start underline underline-offset-4"
+                                >
+                                    Abrir a página de pagamento
+                                </Link>
                             </div>
                         )}
 
