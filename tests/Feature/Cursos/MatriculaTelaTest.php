@@ -14,7 +14,9 @@ use App\Models\CursoMatricula;
 use App\Models\PagamentoConfig;
 use App\Models\Papel;
 use App\Models\User;
+use App\Notifications\ComprovanteRecusado;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -145,7 +147,7 @@ test('comprovante enviado: a tela avisa "aguardando conferência" e o aluno não
 });
 
 test('o Comando Geral recusa o comprovante: arquivo apagado, motivo gravado, e-mail ao aluno e vaga mantida', function () {
-    Illuminate\Support\Facades\Notification::fake();
+    Notification::fake();
     $this->actingAs($this->aluno)->post(route('matriculas.store', $this->curso));
     $matricula = CursoMatricula::firstOrFail();
     $this->actingAs($this->aluno)->post(route('matriculas.comprovante', $matricula), ['comprovante' => UploadedFile::fake()->create('pix.pdf', 100, 'application/pdf')]);
@@ -162,7 +164,7 @@ test('o Comando Geral recusa o comprovante: arquivo apagado, motivo gravado, e-m
         ->and($matricula->comprovante_recusa_motivo)->toBe('Comprovante ilegível')
         ->and($matricula->situacao)->toBe(SituacaoMatricula::AguardandoPagamento);
     Storage::disk('local')->assertMissing($caminho);
-    Illuminate\Support\Facades\Notification::assertSentTo($this->aluno, App\Notifications\ComprovanteRecusado::class);
+    Notification::assertSentTo($this->aluno, ComprovanteRecusado::class);
 
     // O aluno vê o motivo; ao mandar outro, a recusa some.
     $this->actingAs($this->aluno)->get(route('meus-cursos'))->assertInertia(fn ($tela) => $tela->where('cursos.0.comprovante_recusado', true));
