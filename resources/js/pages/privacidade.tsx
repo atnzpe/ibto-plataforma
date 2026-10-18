@@ -66,7 +66,8 @@ export default function Privacidade({
                 <p className="text-sm text-[#5c5644]">
                     Versão {versao_politica} · {data}
                 </p>
-                {/* Enquanto for rascunho (versão 0.x), o aviso fica no topo. */}
+                {/* Enquanto for rascunho (versão 0.x), o aviso fica no topo. Desde 18/10/2026 a
+                    política está aprovada (1.0): o aviso não aparece mais. */}
                 {versao_politica.startsWith('0.') && (
                     <p
                         role="note"
