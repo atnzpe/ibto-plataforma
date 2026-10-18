@@ -18,6 +18,8 @@ name: Deploy homologação
 on:
   push:
     branches: [main]
+    # Mudança só de documentação não muda a plataforma: não publica (custo zero, 18/10/2026).
+    paths-ignore: ['**.md', 'docs/**']
   # Actions → "Deploy homologação" → Run workflow → escolher a branch a testar.
   workflow_dispatch:
 

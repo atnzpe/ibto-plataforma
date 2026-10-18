@@ -9,7 +9,10 @@ name: CI
 on:
   # Na main quem chama a CI é o deploy (deploy-homologacao.yml), antes de
   # publicar; assim ela não roda duas vezes no mesmo commit.
+  # PR só de documentação (README, CHANGELOG, docs/): não gasta minutos (regra de
+  # custo zero, 18/10/2026).
   pull_request:
+    paths-ignore: ['**.md', 'docs/**']
   workflow_dispatch:
   workflow_call:
 
