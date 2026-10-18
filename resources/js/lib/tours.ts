@@ -719,6 +719,16 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             titulo: 'Relatório',
             texto: 'Filtre o período em "De" e "Até". Exporte em CSV ou imprima em PDF.',
         },
+        {
+            elemento: '[data-tour="filtros-relatorio"]',
+            titulo: 'Filtros',
+            texto: 'Cada campo filtra por um valor (equipe, modalidade, área, situação, instrutor...). A busca procura em todas as colunas.',
+        },
+        {
+            elemento: '[data-tour="modo-relatorio"]',
+            titulo: 'Analítico ou sintético',
+            texto: 'Analítico: cada linha. Sintético: somado pelo campo escolhido (ex.: receita por equipe). O CSV e o PDF levam o que está na tela.',
+        },
     ],
 };
 

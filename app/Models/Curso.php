@@ -179,6 +179,16 @@ class Curso extends Model
     }
 
     /**
+     * A equipe dona do curso (18/10/2026, para os relatórios); null = curso do IBTO.
+     *
+     * @return BelongsTo<Equipe, $this>
+     */
+    public function equipe(): BelongsTo
+    {
+        return $this->belongsTo(Equipe::class);
+    }
+
+    /**
      * @return BelongsTo<AreaAtuacao, $this>
      */
     public function area(): BelongsTo

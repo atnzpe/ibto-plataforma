@@ -54,11 +54,24 @@ class CursosRelatorio extends Relatorio
         ];
     }
 
+    /**
+     * Filtros e agrupamentos extras (18/10/2026): equipe, modalidade, área e situação do curso.
+     */
+    public function dimensoes(): array
+    {
+        return [
+            ['chave' => 'equipe', 'rotulo' => 'Equipe'],
+            ['chave' => 'modalidade', 'rotulo' => 'Modalidade'],
+            ['chave' => 'area', 'rotulo' => 'Área de atuação'],
+            ['chave' => 'situacao', 'rotulo' => 'Situação do curso'],
+        ];
+    }
+
     public function linhas(Periodo $periodo, User $usuario): array
     {
         return array_values(Curso::query()
             ->where(fn ($consulta) => $consulta->whereNull('data_inicio')->orWhereBetween('data_inicio', [$periodo->inicio->toDateString(), $periodo->fim->toDateString()]))
-            ->orderByDesc('data_inicio')->get()
+            ->with(['equipe', 'area'])->orderByDesc('data_inicio')->get()
             ->map(function (Curso $curso): array {
                 $matriculas = CursoMatricula::query()->where('curso_id', $curso->id);
                 $confirmadas = (clone $matriculas)->where('situacao', SituacaoMatricula::Confirmada->value);
@@ -68,6 +81,11 @@ class CursosRelatorio extends Relatorio
                 return [
                     'curso' => $curso->titulo,
                     'inicio' => $curso->data_inicio?->format('d/m/Y') ?? 'Sem data',
+                    // Dimensões (filtram e agrupam; não são colunas).
+                    'equipe' => $curso->equipe->nome ?? 'IBTO',
+                    'modalidade' => $curso->modalidade->rotulo(),
+                    'area' => $curso->area->nome ?? 'Sem área',
+                    'situacao' => $curso->situacao->rotulo(),
                     'instrutor' => $curso->instrutorExibido() ?? '—',
                     'vagas' => (int) ($curso->vagas ?? 0),
                     'inscritos' => (clone $matriculas)->where('situacao', '!=', SituacaoMatricula::Cancelada->value)->count(),

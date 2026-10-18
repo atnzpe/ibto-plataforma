@@ -54,6 +54,18 @@ abstract class Relatorio
     abstract public function linhas(Periodo $periodo, User $usuario): array;
 
     /**
+     * As DIMENSÕES do relatório (18/10/2026): campos que vêm em cada linha para
+     * FILTRAR e AGRUPAR, mas que não precisam ser coluna. Ex.: a equipe e a
+     * modalidade de cada curso. Por padrão, nenhuma.
+     *
+     * @return list<array{chave: string, rotulo: string}> Ex.: [['chave' => 'modalidade', 'rotulo' => 'Modalidade']]
+     */
+    public function dimensoes(): array
+    {
+        return [];
+    }
+
+    /**
      * A linha de totais: soma as colunas de número e dinheiro; percentual e texto ficam vazios.
      *
      * @param  list<array<string, mixed>>  $linhas
