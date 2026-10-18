@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (tela de manutenção)
+
+- Tela de manutenção do IBTO (17/10/2026): durante o deploy, em vez da página genérica "503 Service Unavailable", aparece "Estamos atualizando a plataforma" com o emblema, em português, recarregando sozinha a cada 60 segundos; tudo embutido, para funcionar mesmo no meio da troca dos arquivos.
+
 ### Adicionado (manual e tour em nível militar)
 
 - Tour guiado em TODAS as telas da plataforma (17/10/2026): cerca de 50 telas ganharam tour (aulas regulares, pagamento, fotos, carteirinha, privacidade, configurações, cadastros, financeiro, relatórios, galeria e blog); o "?" do tour passou a aparecer também na vitrine (catálogo, curso, trilha, blog, eventos, privacidade e validações) e na carteirinha; marcas `data-tour` nos botões principais (salvar chamada, Pix, 3 passos da compra, desfocar, fotos do curso).
