@@ -19,5 +19,15 @@ test('com a placa do deploy, aparece a tela do IBTO em português (503)', functi
     $this->get('/login')
         ->assertStatus(503)
         ->assertSee('Estamos atualizando a plataforma')
+        ->assertSee('um minuto de treino')
         ->assertDontSee('Service Unavailable');
+});
+
+test('a mensagem de treino vem sorteada e com a fonte (ou IBTO)', function () {
+    File::put(storage_path('framework/down'), json_encode(['status' => 503, 'template' => null]));
+
+    $html = $this->get('/')->assertStatus(503)->getContent();
+
+    // Toda mensagem termina com a fonte (Sun Tzu, um ditado ou o próprio IBTO).
+    expect($html)->toMatch('/<cite id="fonte">— \S/');
 });
