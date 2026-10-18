@@ -121,3 +121,30 @@ test('LGPD: a conta logada vai para a tela sem o filiado (nem CPF, nem nasciment
     $pagina = $resposta->getContent();
     expect($pagina)->not->toContain('52998224725')->not->toContain('81999990000')->not->toContain('1985-01-01');
 });
+
+test('filtros robustos: por dimensão, busca livre e modo sintético (com CSV no mesmo filtro)', function () {
+    // Um segundo curso, online, para ter o que filtrar.
+    $online = new Curso(['titulo' => 'Inteligência Online', 'modalidade' => 'online', 'acesso' => 'aberto', 'valor_centavos' => 10000, 'data_inicio' => today()->toDateString(), 'instrutor_nome' => 'Ana']);
+    $online->forceFill(['situacao' => SituacaoCurso::Publicado, 'percentual_ibto' => 20])->save();
+
+    $tela = fn (array $filtros) => $this->actingAs($this->admin)->get(route('relatorios.show', ['chave' => 'cursos', ...$filtros]));
+
+    // Os campos de filtro trazem a modalidade (dimensão) com os dois valores.
+    $tela([])->assertInertia(fn ($t) => $t->where('campos_filtro', fn ($campos) => collect($campos)->firstWhere('chave', 'modalidade')['valores'] === ['Online', 'Presencial']));
+    // Filtro por dimensão: só o online.
+    $tela(['f_modalidade' => 'Online'])->assertInertia(fn ($t) => $t->has('linhas', 1)->where('linhas.0.curso', 'Inteligência Online'));
+    // Busca livre (sem diferenciar maiúscula).
+    $tela(['busca' => 'faca'])->assertInertia(fn ($t) => $t->has('linhas', 1)->where('linhas.0.curso', 'Combate com Faca'));
+    // Valor que não existe é ignorado (não quebra, não filtra).
+    $tela(['f_modalidade' => 'Marte'])->assertOk()->assertInertia(fn ($t) => $t->has('linhas', 2));
+    // Sintético por modalidade: uma linha por modalidade, com a receita somada.
+    $tela(['modo' => 'sintetico', 'agrupar' => 'modalidade'])->assertInertia(fn ($t) => $t
+        ->has('linhas', 2)
+        ->where('colunas.0.rotulo', 'Modalidade')
+        ->where('linhas.1.grupo', 'Presencial')
+        ->where('linhas.1.receita', 50000));
+
+    // O CSV respeita o filtro.
+    $csv = $this->actingAs($this->admin)->get(route('relatorios.csv', ['chave' => 'cursos', 'f_modalidade' => 'Online']))->streamedContent();
+    expect($csv)->toContain('Inteligência Online')->not->toContain('Combate com Faca');
+});

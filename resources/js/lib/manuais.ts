@@ -651,6 +651,8 @@ export const MANUAIS: Manual[] = [
                 passos: [
                     'Menu "Relatórios" → escolha o relatório. Cada pessoa vê só os que a permissão dela libera.',
                     'Troque o período em "De" e "Até" (sem filtro: o ano atual).',
+                    'Filtre por equipe, modalidade, área, situação, instrutor (ou qualquer coluna de texto) e use a busca para achar uma parte do texto. "Limpar filtros" volta só ao período.',
+                    'Modo "Sintético" → "Somar por": junta as linhas pelo campo escolhido e soma os números (ex.: receita e repasse por equipe ou por modalidade).',
                     '"Exportar CSV" baixa para o Excel ou o Google Planilhas. "PDF / imprimir" abre a versão com a marca do IBTO, a data e quem gerou: lá, "Imprimir ou salvar em PDF".',
                 ],
                 regras: [

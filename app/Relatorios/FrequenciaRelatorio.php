@@ -52,6 +52,20 @@ class FrequenciaRelatorio extends Relatorio
         ];
     }
 
+    /**
+     * Filtros e agrupamentos extras (18/10/2026): equipe, modalidade, área e situação do curso.
+     */
+    public function dimensoes(): array
+    {
+        return [
+            ['chave' => 'equipe', 'rotulo' => 'Equipe'],
+            ['chave' => 'modalidade', 'rotulo' => 'Modalidade'],
+            ['chave' => 'area', 'rotulo' => 'Área de atuação'],
+            ['chave' => 'situacao', 'rotulo' => 'Situação do curso'],
+            ['chave' => 'instrutor', 'rotulo' => 'Instrutor'],
+        ];
+    }
+
     public function linhas(Periodo $periodo, User $usuario): array
     {
         // Quem não cuida de todos os cursos (o instrutor): só os dele.
@@ -60,7 +74,7 @@ class FrequenciaRelatorio extends Relatorio
         return array_values(Curso::query()
             ->when($soDele, fn ($consulta) => $consulta->where('responsavel_id', $usuario->id))
             ->where(fn ($consulta) => $consulta->whereNull('data_inicio')->orWhereBetween('data_inicio', [$periodo->inicio->toDateString(), $periodo->fim->toDateString()]))
-            ->orderByDesc('data_inicio')->get()
+            ->with(['equipe', 'area'])->orderByDesc('data_inicio')->get()
             ->map(function (Curso $curso): array {
                 $encontros = CursoAula::query()->whereNotNull('chamada_feita_em')->whereHas('modulo', fn ($modulo) => $modulo->where('curso_id', $curso->id))->pluck('id');
                 $confirmados = CursoMatricula::query()->where('curso_id', $curso->id)->where('situacao', SituacaoMatricula::Confirmada->value)->count();
@@ -70,6 +84,12 @@ class FrequenciaRelatorio extends Relatorio
                 return [
                     'curso' => $curso->titulo,
                     'inicio' => $curso->data_inicio?->format('d/m/Y') ?? 'Sem data',
+                    // Dimensões (filtram e agrupam; não são colunas).
+                    'equipe' => $curso->equipe->nome ?? 'IBTO',
+                    'modalidade' => $curso->modalidade->rotulo(),
+                    'area' => $curso->area->nome ?? 'Sem área',
+                    'situacao' => $curso->situacao->rotulo(),
+                    'instrutor' => $curso->instrutorExibido() ?? '—',
                     'encontros' => $encontros->count(),
                     'confirmados' => $confirmados,
                     'presencas' => $presencas,

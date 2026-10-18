@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (filtros dos relatórios)
+
+- Relatórios com filtros robustos: por dimensão (equipe, modalidade, área, situação, instrutor) e por coluna de texto, busca livre, e modo analítico ou sintético (somado pelo campo escolhido). CSV e PDF exportam o mesmo filtro, e a auditoria guarda os filtros usados.
+
 ### Adicionado (vínculos do livro-caixa)
 
 - Financeiro com filtros robustos: período pelo vencimento ou pelo pagamento; situação, tipo de movimento, categoria, forma, papel da pessoa, equipe, curso, programa, modalidade, pessoa (nome ou e-mail), código e faixa de valor. Cartões que respondem ao filtro (recebido, a receber, pago, a pagar e saldo em caixa); modo analítico ou sintético (por pessoa, categoria, movimento, curso, equipe, mês ou forma); CSV e PDF com o mesmo filtro, registrados na auditoria.
