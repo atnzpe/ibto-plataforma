@@ -179,6 +179,7 @@ export default function PaginaCurso({
     requisitos = [],
     albuns_fotos = [],
     vagas_preenchidas = 0,
+    provas = [],
     matricula,
 }: {
     curso: CursoDetalhe;
@@ -193,6 +194,15 @@ export default function PaginaCurso({
     vagas_preenchidas?: number;
     // A matrícula da pessoa logada, ou null.
     matricula: MatriculaDaPessoa | null;
+    // Provas (#43) do matriculado, com a situação em cada uma (vazia para os demais).
+    provas?: {
+        id: number;
+        titulo: string;
+        melhor_nota: number | null;
+        aprovada: boolean;
+        usadas: number;
+        restantes: number;
+    }[];
 }) {
     // A primeira aula (para o botão "Assistir as aulas"), só para quem pode assistir.
     const primeiraAula = pode_assistir
@@ -539,6 +549,46 @@ export default function PaginaCurso({
                             matricula={matricula}
                             requisitos={requisitos}
                         />
+                        {/* Provas (#43): a situação e o botão de cada uma (só para o matriculado). */}
+                        {provas.length > 0 && (
+                            <section
+                                aria-labelledby="titulo-provas"
+                                className="flex flex-col gap-2 rounded-xl border border-[#e4dccb] p-4"
+                                data-tour="provas-do-curso"
+                            >
+                                <h2
+                                    id="titulo-provas"
+                                    className="text-base font-semibold"
+                                >
+                                    Provas
+                                </h2>
+                                {provas.map((prova) => (
+                                    <div
+                                        key={prova.id}
+                                        className="flex flex-col gap-1 text-sm"
+                                    >
+                                        <strong>{prova.titulo}</strong>
+                                        {/* Situação escrita (não só cor). */}
+                                        <span>
+                                            {prova.aprovada
+                                                ? `Aprovado (melhor nota: ${prova.melhor_nota})`
+                                                : prova.melhor_nota === null
+                                                  ? 'Ainda não feita'
+                                                  : `Melhor nota: ${prova.melhor_nota} · ${prova.restantes} tentativa(s) restante(s)`}
+                                        </span>
+                                        <Link
+                                            href={`/cursos/${curso.id}/provas/${prova.id}`}
+                                            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#6b5d3a] px-4 text-sm font-semibold text-[#6b5d3a] no-underline hover:bg-[#6b5d3a] hover:text-white"
+                                        >
+                                            {prova.aprovada ||
+                                            prova.restantes === 0
+                                                ? 'Ver a prova'
+                                                : 'Fazer a prova'}
+                                        </Link>
+                                    </div>
+                                ))}
+                            </section>
+                        )}
                         {/* Fotos do evento à venda (#90): só para quem fez o curso, com a venda ligada. */}
                         {albuns_fotos.map((album) => (
                             <Link

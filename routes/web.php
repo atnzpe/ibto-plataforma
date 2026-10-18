@@ -41,6 +41,8 @@ use App\Http\Controllers\Cursos\DetalhesCursoController;
 use App\Http\Controllers\Cursos\MatriculaPainelController;
 use App\Http\Controllers\Cursos\MatricularPeloIbtoController;
 use App\Http\Controllers\Cursos\PagamentoConfigController;
+use App\Http\Controllers\Cursos\ProvaAlunoController;
+use App\Http\Controllers\Cursos\ProvaController;
 use App\Http\Controllers\Cursos\TrilhaController;
 use App\Http\Controllers\EquipeLogoController;
 use App\Http\Controllers\Financeiro\CategoriaController;
@@ -244,6 +246,13 @@ Route::middleware(['auth', 'verified', 'can:cursos.acessar'])
             Route::put('aulas/{aula}', 'updateAula')->name('aulas.update');
             Route::post('aulas/{aula}/mover', 'moverAula')->name('aulas.mover');
         });
+
+        // Provas do curso (#43): montar e ver as notas. Quem pode: Gate curso.editar (no controlador).
+        Route::get('cursos/{curso}/provas', [ProvaController::class, 'index'])->name('cursos.provas.index');
+        Route::get('cursos/{curso}/provas/nova', [ProvaController::class, 'create'])->name('cursos.provas.create');
+        Route::post('cursos/{curso}/provas', [ProvaController::class, 'store'])->name('cursos.provas.store');
+        Route::get('cursos/{curso}/provas/{prova}/editar', [ProvaController::class, 'edit'])->name('cursos.provas.edit');
+        Route::put('cursos/{curso}/provas/{prova}', [ProvaController::class, 'update'])->name('cursos.provas.update');
     });
 
 // Trilhas (#39): só o Comando Geral monta (cursos.gerenciar).
@@ -319,6 +328,16 @@ Route::middleware(['auth', 'verified'])
     ->get('cursos/{curso}/assistir/{aula}', [AssistirController::class, 'show'])
     ->whereNumber(['curso', 'aula'])
     ->name('cursos.assistir');
+// Prova do aluno (#43): ver (sem gabarito) e responder. Mesma porta da sala de aula;
+// no máximo 10 envios por minuto (ninguém "chuta" respostas em massa).
+Route::middleware(['auth', 'verified'])
+    ->get('cursos/{curso}/provas/{prova}', [ProvaAlunoController::class, 'show'])
+    ->whereNumber(['curso', 'prova'])
+    ->name('cursos.prova');
+Route::middleware(['auth', 'verified', 'throttle:10,1'])
+    ->post('cursos/{curso}/provas/{prova}', [ProvaAlunoController::class, 'responder'])
+    ->whereNumber(['curso', 'prova'])
+    ->name('cursos.prova.responder');
 // Progresso (14/10/2026): marcar/desmarcar a aula como assistida. Mesma porta da sala de aula.
 Route::middleware(['auth', 'verified'])
     ->put('cursos/{curso}/assistir/{aula}/assistida', [AssistirController::class, 'marcar'])

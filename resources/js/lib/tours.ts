@@ -194,6 +194,43 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'O CSV traz uma linha por mensalidade, com os mesmos filtros da tela. A exportação fica registrada na auditoria.',
         },
     ],
+    // Provas (#43).
+    'cursos/provas/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Provas do curso',
+            texto: 'Cada prova com quantos fizeram, os aprovados e a média, e a nota de cada aluno (só o registro). Com prova ativa, o certificado exige a aprovação.',
+        },
+        {
+            elemento: '[data-tour="nova-prova"]',
+            titulo: 'Nova prova',
+            texto: 'Monte a prova: título, nota mínima, tentativas e as perguntas de múltipla escolha.',
+        },
+    ],
+    'cursos/provas/formulario': [
+        {
+            elemento: 'main h1',
+            titulo: 'Montar a prova',
+            texto: 'Defina a nota mínima (0 a 100) e quantas tentativas cada aluno tem.',
+        },
+        {
+            elemento: '[data-tour="pergunta-prova"]',
+            titulo: 'Perguntas',
+            texto: 'Escreva o enunciado e as alternativas e marque a bolinha da CERTA. O aluno nunca vê qual é a certa; a correção é feita no servidor.',
+        },
+    ],
+    'cursos/provas/fazer': [
+        {
+            elemento: 'main h1',
+            titulo: 'Prova',
+            texto: 'Responda todas as perguntas e envie. A nota aparece na hora; a mínima e as tentativas estão no topo.',
+        },
+        {
+            elemento: '[data-tour="situacao-prova"]',
+            titulo: 'Sua situação',
+            texto: 'A melhor nota até agora e quantas tentativas sobram. Aprovado em todas as provas e com o curso concluído, o certificado sai sozinho.',
+        },
+    ],
     // Meu painel (#79).
     'meu-painel': [
         {

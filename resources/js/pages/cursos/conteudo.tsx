@@ -556,6 +556,16 @@ export default function ConteudoCurso({
                                 Dados do curso
                             </Link>
                         </Button>
+                        {/* Provas (#43): montar e ver as notas (só quem pode editar). */}
+                        {pode_editar && (
+                            <Button asChild variant="outline">
+                                <Link
+                                    href={`/comando-geral/cursos/${curso.id}/provas`}
+                                >
+                                    Provas
+                                </Link>
+                            </Button>
+                        )}
                         {/* Só quem pode editar cria módulos. */}
                         {pode_editar && (
                             <JanelaModulo
