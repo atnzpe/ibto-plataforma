@@ -122,6 +122,15 @@ return [
         ? (string) env('CADASTRO_PUBLICO', 'fechado')
         : 'fechado',
 
+    /*
+    | Política de conteúdo (CSP) dos cabeçalhos de segurança (#74, 18/10/2026).
+    | Ligada por padrão. Se algo deixar de carregar na homologação (ex.: um
+    | widget externo), SEGURANCA_CSP=false no .env desliga SÓ ela; os outros
+    | cabeçalhos (HTTPS obrigatório, anti-clickjacking etc.) continuam.
+    */
+
+    'seguranca_csp' => (bool) env('SEGURANCA_CSP', true),
+
     'site_url' => (static function (): string {
         // Endereço escrito no .env: vale ele (sem a barra do fim).
         $doEnv = rtrim((string) env('SITE_URL', ''), '/');
