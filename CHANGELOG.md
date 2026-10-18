@@ -11,6 +11,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Acessibilidade (#74)
+
+- Auditoria automática de acessibilidade na CI: 15 telas (públicas, do aluno e do Comando Geral) abrem num navegador de verdade (Chromium) e passam pelo axe (regras WCAG); falha nova deixa a CI vermelha.
+- Telas de entrar e de pedir acesso sem tabindex forçado: a ordem do teclado é a ordem natural da tela.
+- Lighthouse depois de cada deploy na homologação (workflow "Lighthouse homologação"): catálogo, entrar e privacidade no celular, com acessibilidade, SEO e boas práticas ≥ 95 (bloqueante) e desempenho ≥ 90 (aviso); o relatório fica nos artefatos do job.
+
 ### Segurança (#74)
 
 - Cabeçalhos de segurança em toda resposta: nosniff, anti-clickjacking (X-Frame-Options e frame-ancestors), Referrer-Policy, Permissions-Policy (câmera, microfone, localização e pagamento bloqueados), Cross-Origin-Opener-Policy, HSTS de 1 ano em HTTPS e política de conteúdo (CSP: scripts só da plataforma e da VLibras, vídeos só do YouTube, sem plugins, formulários só para a própria plataforma). `SEGURANCA_CSP=false` no .env desliga só a CSP, se algo externo deixar de carregar.

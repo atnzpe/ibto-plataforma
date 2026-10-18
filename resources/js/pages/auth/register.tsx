@@ -3,6 +3,8 @@
  * INDICOU e a senha. O IBTO é um grupo fechado, só de indicados: a conta nasce
  * "em análise" e só entra depois que o admin da equipe ou o Comando Geral
  * aprovar. Precisa confirmar o e-mail. Textos em português.
+ * Acessibilidade (18/10/2026, auditoria axe): sem tabindex forçado; a ordem do
+ * teclado é a ordem natural da tela (quem usa leitor de tela não se perde).
  */
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -51,7 +53,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                     type="text"
                                     required
                                     autoFocus
-                                    tabIndex={1}
                                     autoComplete="name"
                                     name="name"
                                     placeholder="Seu nome completo"
@@ -68,7 +69,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                     id="email"
                                     type="email"
                                     required
-                                    tabIndex={2}
                                     autoComplete="email"
                                     name="email"
                                     placeholder="seu-email@exemplo.com"
@@ -84,7 +84,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                     name="equipe_id"
                                     required
                                     defaultValue=""
-                                    tabIndex={3}
                                     className="h-11 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
                                 >
                                     <option value="" disabled>
@@ -113,7 +112,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                     required
                                     minLength={3}
                                     maxLength={150}
-                                    tabIndex={3}
                                     name="indicado_por"
                                     placeholder="Ex.: Mestre Trinca"
                                 />
@@ -125,7 +123,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                 <PasswordInput
                                     id="password"
                                     required
-                                    tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Crie uma senha"
@@ -141,7 +138,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                                 <PasswordInput
                                     id="password_confirmation"
                                     required
-                                    tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Digite a senha de novo"
@@ -155,7 +151,6 @@ export default function Register({ passwordRules, equipes }: Props) {
                             <Button
                                 type="submit"
                                 className="mt-2 w-full"
-                                tabIndex={5}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -165,9 +160,7 @@ export default function Register({ passwordRules, equipes }: Props) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Já tem conta?{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                Entrar
-                            </TextLink>
+                            <TextLink href={login()}>Entrar</TextLink>
                         </div>
                     </>
                 )}
