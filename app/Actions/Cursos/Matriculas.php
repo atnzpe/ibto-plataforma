@@ -185,6 +185,9 @@ class Matriculas
                 'valor_centavos' => $matricula->valor_centavos,
                 'vencimento' => $pagoEm,
                 'equipe_id' => $matricula->curso->equipe_id,
+                // Quem pagou (o aluno) e o curso.
+                'pessoa_id' => $matricula->user_id,
+                'curso_id' => $matricula->curso_id,
                 'origem' => 'matricula',
                 'origem_id' => $matricula->id,
             ]);
@@ -209,6 +212,9 @@ class Matriculas
                     // Vence no dia do pagamento: aparece logo como "a pagar" no livro-caixa.
                     'vencimento' => $pagoEm,
                     'equipe_id' => $curso->equipe_id,
+                    // Quem recebe: o instrutor do curso (ou o responsável, se não houver).
+                    'pessoa_id' => $curso->instrutor_id ?? $curso->responsavel_id,
+                    'curso_id' => $curso->id,
                     'origem' => 'repasse',
                     'origem_id' => $matricula->id,
                 ]);

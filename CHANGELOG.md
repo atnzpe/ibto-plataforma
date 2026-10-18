@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (vínculos do livro-caixa)
+
+- Cada lançamento guarda a quem se refere: a pessoa (na receita, quem pagou; no repasse, o instrutor ou o fotógrafo que recebe), o curso e o programa de aulas regulares. Os lançamentos antigos foram preenchidos pela origem; estornos e saldos herdam os vínculos. É a base dos filtros por pessoa, papel, curso e equipe no Financeiro.
+
 ### Adicionado (diário de aulas)
 
 - Aulas regulares: ao fazer a chamada, o instrutor escreve "O que foi ministrado nesta aula" (obrigatório).
