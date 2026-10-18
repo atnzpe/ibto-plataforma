@@ -1,6 +1,7 @@
-# LIGHTHOUSE NA HOMOLOGAÇÃO (#74, 18/10/2026): depois de cada deploy, o Google
-# Lighthouse mede as telas PÚBLICAS da plataforma no celular e confere as notas
-# mínimas da issue #74:
+# LIGHTHOUSE NA HOMOLOGAÇÃO (#74, 18/10/2026): o Google Lighthouse mede as telas
+# PÚBLICAS da plataforma no celular e confere as notas mínimas da issue #74.
+# ECONOMIA DE MINUTOS (18/10/2026): roda só À MÃO ou uma vez por SEMANA (segunda,
+# 9h de Brasília); antes rodava depois de cada deploy e esperava até 30 min a placa.
 # - acessibilidade, SEO e boas práticas ≥ 95 (abaixo disso, o job fica vermelho);
 # - desempenho ≥ 90 no celular (só AVISO: depende também da hospedagem).
 # A homologação é "não indexar" de propósito (APP_INDEXAVEL=false), então a
@@ -11,36 +12,34 @@ name: Lighthouse homologação
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Deploy homologação']
-    types: [completed]
+  # Toda segunda às 12h UTC (9h de Brasília).
+  schedule:
+    - cron: '0 12 * * 1'
 
 permissions:
   contents: read
 
 jobs:
   lighthouse:
-    # Depois do deploy, só se ele deu certo (ou quando alguém roda à mão).
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 15
     steps:
       - name: Baixar o código (só o lighthouserc.json)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # Logo depois do deploy a plataforma mostra a tela de manutenção (503) até a tarefa
-      # agendada tirar a placa (até ~15 min). Espera ela voltar antes de medir.
+      # Se coincidir com um deploy, a plataforma mostra a tela de manutenção (503) por alguns
+      # minutos. Espera no máximo 5 min (para não gastar minutos à toa).
       - name: Esperar a plataforma sair da manutenção
         run: |
-          for tentativa in $(seq 1 60); do
+          for tentativa in $(seq 1 10); do
             if curl --silent --fail --max-time 20 https://cursos-homolog.ib-to.org/api/saude > /dev/null; then
               echo "No ar (tentativa $tentativa)."
               exit 0
             fi
-            echo "Ainda em manutenção; nova tentativa em 30 s ($tentativa/60)."
+            echo "Ainda em manutenção; nova tentativa em 30 s ($tentativa/10)."
             sleep 30
           done
-          echo "A plataforma não voltou em 30 minutos." && exit 1
+          echo "A plataforma não voltou em 5 minutos (deploy em andamento?). Rode de novo depois." && exit 1
 
       # A máquina do GitHub (ubuntu-latest) já vem com Node e npx.
       - name: Medir com o Lighthouse e conferir as notas
