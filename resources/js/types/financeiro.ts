@@ -24,23 +24,59 @@ export type Lancamento = {
     parcela_total: number | null;
     // Quantas parcelas do mesmo título ainda estão em aberto (0 = à vista).
     parcelas_em_aberto: number;
+    // Vínculos (18/10/2026): o tipo de movimento e a quem se refere. null = sem vínculo.
+    movimento: string;
+    pessoa: string | null;
+    curso: string | null;
+    equipe: string | null;
+    forma: string | null;
 };
 
-/** Totais do mês, no topo da lista (todos em centavos, menos "vencidos"). */
-export type TotaisFinanceiro = {
-    saldo_centavos: number;
-    a_receber_centavos: number;
-    a_pagar_centavos: number;
-    // Quantos lançamentos estão vencidos (de qualquer mês).
+/** Os cartões do topo, somados SOBRE O FILTRO (centavos; vencidos e quantidade são contagens). */
+export type CartoesFinanceiro = {
+    recebido: number;
+    a_receber: number;
+    pago: number;
+    a_pagar: number;
+    // Saldo em caixa no filtro: recebido − pago.
+    saldo: number;
     vencidos: number;
+    quantidade: number;
 };
 
-/** Os filtros da lista. Ex.: { de: '2027-03-01', ate: '2027-03-31', visao: 'pagar' } */
+/** Uma linha da visão sintética: os cartões somados de um grupo (pessoa, categoria...). */
+export type LinhaSintetica = CartoesFinanceiro & { grupo: string };
+
+/** Uma opção de filtro. Ex.: { id: 'fotografo', nome: 'Fotógrafo' } */
+export type OpcaoFiltro = { id: number | string; nome: string };
+
+/** Os filtros da lista (18/10/2026). Vazio/null = sem esse filtro. */
 export type FiltrosFinanceiro = {
     // Período: data inicial e final (AAAA-MM-DD).
     de: string;
     ate: string;
     visao: 'todos' | 'receber' | 'pagar' | 'vencidos';
+    // Qual data o período usa: o vencimento ou o dia do pagamento.
+    data_base: 'vencimento' | 'pagamento';
+    situacao: string | null;
+    movimento: string | null;
+    modalidade: string | null;
+    categoria: number | null;
+    forma: number | null;
+    equipe: number | null;
+    curso: number | null;
+    programa: number | null;
+    pessoa_id: number | null;
+    // Parte do nome ou do e-mail.
+    pessoa: string;
+    papel: string | null;
+    // Nº do lançamento, da matrícula/pedido/mensalidade, ou o código da página de pagamento.
+    codigo: string;
+    // Em reais, como digitado. Ex.: '150,50'.
+    valor_min: string;
+    valor_max: string;
+    modo: 'analitico' | 'sintetico';
+    agrupar: string;
 };
 
 /** Um lançamento pendente aberto para EDIÇÃO (valor já no formato do campo). */

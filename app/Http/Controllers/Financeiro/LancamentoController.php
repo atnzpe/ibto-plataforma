@@ -1,8 +1,9 @@
 <?php
 
 /*
- * Telas do LIVRO-CAIXA (#59): lista de lançamentos com filtros e totais do mês,
- * e o formulário de novo lançamento. Quem grava é o App\Services\LivroCaixa
+ * Telas do LIVRO-CAIXA (#59): lista de lançamentos com os filtros robustos e os
+ * cartões que respondem ao filtro (18/10/2026; regra em App\Relatorios\FiltroFinanceiro),
+ * CSV e impressão (PDF), e o formulário de novo lançamento. Quem grava é o App\Services\LivroCaixa
  * (regras + auditoria). Permissões nas rotas: "financeiro.ver" para olhar,
  * "financeiro.lancar" para lançar.
  */
@@ -14,24 +15,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Financeiro\BaixaRequest;
 use App\Http\Requests\Financeiro\LancamentoRequest;
 use App\Http\Requests\Financeiro\MotivoRequest;
+use App\Models\Auditoria;
+use App\Models\Curso;
 use App\Models\Equipe;
 use App\Models\FinCategoria;
 use App\Models\FinFormaPagamento;
 use App\Models\FinLancamento;
+use App\Models\Papel;
+use App\Models\Programa;
+use App\Relatorios\AuditoriaRelatorio;
+use App\Relatorios\FiltroFinanceiro;
 use App\Services\LivroCaixa;
 use App\Support\Dinheiro;
-use App\Support\Periodo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LancamentoController extends Controller
 {
-    // As "visões" da lista: todos, só a receber, só a pagar, só os vencidos.
-    private const VISOES = ['todos', 'receber', 'pagar', 'vencidos'];
-
     /**
      * Título parcelado (grupo) → quantas parcelas pendentes, preenchido por
      * comParcelasEmAberto() antes de montar a lista.
@@ -41,57 +45,159 @@ class LancamentoController extends Controller
     private array $emAbertoPorTitulo = [];
 
     /**
-     * Lista do mês escolhido, com os totais no topo.
+     * A lista do livro-caixa com os FILTROS ROBUSTOS (18/10/2026) e os cartões
+     * que respondem ao filtro: recebido, a receber, pago, a pagar e saldo.
+     * Modo analítico (cada lançamento) ou sintético (somado por grupo).
      *
-     * @param  Request  $request  Filtros do endereço. Ex.: /financeiro?mes=2027-03&visao=pagar
-     * @param  LivroCaixa  $caixa  O livro-caixa (o Laravel entrega pronto), para o saldo do mês.
+     * @param  Request  $request  Ex.: /financeiro?de=2026-10-01&ate=2026-10-31&papel=fotografo&modo=sintetico
      * @return Response A tela "financeiro/lancamentos/index".
      */
-    public function index(Request $request, LivroCaixa $caixa): Response
+    public function index(Request $request): Response
     {
-        // Visão pedida; se vier algo fora da lista, usa "todos".
-        $visao = in_array($request->query('visao'), self::VISOES, true) ? (string) $request->query('visao') : 'todos';
-
-        // Período pedido ("de" e "até"; padrão = mês atual), pedido do Gleyson em
-        // 10/10/2026. A regra fica em App\Support\Periodo, igual para todos os filtros.
-        $periodo = Periodo::doPedido($request);
-        $inicio = $periodo->inicio->toDateString();
-        $fim = $periodo->fim->toDateString();
-
-        // Consulta da lista, já com a categoria (evita uma consulta por linha).
-        // withExists('estorno'): junto, o banco diz se cada um já foi estornado (estorno_exists).
-        $consulta = FinLancamento::query()->with('categoria')->withExists('estorno')->orderBy('vencimento')->orderBy('id');
-
-        if ($visao === 'vencidos') {
-            // Vencidos de qualquer mês: quem está atrasado não pode sumir da lista.
-            $consulta->vencidos();
-        } else {
-            // As outras visões mostram o que VENCE no período escolhido.
-            $consulta->whereBetween('vencimento', [$inicio, $fim]);
-            // "receber" = só receitas; "pagar" = só despesas; "todos" = sem filtro.
-            if ($visao !== 'todos') {
-                $consulta->where('tipo', $visao === 'receber' ? 'receita' : 'despesa');
-            }
-        }
-
-        // Totais do período: o que falta receber e pagar (pendentes que vencem nele).
-        $pendentesDoPeriodo = FinLancamento::query()
-            ->where('situacao', 'pendente')
-            ->whereBetween('vencimento', [$inicio, $fim]);
+        $filtro = FiltroFinanceiro::doPedido($request);
+        $lancamentos = $filtro->lancamentos();
 
         return Inertia::render('financeiro/lancamentos/index', [
-            'filtros' => [...$periodo->paraTela(), 'visao' => $visao],
-            'lancamentos' => $this->comParcelasEmAberto($consulta->limit(500)->get())->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento)),
-            'totais' => [
-                'saldo_centavos' => $caixa->saldoEntre($inicio, $fim),
-                'a_receber_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'receita')->sum('valor_centavos'),
-                'a_pagar_centavos' => (int) (clone $pendentesDoPeriodo)->where('tipo', 'despesa')->sum('valor_centavos'),
-                'vencidos' => FinLancamento::query()->vencidos()->count(),
-            ],
+            'filtros' => $filtro->paraTela(),
+            // Analítico: cada lançamento, com as ações (baixa, cancelar, estornar) e os vínculos.
+            'lancamentos' => $this->comParcelasEmAberto($lancamentos)->map(fn (FinLancamento $lancamento) => $this->paraTela($lancamento) + FiltroFinanceiro::linha($lancamento))->values(),
+            // Sintético: as mesmas somas por grupo (pessoa, categoria, curso, equipe...).
+            'sintetico' => $filtro->filtros['modo'] === 'sintetico' ? $filtro->sintetico($lancamentos) : [],
+            'cartoes' => FiltroFinanceiro::cartoes($lancamentos),
+            // Passou do limite: a tela avisa para refinar o filtro.
+            'limite_atingido' => $lancamentos->count() >= FiltroFinanceiro::LIMITE,
+            // Vencidos de QUALQUER mês (alerta fixo, independente do filtro).
+            'vencidos_total' => FinLancamento::query()->vencidos()->count(),
             'pode_lancar' => $request->user()?->can('financeiro.lancar') ?? false,
             // Formas ativas, para a janela de baixa.
             'formas' => FinFormaPagamento::where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
+            'opcoes' => $this->opcoesDosFiltros(),
         ]);
+    }
+
+    /**
+     * O CSV do filtro atual: analítico (um lançamento por linha) ou sintético (um grupo por linha).
+     *
+     * @param  Request  $request  Os mesmos filtros da tela.
+     */
+    public function csv(Request $request): StreamedResponse
+    {
+        $filtro = FiltroFinanceiro::doPedido($request);
+        [$colunas, $linhas] = $this->tabelaExportacao($filtro);
+        Auditoria::registrar('RELATORIO_EXPORTADO', ['relatorio' => 'financeiro', 'formato' => 'csv', 'modo' => $filtro->filtros['modo'], ...$filtro->periodo->paraTela()]);
+
+        return response()->streamDownload(function () use ($colunas, $linhas): void {
+            $saida = fopen('php://output', 'w');
+            // Não abriu a saída (raro): não há onde escrever.
+            if ($saida === false) {
+                return;
+            }
+            // BOM: o Excel lê os acentos certos.
+            fwrite($saida, "\xEF\xBB\xBF");
+            fputcsv($saida, array_column($colunas, 'rotulo'), ';');
+            foreach ($linhas as $linha) {
+                fputcsv($saida, array_map(fn (array $coluna) => $coluna['tipo'] === 'dinheiro' ? number_format(((int) ($linha[$coluna['chave']] ?? 0)) / 100, 2, ',', '') : (string) ($linha[$coluna['chave']] ?? ''), $colunas), ';');
+            }
+            fclose($saida);
+        }, 'financeiro-ibto.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * A versão para impressão (PDF pelo navegador) do filtro atual, com a marca do IBTO.
+     *
+     * @param  Request  $request  Os mesmos filtros da tela.
+     */
+    public function imprimir(Request $request): Response
+    {
+        $filtro = FiltroFinanceiro::doPedido($request);
+        [$colunas, $linhas] = $this->tabelaExportacao($filtro);
+        Auditoria::registrar('RELATORIO_EXPORTADO', ['relatorio' => 'financeiro', 'formato' => 'impressao', 'modo' => $filtro->filtros['modo'], ...$filtro->periodo->paraTela()]);
+        // Totais: soma as colunas de dinheiro e número; texto fica vazio.
+        $totais = [];
+        foreach ($colunas as $coluna) {
+            $totais[$coluna['chave']] = in_array($coluna['tipo'], ['dinheiro', 'numero'], true) ? (int) collect($linhas)->sum($coluna['chave']) : null;
+        }
+        $modo = $filtro->filtros['modo'] === 'sintetico' ? 'sintético por '.mb_strtolower(FiltroFinanceiro::AGRUPAMENTOS[$filtro->filtros['agrupar']]) : 'analítico';
+
+        return Inertia::render('relatorios/imprimir', [
+            'relatorio' => ['chave' => 'financeiro', 'titulo' => "Financeiro ({$modo})", 'descricao' => ''],
+            'colunas' => $colunas,
+            'linhas' => $linhas,
+            'totais' => $totais,
+            'periodo' => $filtro->periodo->paraTela(),
+            'gerado_em' => now()->format('d/m/Y H:i'),
+            'gerado_por' => AuditoriaRelatorio::abreviado($request->user()->name).' (nº '.$request->user()->id.')',
+        ]);
+    }
+
+    /**
+     * As colunas e as linhas da exportação (CSV e PDF), no modo do filtro.
+     *
+     * @return array{0: list<array{chave: string, rotulo: string, tipo: string}>, 1: list<array<string, mixed>>}
+     */
+    private function tabelaExportacao(FiltroFinanceiro $filtro): array
+    {
+        $lancamentos = $filtro->lancamentos();
+        // Sintético: um grupo por linha, com os cinco números.
+        if ($filtro->filtros['modo'] === 'sintetico') {
+            return [[
+                ['chave' => 'grupo', 'rotulo' => FiltroFinanceiro::AGRUPAMENTOS[$filtro->filtros['agrupar']], 'tipo' => 'texto'],
+                ['chave' => 'recebido', 'rotulo' => 'Recebido', 'tipo' => 'dinheiro'],
+                ['chave' => 'a_receber', 'rotulo' => 'A receber', 'tipo' => 'dinheiro'],
+                ['chave' => 'pago', 'rotulo' => 'Pago', 'tipo' => 'dinheiro'],
+                ['chave' => 'a_pagar', 'rotulo' => 'A pagar', 'tipo' => 'dinheiro'],
+                ['chave' => 'saldo', 'rotulo' => 'Saldo', 'tipo' => 'dinheiro'],
+                ['chave' => 'quantidade', 'rotulo' => 'Lançamentos', 'tipo' => 'numero'],
+            ], $filtro->sintetico($lancamentos)];
+        }
+
+        // Analítico: um lançamento por linha. Situação e tipo escritos por extenso.
+        return [[
+            ['chave' => 'id', 'rotulo' => 'Nº', 'tipo' => 'texto'],
+            ['chave' => 'vencimento', 'rotulo' => 'Vencimento', 'tipo' => 'texto'],
+            ['chave' => 'pago_em', 'rotulo' => 'Pago em', 'tipo' => 'texto'],
+            ['chave' => 'tipo_texto', 'rotulo' => 'Tipo', 'tipo' => 'texto'],
+            ['chave' => 'descricao', 'rotulo' => 'Descrição', 'tipo' => 'texto'],
+            ['chave' => 'categoria', 'rotulo' => 'Categoria', 'tipo' => 'texto'],
+            ['chave' => 'movimento', 'rotulo' => 'Movimento', 'tipo' => 'texto'],
+            ['chave' => 'pessoa', 'rotulo' => 'Pessoa', 'tipo' => 'texto'],
+            ['chave' => 'curso', 'rotulo' => 'Curso/programa', 'tipo' => 'texto'],
+            ['chave' => 'equipe', 'rotulo' => 'Equipe', 'tipo' => 'texto'],
+            ['chave' => 'forma', 'rotulo' => 'Forma', 'tipo' => 'texto'],
+            ['chave' => 'situacao_texto', 'rotulo' => 'Situação', 'tipo' => 'texto'],
+            ['chave' => 'valor_centavos', 'rotulo' => 'Valor', 'tipo' => 'dinheiro'],
+        ], array_values($lancamentos->map(function (FinLancamento $lancamento): array {
+            $linha = FiltroFinanceiro::linha($lancamento);
+
+            return $linha + [
+                'tipo_texto' => $linha['tipo'] === 'receita' ? 'Receita' : 'Despesa',
+                'situacao_texto' => (FiltroFinanceiro::SITUACOES[$linha['situacao']] ?? $linha['situacao']).($linha['estorno'] ? ' (estorno)' : ''),
+            ];
+        })->all())];
+    }
+
+    /**
+     * As opções dos filtros (listas para os campos de escolha).
+     *
+     * @return array<string, mixed>
+     */
+    private function opcoesDosFiltros(): array
+    {
+        // Lista simples [{id, nome}] a partir de um mapa chave => rótulo.
+        $lista = fn (array $mapa) => collect($mapa)->map(fn (string $nome, string $id) => ['id' => $id, 'nome' => $nome])->values();
+
+        return [
+            'categorias' => FinCategoria::orderBy('tipo')->orderBy('nome')->get(['id', 'nome', 'tipo']),
+            'formas' => FinFormaPagamento::orderBy('nome')->get(['id', 'nome']),
+            'equipes' => Equipe::orderBy('nome')->get(['id', 'nome']),
+            'cursos' => Curso::orderBy('titulo')->get(['id', 'titulo as nome']),
+            'programas' => Programa::orderBy('titulo')->get(['id', 'titulo as nome']),
+            'papeis' => Papel::orderBy('nome')->get(['slug as id', 'nome']),
+            'situacoes' => $lista(FiltroFinanceiro::SITUACOES),
+            'movimentos' => $lista(FiltroFinanceiro::MOVIMENTOS),
+            'modalidades' => $lista(FiltroFinanceiro::MODALIDADES),
+            'agrupamentos' => $lista(FiltroFinanceiro::AGRUPAMENTOS),
+        ];
     }
 
     /**

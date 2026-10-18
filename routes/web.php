@@ -446,6 +446,13 @@ Route::middleware(['auth', 'verified'])
         Route::get('/', [LancamentoController::class, 'index'])
             ->middleware('can:financeiro.ver')
             ->name('lancamentos.index');
+        // Exportação do filtro atual (18/10/2026): CSV e versão para impressão (PDF).
+        Route::get('exportar/csv', [LancamentoController::class, 'csv'])
+            ->middleware(['can:financeiro.ver', 'throttle:20,1'])
+            ->name('lancamentos.csv');
+        Route::get('exportar/imprimir', [LancamentoController::class, 'imprimir'])
+            ->middleware(['can:financeiro.ver', 'throttle:20,1'])
+            ->name('lancamentos.imprimir');
         // Histórico de toda movimentação (só leitura: não há rota de apagar).
         Route::get('historico', HistoricoController::class)
             ->middleware('can:financeiro.ver')

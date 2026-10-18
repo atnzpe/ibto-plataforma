@@ -60,8 +60,8 @@ test('administrador vê a lista do mês com os totais', function () {
         ->assertInertia(fn (Assert $tela) => $tela
             ->component('financeiro/lancamentos/index')
             ->has('lancamentos', 2)
-            ->where('totais.a_receber_centavos', 9000)
-            ->where('totais.a_pagar_centavos', 4990)
+            ->where('cartoes.a_receber', 9000)
+            ->where('cartoes.a_pagar', 4990)
             ->where('pode_lancar', true));
 });
 

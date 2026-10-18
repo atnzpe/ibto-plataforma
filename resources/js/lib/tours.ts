@@ -236,6 +236,21 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             titulo: 'Livro-caixa',
             texto: 'Receitas e despesas, a receber e a pagar. Filtre por período (De/Até). Lançamento pago não muda: corrige-se com estorno.',
         },
+        {
+            elemento: '[data-tour="cartoes-financeiro"]',
+            titulo: 'Os números do filtro',
+            texto: 'Recebido, a receber, pago, a pagar e o saldo em caixa somam SÓ o que está no filtro. Mudou o filtro, mudam os números.',
+        },
+        {
+            elemento: '[data-tour="filtros-financeiro"]',
+            titulo: 'Filtros avançados',
+            texto: 'Pessoa (nome ou e-mail), papel (ex.: Fotógrafo → quanto pagar a cada fotógrafo), equipe, curso, programa, modalidade, código e faixa de valor.',
+        },
+        {
+            elemento: '[data-tour="modo-financeiro"]',
+            titulo: 'Analítico ou sintético',
+            texto: 'Analítico: cada lançamento. Sintético: somado por pessoa, categoria, curso, equipe, mês ou forma. CSV e PDF exportam o que está na tela.',
+        },
     ],
     'admin/usuarios/index': [
         {

@@ -72,6 +72,8 @@ class Anuidades
                 'valor_centavos' => $anuidade->valor_centavos,
                 'vencimento' => $pagoEm,
                 'equipe_id' => $filiado->equipe_id,
+                // Quem pagou: a conta do filiado (null se a ficha ainda não tem conta).
+                'pessoa_id' => $filiado->user_id,
                 'origem' => 'anuidade',
             ]);
 

@@ -36,6 +36,9 @@ use Illuminate\Support\Carbon;
  * @property int|null $estorno_de_id
  * @property int|null $saldo_de_id
  * @property int|null $equipe_id
+ * @property int|null $pessoa_id Receita: quem pagou; despesa de repasse: quem recebe (18/10/2026).
+ * @property int|null $curso_id O curso ligado (inscrição, repasse, fotos).
+ * @property int|null $programa_id O programa de aulas regulares ligado (mensalidade, repasse).
  * @property string|null $origem
  * @property int|null $origem_id
  * @property int|null $criado_por
@@ -145,5 +148,45 @@ class FinLancamento extends Model
     public function estorno(): HasOne
     {
         return $this->hasOne(FinLancamento::class, 'estorno_de_id');
+    }
+
+    /**
+     * A pessoa ligada (18/10/2026): na receita, quem pagou; no repasse, quem recebe.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function pessoa(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pessoa_id');
+    }
+
+    /**
+     * O curso ligado, se houver.
+     *
+     * @return BelongsTo<Curso, $this>
+     */
+    public function curso(): BelongsTo
+    {
+        return $this->belongsTo(Curso::class);
+    }
+
+    /**
+     * O programa de aulas regulares ligado, se houver.
+     *
+     * @return BelongsTo<Programa, $this>
+     */
+    public function programa(): BelongsTo
+    {
+        return $this->belongsTo(Programa::class);
+    }
+
+    /**
+     * A equipe ligada, se houver.
+     *
+     * @return BelongsTo<Equipe, $this>
+     */
+    public function equipe(): BelongsTo
+    {
+        return $this->belongsTo(Equipe::class);
     }
 }

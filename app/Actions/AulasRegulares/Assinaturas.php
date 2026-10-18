@@ -126,6 +126,9 @@ class Assinaturas
                 'descricao' => "Mensalidade {$pagamento->referencia} — {$programa->titulo} — assinatura nº {$assinatura->id}",
                 'valor_centavos' => $pagamento->valor_centavos,
                 'vencimento' => $pagoEm,
+                // Quem pagou (o aluno) e o programa.
+                'pessoa_id' => $assinatura->user_id,
+                'programa_id' => $programa->id,
                 'origem' => 'assinatura',
                 'origem_id' => $pagamento->id,
             ]);
@@ -142,6 +145,9 @@ class Assinaturas
                     'vencimento' => $pagoEm,
                     // Origem própria: o livro-caixa não aceita origem + número repetidos, e
                     // "repasse" já é usada pelas matrículas de curso (com o número da matrícula).
+                    // Quem recebe: o instrutor do programa.
+                    'pessoa_id' => $programa->instrutor_id,
+                    'programa_id' => $programa->id,
                     'origem' => 'repasse_assinatura',
                     'origem_id' => $pagamento->id,
                 ]);

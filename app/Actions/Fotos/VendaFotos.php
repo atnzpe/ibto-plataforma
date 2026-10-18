@@ -148,6 +148,9 @@ class VendaFotos
                 'descricao' => "Venda de fotos — {$album->titulo} — pedido nº {$pedido->id}",
                 'valor_centavos' => $pedido->valor_centavos,
                 'vencimento' => $pagoEm,
+                // Quem pagou (o aluno) e o curso do evento.
+                'pessoa_id' => $pedido->user_id,
+                'curso_id' => $album->curso_id,
                 'origem' => 'pedido_foto',
                 'origem_id' => $pedido->id,
             ]);
@@ -162,6 +165,9 @@ class VendaFotos
                     'descricao' => "Repasse ao fotógrafo ({$album->fotografo->name}) — {$album->titulo} — pedido nº {$pedido->id}",
                     'valor_centavos' => $parte,
                     'vencimento' => $pagoEm,
+                    // Quem recebe: o fotógrafo do álbum.
+                    'pessoa_id' => $album->fotografo_id,
+                    'curso_id' => $album->curso_id,
                     'origem' => 'repasse_foto',
                     'origem_id' => $pedido->id,
                 ]);

@@ -34,8 +34,8 @@ class LivroCaixa
     /**
      * Cria um lançamento PENDENTE (uma conta a receber ou a pagar).
      *
-     * @param  array{tipo: string, categoria_id: int, descricao: string, valor_centavos: int, vencimento: string, equipe_id?: int|null, origem?: string|null, origem_id?: int|null}  $dados
-     *                                                                                                                                                                                       Ex.: ['tipo' => 'despesa', 'categoria_id' => 5, 'descricao' => 'Hospedagem out/2027', 'valor_centavos' => 4990, 'vencimento' => '2027-10-10']
+     * @param  array{tipo: string, categoria_id: int, descricao: string, valor_centavos: int, vencimento: string, equipe_id?: int|null, pessoa_id?: int|null, curso_id?: int|null, programa_id?: int|null, origem?: string|null, origem_id?: int|null}  $dados
+     *                                                                                                                                                                                                                                                          Ex.: ['tipo' => 'despesa', 'categoria_id' => 5, 'descricao' => 'Hospedagem out/2027', 'valor_centavos' => 4990, 'vencimento' => '2027-10-10']
      * @return FinLancamento O lançamento criado.
      */
     public function lancar(array $dados): FinLancamento
@@ -54,6 +54,10 @@ class LivroCaixa
                 'vencimento' => $dados['vencimento'],
                 'situacao' => 'pendente',
                 'equipe_id' => $dados['equipe_id'] ?? null,
+                // A quem se refere (18/10/2026): pessoa (pagador ou recebedor), curso e programa.
+                'pessoa_id' => $dados['pessoa_id'] ?? null,
+                'curso_id' => $dados['curso_id'] ?? null,
+                'programa_id' => $dados['programa_id'] ?? null,
                 'origem' => $dados['origem'] ?? null,
                 'origem_id' => $dados['origem_id'] ?? null,
                 'criado_por' => Auth::id(),
@@ -231,6 +235,10 @@ class LivroCaixa
                 'situacao' => 'pendente',
                 'saldo_de_id' => $lancamento->id,
                 'equipe_id' => $lancamento->equipe_id,
+                // O saldo é da mesma pessoa, curso e programa.
+                'pessoa_id' => $lancamento->pessoa_id,
+                'curso_id' => $lancamento->curso_id,
+                'programa_id' => $lancamento->programa_id,
                 'criado_por' => Auth::id(),
             ])->save();
 
@@ -356,6 +364,10 @@ class LivroCaixa
                 'motivo' => trim($motivo),
                 'estorno_de_id' => $original->id,
                 'equipe_id' => $original->equipe_id,
+                // O estorno é da mesma pessoa, curso e programa do original.
+                'pessoa_id' => $original->pessoa_id,
+                'curso_id' => $original->curso_id,
+                'programa_id' => $original->programa_id,
                 'criado_por' => Auth::id(),
             ])->save();
 
