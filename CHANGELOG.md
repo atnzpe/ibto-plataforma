@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Alterado (LGPD, #47)
+
+- Política de privacidade aprovada pela diretoria: versão 1.0 de 18/10/2026 (sai o aviso de rascunho). Com LGPD_EXIGIR_ACEITE=true no .env, todos aceitam a versão 1.0 no próximo acesso; o encarregado de dados vem de LGPD_ENCARREGADO.
+
 ### Desempenho (#74)
 
 - Os textos dos tours e a biblioteca dos balões (driver.js) só são baixados quando o tour abre: o arquivo principal da tela caiu de 83,8 KB para 71,8 KB (comprimido). O botão "?" usa a lista curta de lib/tours-telas.ts.
