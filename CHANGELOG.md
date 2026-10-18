@@ -11,6 +11,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Corrigido (achados do Lighthouse)
+
+- Privacidade: o campo da versão do texto cobria a versão da plataforma e quebrava o aviso do console (erro "reading 'versao'"); agora se chama versao_politica.
+- Entrar e Privacidade ganharam a meta descrição (o resumo que o Google e o WhatsApp mostram).
+- O relatório do Lighthouse passa a ser guardado nos artefatos do job (a pasta é oculta).
+
 ### Acessibilidade (#74)
 
 - Auditoria automática de acessibilidade na CI: 15 telas (públicas, do aluno e do Comando Geral) abrem num navegador de verdade (Chromium) e passam pelo axe (regras WCAG); falha nova deixa a CI vermelha.

@@ -52,4 +52,6 @@ jobs:
         with:
           name: relatorio-lighthouse
           path: .lighthouseci/
+          # A pasta começa com ponto (oculta): sem isto, o GitHub não guarda nada.
+          include-hidden-files: true
           retention-days: 14
