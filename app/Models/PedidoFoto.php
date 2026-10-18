@@ -7,6 +7,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TemCodigoDePagamento;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -24,9 +25,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $download_ate
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string|null $codigo_pagamento Código único da página /pagar/<código> (17/10/2026).
  */
 class PedidoFoto extends Model
 {
+    // Código único da cobrança e o link /pagar/<código> (17/10/2026).
+    use TemCodigoDePagamento;
+
     protected $table = 'pedidos_fotos';
 
     /**

@@ -181,8 +181,9 @@ class Assinaturas
             if ($assinatura->pagamentos()->where('referencia', $referencia)->exists()) {
                 continue;
             }
-            $this->novaMensalidade($assinatura, $assinatura->programa, $referencia, $vence);
-            $assinatura->usuario->notify(new AvisoMensalidade($assinatura->programa->titulo, $vence->format('d/m/Y')));
+            $nova = $this->novaMensalidade($assinatura, $assinatura->programa, $referencia, $vence);
+            // O aviso leva direto à página de pagamento desta mensalidade (/pagar/<código>).
+            $assinatura->usuario->notify(new AvisoMensalidade($assinatura->programa->titulo, $vence->format('d/m/Y'), $nova->linkDePagamento()));
             $geradas++;
         }
 

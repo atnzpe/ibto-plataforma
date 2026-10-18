@@ -138,7 +138,15 @@ class AulasController extends Controller
      */
     private function pixDaMensalidade(AssinaturaPagamento $mensalidade, array $pagamento): array
     {
-        $dados = ['id' => $mensalidade->id, 'referencia' => $mensalidade->referencia, 'valor_centavos' => $mensalidade->valor_centavos, 'vence_em' => $mensalidade->vence_em->format('d/m/Y'), 'pix' => null];
+        $dados = [
+            'id' => $mensalidade->id,
+            'referencia' => $mensalidade->referencia,
+            'valor_centavos' => $mensalidade->valor_centavos,
+            'vence_em' => $mensalidade->vence_em->format('d/m/Y'),
+            // A página de pagamento única desta mensalidade (17/10/2026), para abrir ou mandar por WhatsApp.
+            'link_pagamento' => $mensalidade->linkDePagamento(),
+            'pix' => null,
+        ];
         // Sem a chave Pix configurada: mostra só o valor (o Comando Geral precisa configurar).
         if ($pagamento['pix_chave'] === '') {
             return $dados;

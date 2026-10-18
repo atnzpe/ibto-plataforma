@@ -152,9 +152,15 @@ export default function MinhaCarteirinha({
                                 {carteirinha.registro}
                             </p>
                             <p className="text-xs text-[#c9bd94] print:text-[6.5pt]">
-                                {[carteirinha.categoria, carteirinha.nivel]
-                                    .filter(Boolean)
-                                    .join(' · ')}
+                                {/* Categoria · nível; quando os dois têm o mesmo nome (ex.: "Praticante"), aparece uma vez só. */}
+                                {[
+                                    ...new Set(
+                                        [
+                                            carteirinha.categoria,
+                                            carteirinha.nivel,
+                                        ].filter(Boolean),
+                                    ),
+                                ].join(' · ')}
                             </p>
                             {carteirinha.equipe && (
                                 <p className="text-xs print:text-[6.5pt]">

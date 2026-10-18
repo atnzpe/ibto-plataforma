@@ -10,6 +10,7 @@
 namespace App\Models;
 
 use App\Enums\SituacaoMatricula;
+use App\Models\Concerns\TemCodigoDePagamento;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,9 +35,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $excecao_motivo Por que o IBTO matriculou quem não cumpre os pré-requisitos (#88).
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string|null $codigo_pagamento Código único da página /pagar/<código> (17/10/2026).
  */
 class CursoMatricula extends Model
 {
+    // Código único da cobrança e o link /pagar/<código> (17/10/2026).
+    use TemCodigoDePagamento;
+
     // Nenhum campo vem de formulário: tudo passa pela classe Matriculas (forceFill).
     protected $guarded = ['*'];
 
