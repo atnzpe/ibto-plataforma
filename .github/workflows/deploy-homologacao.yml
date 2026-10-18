@@ -32,13 +32,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  ci:
-    name: CI
-    uses: ./.github/workflows/ci.yml
-
+  # Sem a CI de novo aqui (regra de custo zero, 18/10/2026): o merge só acontece com a
+  # CI da PR verde, e a CI da PR já testa o código JUNTO com a main (o "merge commit"
+  # do pull_request). Repetir aqui gastava uns 4 minutos por merge.
   pacote:
     name: Montar o pacote
-    needs: ci
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
