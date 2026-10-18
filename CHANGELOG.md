@@ -15,6 +15,12 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 - Cabeçalhos de segurança em toda resposta: nosniff, anti-clickjacking (X-Frame-Options e frame-ancestors), Referrer-Policy, Permissions-Policy (câmera, microfone, localização e pagamento bloqueados), Cross-Origin-Opener-Policy, HSTS de 1 ano em HTTPS e política de conteúdo (CSP: scripts só da plataforma e da VLibras, vídeos só do YouTube, sem plugins, formulários só para a própria plataforma). `SEGURANCA_CSP=false` no .env desliga só a CSP, se algo externo deixar de carregar.
 
+### Adicionado (provas dos cursos, #43)
+
+- Provas de múltipla escolha por curso: o instrutor monta (título, nota mínima, tentativas e as perguntas com a alternativa certa) e vê quem fez, os aprovados, a média e a nota de cada aluno (só o registro).
+- O aluno faz a prova na página do curso; a correção é no servidor (o gabarito nunca vai para a tela) e a nota aparece na hora.
+- Com prova ativa, o certificado exige a aprovação em todas; aprovado com o curso concluído, o certificado automático sai na hora.
+
 ### Alterado (anuidade e cursos exclusivos)
 
 - Curso exclusivo para filiados exige também a anuidade do ano em dia (#37): o filiado vencido não se inscreve (código MATRICULA_ANUIDADE_PENDENTE) e perde o acesso às aulas desses cursos até pagar. Ano isento (2026) conta como em dia.
