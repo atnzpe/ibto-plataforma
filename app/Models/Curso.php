@@ -179,6 +179,16 @@ class Curso extends Model
     }
 
     /**
+     * As provas do curso (#43), na ordem em que foram criadas.
+     *
+     * @return HasMany<CursoProva, $this>
+     */
+    public function provas(): HasMany
+    {
+        return $this->hasMany(CursoProva::class)->orderBy('id');
+    }
+
+    /**
      * A equipe dona do curso (18/10/2026, para os relatórios); null = curso do IBTO.
      *
      * @return BelongsTo<Equipe, $this>

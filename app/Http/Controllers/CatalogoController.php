@@ -12,6 +12,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Cursos\Provas;
 use App\Actions\Fotos\VendaFotos;
 use App\Enums\AcessoCurso;
 use App\Enums\ModalidadeCurso;
@@ -21,8 +22,10 @@ use App\Models\AreaAtuacao;
 use App\Models\Curso;
 use App\Models\CursoAula;
 use App\Models\CursoAulaAssistida;
+use App\Models\CursoMatricula;
 use App\Models\CursoModulo;
 use App\Models\CursoPresenca;
+use App\Models\CursoProva;
 use App\Models\FotoAlbumVenda;
 use App\Models\Trilha;
 use App\Support\Calendario;
@@ -175,6 +178,8 @@ class CatalogoController extends Controller
             // A matrícula da pessoa logada que ainda vale (aguardando ou confirmada), ou null.
             'matricula' => $this->matriculaDe($request, $curso),
             // Venda de fotos (#90): os álbuns deste curso que a pessoa pode ver (fez o curso e a venda está ligada).
+            // Provas (#43): só para quem tem a matrícula confirmada, com a situação em cada uma.
+            'provas' => $this->provasDe($request, $curso),
             'albuns_fotos' => FotoAlbumVenda::query()->where('curso_id', $curso->id)->where('ativo', true)->where('expirado', false)->get()
                 ->filter(fn (FotoAlbumVenda $album) => VendaFotos::podeVer($album, $request->user()))
                 ->map(fn (FotoAlbumVenda $album) => ['id' => $album->id, 'titulo' => $album->titulo])->values(),
@@ -530,5 +535,25 @@ class CatalogoController extends Controller
             : $inicio->copy()->addMinutes($aula->duracao_minutos ?? 60);
 
         return ['inicio' => $inicio, 'fim' => $fim, 'dia_inteiro' => false];
+    }
+
+    /**
+     * As provas ativas do curso com a situação da pessoa (só matrícula confirmada; senão, lista vazia).
+     *
+     * @return list<array{id: int, titulo: string, melhor_nota: int|null, aprovada: bool, usadas: int, restantes: int}>
+     */
+    private function provasDe(Request $request, Curso $curso): array
+    {
+        $usuario = $request->user();
+        $matricula = $usuario === null ? null : CursoMatricula::query()->where('curso_id', $curso->id)->where('user_id', $usuario->id)->where('situacao', SituacaoMatricula::Confirmada->value)->first();
+        // Sem login ou sem matrícula confirmada: não mostra provas.
+        if ($matricula === null) {
+            return [];
+        }
+        $provas = app(Provas::class);
+
+        return array_values($curso->provas()->where('ativa', true)->get()
+            ->map(fn (CursoProva $prova): array => ['id' => $prova->id, 'titulo' => $prova->titulo, ...$provas->situacao($prova, $matricula)])
+            ->all());
     }
 }

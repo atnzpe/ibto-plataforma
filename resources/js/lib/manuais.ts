@@ -115,6 +115,7 @@ export const MANUAIS: Manual[] = [
                     'Assista à aula e clique em "Marcar como assistida": a barra de progresso anda.',
                     'Use "Próxima" e "Anterior" para seguir a sequência.',
                     'Encontro online ao vivo: o botão "Entrar na sala" aparece 30 minutos antes do início e some no fim do encontro.',
+                    'Prova: na página do curso, em "Provas", clique em "Fazer a prova", responda todas as perguntas e envie. A nota aparece na hora; se não passar, tente de novo enquanto houver tentativas.',
                 ],
                 regras: [
                     'O link da sala ao vivo só aparece para matrícula confirmada e só na hora do encontro: assim ele não circula fora da turma.',
@@ -248,8 +249,10 @@ export const MANUAIS: Manual[] = [
                     'Aula com dia e horário é um ENCONTRO (aparece no cronograma e tem chamada).',
                     'Encontro online ao vivo: preencha o "Link da sala ao vivo" (Google Meet, Zoom, Teams ou YouTube).',
                     'Quando estiver tudo pronto, clique em "Enviar para chancela".',
+                    'Prova (opcional): no Conteúdo, "Provas" → "Nova prova": título, nota mínima, tentativas e as perguntas (marque a bolinha da alternativa certa). A lista mostra quem fez, os aprovados, a média e a nota de cada aluno.',
                 ],
                 regras: [
+                    'Com prova ativa, o certificado só sai com a aprovação em todas as provas do curso. O aluno nunca vê qual alternativa é a certa: a correção é feita no servidor.',
                     'O link da sala só aceita Meet, Zoom, Teams ou YouTube por https: um link qualquer poderia levar o aluno a um site falso.',
                     'Vídeo enviado tem limite de 200 MB; vídeos maiores vão pelo YouTube (não listado).',
                 ],

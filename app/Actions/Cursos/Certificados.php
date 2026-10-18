@@ -39,7 +39,7 @@ class Certificados
      * @param  SalaDeAula  $sala  As regras da sala de aula (a sequência de aulas e as assistidas).
      *                            O Laravel entrega pronto (injeção de dependência).
      */
-    public function __construct(private readonly SalaDeAula $sala) {}
+    public function __construct(private readonly SalaDeAula $sala, private readonly Provas $provas) {}
 
     /**
      * Diz se a matrícula pode receber o certificado agora, e por quê não.
@@ -83,6 +83,12 @@ class Certificados
             $faltam = $gravadasTotal - $gravadasAssistidas;
 
             return ['apto' => false, 'motivo' => "Faltam {$faltam} de {$gravadasTotal} aulas gravadas para assistir.", ...$base];
+        }
+
+        // Com prova ativa (#43): precisa da aprovação em TODAS. Sem prova: não se aplica.
+        $provasPendentes = $this->provas->pendentes($matricula);
+        if ($provasPendentes !== []) {
+            return ['apto' => false, 'motivo' => 'Falta a aprovação em: '.implode(', ', $provasPendentes).'.', ...$base];
         }
 
         return ['apto' => true, 'motivo' => null, ...$base];
