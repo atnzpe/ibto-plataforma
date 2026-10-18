@@ -271,6 +271,21 @@ export const MANUAIS: Manual[] = [
                 tela: { endereco: '/meu-painel', nome: 'Meu painel' },
             },
             {
+                id: 'chamada-aulas-regulares',
+                titulo: 'Chamada das aulas regulares',
+                resumo: 'Nas aulas com mensalidade (Krav Maga, Kapap...), a chamada vira a frequência do dossiê.',
+                passos: [
+                    'Menu "Minhas turmas": aparecem as turmas dos programas em que você é o instrutor.',
+                    '"Fazer chamada": a data já vem com hoje (troque para corrigir um dia anterior).',
+                    'Marque quem estava e toque em "Salvar chamada". Dá para corrigir depois, sem duplicar.',
+                ],
+                regras: [
+                    'Na lista aparecem só os alunos em dia ou na carência; quem está com a mensalidade travada não aparece.',
+                    'A frequência do mês vai para o dossiê de cada aluno (aula regular não tem certificado).',
+                ],
+                tela: { endereco: '/minhas-turmas', nome: 'Minhas turmas' },
+            },
+            {
                 id: 'fotos-do-curso',
                 titulo: 'Fotos do curso (você é o responsável)',
                 resumo: 'O instrutor cuida das fotos do curso dele; o Comando Geral confere e publica.',
@@ -503,6 +518,69 @@ export const MANUAIS: Manual[] = [
                     'Anonimizar NÃO TEM VOLTA: apaga nome, e-mail, CPF, nascimento, telefone, cidade e fotos, desativa a conta e invalida a carteirinha. Ficam o registro e os números do financeiro e das presenças.',
                 ],
                 tela: { endereco: '/cadastros/equipes', nome: 'Equipes' },
+            },
+            {
+                id: 'areas',
+                titulo: 'Áreas de atuação',
+                resumo: 'A lista oficial das áreas do IBTO; as ativas aparecem no site.',
+                passos: [
+                    'Menu "Áreas de atuação": a lista, com a situação de cada uma.',
+                    '"Nova área": o nome, a imagem (o medalhão do site) e se está ativa.',
+                    'Para tirar uma área do site, desative em vez de apagar: os cursos e equipes ligados a ela continuam.',
+                ],
+                tela: {
+                    endereco: '/cadastros/areas-atuacao',
+                    nome: 'Áreas de atuação',
+                },
+            },
+            {
+                id: 'niveis',
+                titulo: 'Níveis (graduações)',
+                resumo: 'As graduações do IBTO, na ordem; aparecem na ficha, na carteirinha e no dossiê.',
+                passos: [
+                    'Menu "Níveis": as graduações na ordem.',
+                    '"Novo nível": o nome e a ordem. Mude a ordem para refletir a hierarquia.',
+                ],
+                regras: [
+                    'O nível do filiado aparece na carteirinha e na validação pública pelo QR.',
+                ],
+                tela: { endereco: '/cadastros/niveis', nome: 'Níveis' },
+            },
+            {
+                id: 'galeria',
+                titulo: 'Galeria de eventos',
+                resumo: 'Os álbuns de fotos dos eventos, privados para quem tem login.',
+                passos: [
+                    'Menu "Galeria de eventos" → "Novo álbum": o evento, a data, o local e o crédito das fotos.',
+                    'Envie as fotos, descreva cada uma e use "Desfocar áreas" em rostos, distintivos e placas.',
+                    'Marque a autorização de imagem (e a dos responsáveis, se houver menores) e publique.',
+                ],
+                regras: [
+                    'Álbum com foto sem descrição, ou com menores sem a autorização dos responsáveis, não publica.',
+                    'O instrutor do curso também envia e desfoca as fotos do curso dele; só o Comando Geral publica.',
+                ],
+                tela: {
+                    endereco: '/comando-geral/galeria',
+                    nome: 'Galeria de eventos',
+                },
+            },
+            {
+                id: 'mensalidades',
+                titulo: 'Mensalidades das aulas regulares',
+                resumo: 'Confira o Pix das mensalidades e acompanhe quem está em dia.',
+                passos: [
+                    'Menu "Mensalidades": no topo, as mensalidades aguardando o Pix, com o identificador (ex.: IBTOAUL42).',
+                    'Confira o Pix no extrato, ajuste a data do pagamento se preciso e toque em "Confirmar".',
+                    'Abaixo, as assinaturas: em dia, na carência ou travadas, com o botão "Cancelar".',
+                ],
+                regras: [
+                    'Confirmar lança a receita "Aulas regulares" e a parte do instrutor (conta a pagar "Instrutores").',
+                    'Cancelar mantém o histórico de pagamentos e de presenças.',
+                ],
+                tela: {
+                    endereco: '/comando-geral/mensalidades',
+                    nome: 'Mensalidades',
+                },
             },
             {
                 id: 'usuarios',

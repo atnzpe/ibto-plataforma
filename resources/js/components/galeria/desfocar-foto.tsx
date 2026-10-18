@@ -191,6 +191,7 @@ export default function DesfocarFoto({
                 type="button"
                 variant="secondary"
                 size="sm"
+                data-tour="desfocar"
                 className="min-h-11"
                 onClick={() => setAberto(true)}
             >

@@ -24,6 +24,7 @@ use App\Models\CursoMatricula;
 use App\Models\CursoPresenca;
 use App\Models\User;
 use App\Services\SalaDeAula;
+use App\Support\FrequenciaRegular;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -93,6 +94,8 @@ class MeuDossieController extends Controller
                 'valido' => $certificado->valido(),
             ])->values(),
             'cursos' => $cursos,
+            // Aulas regulares (#80): a frequência mês a mês em cada programa (sem certificado).
+            'aulas_regulares' => FrequenciaRegular::doUsuario($usuario),
         ]);
     }
 

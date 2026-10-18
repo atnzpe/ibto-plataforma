@@ -101,6 +101,7 @@ export default function Pagar({ cobranca }: { cobranca: Cobranca }) {
                 {/* O Pix (só enquanto aguarda). */}
                 <section
                     aria-labelledby="t-pix"
+                    data-tour="pix"
                     className="flex flex-col gap-4 rounded-xl border p-5"
                 >
                     <h2 id="t-pix" className="text-lg font-semibold">

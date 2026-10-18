@@ -13,6 +13,7 @@ import BotaoSuporte from '@/components/botao-suporte';
 import { index as blog } from '@/routes/blog';
 import { index as eventos } from '@/routes/galeria';
 import MenuIdiomas from '@/components/menu-idiomas';
+import { TourGuiado } from '@/components/tour-guiado';
 import { dashboard, home, login } from '@/routes';
 import { index as catalogo } from '@/routes/catalogo';
 
@@ -77,6 +78,8 @@ export default function VitrineLayout({ children }: { children: ReactNode }) {
                             {auth.user ? 'Minha área' : 'Entrar'}
                         </Link>
                         <MenuIdiomas />
+                        {/* O "?" do tour (17/10/2026): a vitrine também explica cada tela. */}
+                        <TourGuiado />
                     </nav>
                 </div>
             </header>

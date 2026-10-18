@@ -10,6 +10,7 @@ use App\Models\CursoMatricula;
 use App\Models\Filiado;
 use App\Models\FotoAlbumVenda;
 use App\Models\GaleriaAlbum;
+use App\Models\Programa;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Console\ServeCommand;
@@ -146,6 +147,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('fotos.eventos', fn (User $usuario): bool => VendaFotos::ligada());
         // "aulas.ver" (#80): o item "Aulas regulares" no menu, para quem entrou (filiado ou aluno indicado).
         Gate::define('aulas.ver', fn (User $usuario): bool => true);
+        // "programa.instrutor" (#80): fazer a chamada das aulas regulares. Passa o Comando
+        // Geral (cursos.gerenciar) e o instrutor responsável pelo programa.
+        Gate::define('programa.instrutor', fn (User $usuario, Programa $programa): bool => $usuario->temPermissao('cursos.gerenciar')
+            || $programa->instrutor_id === $usuario->id);
 
         // FOTOS DO CURSO PELO INSTRUTOR (Mestre Eduardo, 17/10/2026: "o responsável pelas
         // fotos é sempre o instrutor do curso").

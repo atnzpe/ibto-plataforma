@@ -17,6 +17,7 @@ export default function FotosDoCurso({ cursoId }: { cursoId: number }) {
     return (
         <section
             aria-labelledby="t-fotos-curso"
+            data-tour="fotos-do-curso"
             className="flex flex-col gap-3 rounded-md border border-border p-4 text-sm"
         >
             <h2 id="t-fotos-curso" className="font-medium">

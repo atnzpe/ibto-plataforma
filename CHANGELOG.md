@@ -11,6 +11,16 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (manual e tour em nível militar)
+
+- Tour guiado em TODAS as telas da plataforma (17/10/2026): cerca de 50 telas ganharam tour (aulas regulares, pagamento, fotos, carteirinha, privacidade, configurações, cadastros, financeiro, relatórios, galeria e blog); o "?" do tour passou a aparecer também na vitrine (catálogo, curso, trilha, blog, eventos, privacidade e validações) e na carteirinha; marcas `data-tour` nos botões principais (salvar chamada, Pix, 3 passos da compra, desfocar, fotos do curso).
+- Manual de instruções completo: novas seções Áreas de atuação, Níveis, Galeria de eventos e Mensalidades.
+- Testes rígidos: toda tela tem tour (só as de antes do login e as de impressão ficam de fora, com o motivo escrito), todo item do menu tem seção no manual, e toda seção do manual aponta para uma tela com tour; tela ou item de menu novo sem manual e sem tour reprova a CI.
+
+### Adicionado (chamada das aulas regulares)
+
+- Chamada das aulas regulares (#80, fecha a issue): "Minhas turmas" mostra ao instrutor as turmas dos programas dele (o Comando Geral vê todas); a chamada lista só os alunos em dia ou na carência, aceita corrigir um dia anterior sem duplicar e recusa data futura; a frequência mês a mês aparece no Meu dossiê, na seção "Aulas regulares".
+
 ### Corrigido (compra de fotos)
 
 - A recusa da compra de fotos agora diz o motivo certo (teste do Gleyson, 17/10/2026): `FOTOS_DO_PROPRIO_FOTOGRAFO` quando quem compra é o fotógrafo do álbum, e `FOTOS_SO_DA_TURMA` só quando a pessoa não é da turma do curso; antes, os dois casos davam a mesma mensagem.

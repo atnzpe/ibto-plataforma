@@ -17,6 +17,7 @@ export default function PassosCompra({ atual }: { atual: 1 | 2 | 3 }) {
     return (
         <ol
             aria-label="Passos da compra"
+            data-tour="passos-compra"
             className="flex flex-wrap gap-2 text-sm"
         >
             {PASSOS.map((passo, i) => {
