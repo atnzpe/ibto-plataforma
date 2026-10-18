@@ -15,6 +15,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 - Certificado de graduação no modelo institucional do Mestre Eduardo: emitido na ficha do filiado (textos sugeridos pelo nível e pelas áreas), número de série GR + ano + ordem + letra do nível + via, QR code com a validação pública (nome abreviado), cancelamento com motivo e a lista no Meu dossiê para imprimir.
 
+### Alterado (economia de minutos do GitHub Actions)
+
+- A CI roda uma vez por envio na PR (antes, duas); no deploy, pula os testes de navegador (já rodaram na PR); o Lighthouse roda só à mão ou toda segunda (antes, depois de cada deploy, esperando até 30 min).
+
 ### Alterado (LGPD, #47)
 
 - Política de privacidade aprovada pela diretoria: versão 1.0 de 18/10/2026 (sai o aviso de rascunho). Com LGPD_EXIGIR_ACEITE=true no .env, todos aceitam a versão 1.0 no próximo acesso; o encarregado de dados vem de LGPD_ENCARREGADO.
