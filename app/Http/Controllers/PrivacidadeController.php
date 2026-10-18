@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Aceite;
 use App\Models\Auditoria;
+use App\Support\Seo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +29,10 @@ class PrivacidadeController extends Controller
         $aceite = $request->user() !== null ? Aceite::daPoliticaAtual($request->user()->id) : null;
 
         return Inertia::render('privacidade', [
-            'versao' => config('lgpd.politica_versao'),
+            // "versao_politica" (e não "versao"): "versao" é a versão da PLATAFORMA, que toda
+            // tela recebe; com o mesmo nome, este texto a cobria e quebrava o aviso do console
+            // (achado pelo Lighthouse em 18/10/2026).
+            'versao_politica' => config('lgpd.politica_versao'),
             'data' => config('lgpd.politica_data'),
             // null = "a definir (decisão da diretoria)".
             'encarregado' => config('lgpd.encarregado') ?: null,
@@ -38,7 +42,7 @@ class PrivacidadeController extends Controller
             'aceito_em' => $aceite?->aceito_em->format('d/m/Y H:i'),
             // true = a plataforma está pedindo o aceite antes de seguir.
             'exigido' => (bool) config('lgpd.exigir_aceite'),
-        ]);
+        ])->withViewData(['seo' => Seo::pagina('Política de privacidade', 'Como o IBTO trata os dados pessoais na plataforma de cursos: o que coleta, para quê, por quanto tempo e como pedir acesso, correção ou exclusão (LGPD).')]);
     }
 
     /**

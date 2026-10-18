@@ -13,7 +13,7 @@ use App\Models\User;
 test('a política é pública e mostra a versão', function () {
     $this->get(route('privacidade'))
         ->assertOk()
-        ->assertInertia(fn ($tela) => $tela->component('privacidade')->where('versao', config('lgpd.politica_versao'))->where('logado', false));
+        ->assertInertia(fn ($tela) => $tela->component('privacidade')->where('versao_politica', config('lgpd.politica_versao'))->where('logado', false));
 });
 
 test('aceitar registra a versão e a data, sem duplicar; revogar grava a data', function () {
@@ -55,4 +55,12 @@ test('trocar a versão da política pede o aceite de novo', function () {
     config(['lgpd.politica_versao' => '9.9']);
 
     $this->actingAs($usuario)->get(route('profile.edit'))->assertRedirect(route('privacidade'));
+});
+
+test('Lighthouse (18/10/2026): entrar e privacidade com meta descrição; a versão da plataforma não é coberta', function () {
+    expect($this->get('/login')->getContent())->toContain('<meta name="description" content="Entre na plataforma');
+    $privacidade = $this->get(route('privacidade'));
+    expect($privacidade->getContent())->toContain('<meta name="description" content="Como o IBTO trata os dados pessoais');
+    // "versao" continua sendo a versão da PLATAFORMA (o objeto com o número), não o texto da política.
+    $privacidade->assertInertia(fn ($tela) => $tela->has('versao.numero'));
 });

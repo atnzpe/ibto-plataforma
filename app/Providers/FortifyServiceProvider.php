@@ -7,6 +7,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Enums\StatusEquipe;
 use App\Http\Responses\LoginResponse;
 use App\Models\Equipe;
+use App\Support\Seo;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,7 +70,8 @@ class FortifyServiceProvider extends ServiceProvider
             'canRegister' => config('app.cadastro_publico') !== 'fechado' || config('app.admin_emails') !== [],
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
-        ]));
+            // Meta descrição e cartão de compartilhamento (Lighthouse, 18/10/2026).
+        ])->withViewData(['seo' => Seo::pagina('Entrar', 'Entre na plataforma de cursos do Instituto Brasileiro de Treinamento Operacional (IBTO): seus cursos, aulas, certificados e o seu dossiê.')]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
             'email' => $request->email,

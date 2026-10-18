@@ -27,7 +27,7 @@ function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
 }
 
 /**
- * @param versao A versão do texto. Ex.: '0.1'.
+ * @param versao_politica A versão do texto. Ex.: '0.1'. (Não se chama "versao": esse nome é da versão da plataforma.)
  * @param data A data desta versão. Ex.: '17/10/2026'.
  * @param encarregado O encarregado de dados (DPO), ou null ("a definir").
  * @param contato O e-mail para os pedidos do titular.
@@ -37,7 +37,7 @@ function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
  * @returns A página da política.
  */
 export default function Privacidade({
-    versao,
+    versao_politica,
     data,
     encarregado,
     contato,
@@ -45,7 +45,7 @@ export default function Privacidade({
     aceito_em,
     exigido,
 }: {
-    versao: string;
+    versao_politica: string;
     data: string;
     encarregado: string | null;
     contato: string;
@@ -64,10 +64,10 @@ export default function Privacidade({
                     Política de privacidade
                 </h1>
                 <p className="text-sm text-[#5c5644]">
-                    Versão {versao} · {data}
+                    Versão {versao_politica} · {data}
                 </p>
                 {/* Enquanto for rascunho (versão 0.x), o aviso fica no topo. */}
-                {versao.startsWith('0.') && (
+                {versao_politica.startsWith('0.') && (
                     <p
                         role="note"
                         className="rounded-lg border border-amber-700 bg-amber-50 p-3 text-sm text-amber-900"
@@ -209,7 +209,7 @@ export default function Privacidade({
                         {aceito_em ? (
                             <>
                                 <p className="text-sm">
-                                    Você aceitou a versão {versao} em{' '}
+                                    Você aceitou a versão {versao_politica} em{' '}
                                     {aceito_em}.
                                 </p>
                                 <button
