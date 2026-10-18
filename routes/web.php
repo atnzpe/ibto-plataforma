@@ -532,7 +532,7 @@ Route::middleware('auth')->get('cadastro/em-analise', function (Request $request
         return redirect()->route('dashboard');
     }
 
-    return Inertia\Inertia::render('auth/cadastro-em-analise', [
+    return Inertia::render('auth/cadastro-em-analise', [
         'equipe' => $request->user()?->equipeSolicitada?->nome,
     ]);
 })->name('cadastro.em-analise');
