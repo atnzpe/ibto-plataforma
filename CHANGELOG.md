@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Desempenho (#74)
+
+- As molduras das telas (menu lateral do painel, vitrine pública, caixa do login, abas das configurações) passam a ser baixadas só quando uma tela precisa delas, já adiantadas junto com a primeira tela e as outras depois que a página carrega: o arquivo principal caiu de 73,0 KB para 39,5 KB (comprimido) para quem abre o login, o catálogo ou a privacidade.
+- Logo do login com 6 KB (antes 18 KB), com largura e altura reservadas; cache de 1 ano para os arquivos com carimbo de /build/assets e de 7 dias para /images.
+
 ### Adicionado (níveis livres)
 
 - O Comando Geral cria níveis novos com nome próprio (ex.: "Grão-Mestre" ou "Monitor III"), escolhe depois de qual nível cada um entra na hierarquia e a letra do número de série do certificado de graduação. A ordem vale em toda a plataforma (listas, pré-requisito de nível mínimo dos cursos, importação). Os 13 níveis de hoje continuam iguais, na mesma ordem.

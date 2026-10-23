@@ -5,53 +5,74 @@ import { escutarErrosDaJanela } from '@/lib/erros-tela';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
-import AppLayout from '@/layouts/app-layout';
-import AuthLayout from '@/layouts/auth-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import VitrineLayout from '@/layouts/vitrine-layout';
+import { layoutsDaTela, telaInicial } from '@/lib/layouts-das-telas';
+import type { NomeLayout } from '@/lib/layouts-das-telas';
+import { lazy, Suspense } from 'react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+// MOLDURAS SOB DEMANDA (#74, desempenho, 23/10/2026). Cada moldura (layout) vira um
+// arquivo separado, baixado só quando uma tela precisa dela: quem abre o login ou o
+// catálogo não baixa mais o menu lateral do painel. A regra "qual tela usa qual
+// moldura" mora em lib/layouts-das-telas.ts.
+// "import()" (com parênteses) = baixar o arquivo quando for chamado, não no começo.
+// "satisfies" confere que existe um carregador para cada nome de moldura, sem perder o tipo de cada um.
+const CARREGAR_LAYOUT = {
+    app: () => import('@/layouts/app-layout'),
+    auth: () => import('@/layouts/auth-layout'),
+    settings: () => import('@/layouts/settings/layout'),
+    vitrine: () => import('@/layouts/vitrine-layout'),
+} satisfies Record<NomeLayout, () => Promise<unknown>>;
+
+// As molduras como componentes "preguiçosos" (lazy): o React espera o arquivo
+// chegar e só então desenha. Usam os mesmos carregadores acima, então um arquivo
+// já adiantado não é baixado de novo (o navegador reaproveita o mesmo pedido).
+const LAYOUTS = {
+    app: lazy(CARREGAR_LAYOUT.app),
+    auth: lazy(CARREGAR_LAYOUT.auth),
+    settings: lazy(CARREGAR_LAYOUT.settings),
+    vitrine: lazy(CARREGAR_LAYOUT.vitrine),
+};
+
+// ADIANTAR A MOLDURA DA PRIMEIRA TELA: lê o nome da tela que o servidor mandou e
+// já começa a baixar a moldura dela, junto com a própria tela (em paralelo, sem
+// uma esperar a outra). Se não achar o nome, nada muda: a moldura é baixada
+// quando a tela montar.
+const primeiraTela = telaInicial(document);
+if (primeiraTela !== null) {
+    layoutsDaTela(primeiraTela).forEach((nome) => void CARREGAR_LAYOUT[nome]());
+}
+
+// DEPOIS QUE A PÁGINA CARREGAR, baixa as outras molduras com calma: assim, ao
+// navegar (ex.: do catálogo para o painel), a moldura nova já está pronta e a
+// tela não pisca em branco. Espera o "load" para não disputar internet com a
+// primeira tela; requestIdleCallback = "quando o navegador estiver folgado"
+// (onde ele não existe, um atraso de 2 segundos faz o mesmo papel).
+window.addEventListener('load', () => {
+    const adiantarTodas = () =>
+        Object.values(CARREGAR_LAYOUT).forEach((carregar) => void carregar());
+
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(adiantarTodas);
+    } else {
+        setTimeout(adiantarTodas, 2000);
+    }
+});
+
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Qual moldura cada tela usa (regra em lib/layouts-das-telas.ts). Nenhuma = null
+    // (telas de imprimir); uma = a própria; duas = lista (ex.: painel + abas das configurações).
     layout: (name) => {
-        switch (true) {
-            case name.startsWith('auth/'):
-                return AuthLayout;
-            // Vitrine pública de cursos (#38): cabeçalho do IBTO, sem o menu lateral.
-            case name.startsWith('catalogo/'):
-                return VitrineLayout;
-            // Blog público (#61): a mesma vitrine do IBTO.
-            case name.startsWith('blog/'):
-                return VitrineLayout;
-            // Galeria de eventos pública (#61, B2): a mesma vitrine.
-            case name.startsWith('galeria/'):
-                return VitrineLayout;
-            // Certificado para imprimir (#44): página limpa, sem menu nem cabeçalho.
-            case name === 'certificados/ver':
-                return null;
-            // Relatório para imprimir ou salvar em PDF (#73): página limpa, sem menu.
-            case name === 'relatorios/imprimir':
-                return null;
-            // Certificado de graduação para imprimir (#46, parte 2): página limpa.
-            case name === 'graduacoes/ver':
-                return null;
-            // Carteirinha (#46): a validação pública na vitrine; a minha, página limpa para imprimir.
-            case name === 'carteirinha/validar':
-                return VitrineLayout;
-            case name === 'carteirinha/minha':
-                return null;
-            // Validação pública do certificado (#44): a vitrine do IBTO.
-            case name === 'certificados/validar':
-                return VitrineLayout;
-            // Política de privacidade (LGPD, #47): pública, com a moldura da vitrine.
-            case name === 'privacidade':
-                return VitrineLayout;
-            case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
-            default:
-                return AppLayout;
+        const molduras = layoutsDaTela(name).map((nome) => LAYOUTS[nome]);
+
+        // Tela de imprimir: sem moldura.
+        if (molduras.length === 0) {
+            return null;
         }
+
+        // Uma moldura só: devolve o componente; mais de uma, a lista (de fora para dentro).
+        return molduras.length === 1 ? molduras[0] : molduras;
     },
     strictMode: true,
     withApp(app) {
@@ -60,7 +81,9 @@ void createInertiaApp({
             // em vez de tela branca, e avisa o servidor.
             <RedeDeProtecao>
                 <TooltipProvider delayDuration={0}>
-                    {app}
+                    {/* Suspense: enquanto o arquivo da moldura chega (só na 1ª vez), não
+                        desenha nada; ao chegar, a tela aparece já completa (sem "pular"). */}
+                    <Suspense fallback={null}>{app}</Suspense>
                     <Toaster />
                 </TooltipProvider>
             </RedeDeProtecao>
