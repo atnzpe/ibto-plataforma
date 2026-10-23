@@ -4,6 +4,11 @@
  * O campo "Grau" muda conforme a categoria: Praticante não tem grau; Monitor
  * mostra I–II; Instrutor e Instrutor Expert, I–V. Isso só ajuda quem preenche:
  * a regra é conferida de verdade no servidor (NivelRequest).
+ *
+ * Níveis livres (18/10/2026): o Comando Geral também pode dar um NOME próprio
+ * ao nível (ex.: "Grão-Mestre" ou "Monitor III"; aí o grau fica opcional),
+ * escolher a LETRA do número de série do certificado de graduação e dizer
+ * DEPOIS DE QUAL nível ele entra na hierarquia.
  */
 import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
@@ -17,21 +22,34 @@ import type { CategoriaNivel, Nivel } from '@/types/cadastros';
 // Graus em algarismos romanos, como aparecem nas graduações.
 const ROMANOS = ['I', 'II', 'III', 'IV', 'V'];
 
-// Visual comum das caixas de escolha (select), igual ao dos campos de texto.
+// Visual comum das caixas de escolha (select) e dos campos de texto desta tela.
 const classeSelect =
     'h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-2 focus-visible:outline-ring';
 
 /**
+ * As opções do campo "Fica depois de", montadas pelo servidor.
+ * opcoes: ex.: [{ valor: 'inicio', rotulo: 'No início...' }, { valor: '3', rotulo: 'Depois de Monitor II' }]
+ * atual: a opção que já vem marcada (onde o nível está hoje ou, se novo, o fim da lista).
+ */
+type Posicoes = {
+    opcoes: { valor: string; rotulo: string }[];
+    atual: string;
+};
+
+/**
  * @param nivel O nível a editar, ou null para cadastrar um novo.
  * @param categorias As 4 categorias com o grau máximo de cada uma (vêm do servidor).
+ * @param posicoes As opções de "Fica depois de" e a já marcada (vêm do servidor).
  * @returns A tela do formulário.
  */
 export default function NivelFormulario({
     nivel,
     categorias,
+    posicoes,
 }: {
     nivel: Nivel | null;
     categorias: CategoriaNivel[];
+    posicoes: Posicoes;
 }) {
     // true quando estamos editando.
     const editando = nivel !== null;
@@ -118,7 +136,94 @@ export default function NivelFormulario({
                                         ),
                                     )}
                                 </select>
+                                {/* Explica quando o grau pode ficar vazio (nível com nome próprio). */}
+                                {grauMaximo > 0 && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Para um nível fora da lista (ex.: &quot;
+                                        {categoria} III&quot;), deixe o grau
+                                        vazio e escreva o nome abaixo.
+                                    </p>
+                                )}
                                 <InputError message={errors.grau} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="nome_personalizado">
+                                    Nome próprio (opcional)
+                                </Label>
+                                {/* Vazio = o nome automático (categoria + grau, ex.: "Monitor II"). */}
+                                <input
+                                    id="nome_personalizado"
+                                    name="nome_personalizado"
+                                    type="text"
+                                    maxLength={60}
+                                    defaultValue={
+                                        nivel?.nome_personalizado ?? ''
+                                    }
+                                    placeholder="Ex.: Grão-Mestre"
+                                    aria-describedby="ajuda-nome"
+                                    className={classeSelect}
+                                />
+                                <p
+                                    id="ajuda-nome"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    Deixe vazio para usar o nome automático
+                                    (categoria + grau).
+                                </p>
+                                <InputError
+                                    message={errors.nome_personalizado}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="letra">
+                                    Letra no certificado (opcional)
+                                </Label>
+                                {/* Uma letra só; o CSS mostra maiúscula e o servidor grava maiúscula. */}
+                                <input
+                                    id="letra"
+                                    name="letra"
+                                    type="text"
+                                    maxLength={1}
+                                    pattern="[A-Za-z]"
+                                    defaultValue={nivel?.letra_escolhida ?? ''}
+                                    placeholder="Ex.: G"
+                                    aria-describedby="ajuda-letra"
+                                    className="h-9 w-20 rounded-md border border-input bg-transparent px-3 text-sm uppercase shadow-xs focus-visible:outline-2 focus-visible:outline-ring"
+                                />
+                                <p
+                                    id="ajuda-letra"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    Vai no número de série do certificado de
+                                    graduação. Vazio = a letra da categoria (P,
+                                    M, I ou E).
+                                </p>
+                                <InputError message={errors.letra} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="depois_de">
+                                    Posição na hierarquia
+                                </Label>
+                                {/* Já vem marcada a posição de hoje (ou o fim, se o nível é novo). */}
+                                <select
+                                    id="depois_de"
+                                    name="depois_de"
+                                    defaultValue={posicoes.atual}
+                                    className={classeSelect}
+                                >
+                                    {posicoes.opcoes.map((opcao) => (
+                                        <option
+                                            key={opcao.valor}
+                                            value={opcao.valor}
+                                        >
+                                            {opcao.rotulo}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.depois_de} />
                             </div>
 
                             <div className="grid gap-2">

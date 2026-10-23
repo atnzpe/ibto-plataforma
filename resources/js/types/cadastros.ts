@@ -21,8 +21,14 @@ export type Nivel = {
     categoria: string;
     // Grau de 1 a 5, ou null na categoria sem grau (Praticante).
     grau: number | null;
-    // Nome pronto para a tela, montado pelo servidor. Ex.: 'Instrutor Expert IV'.
+    // Nome pronto para a tela, montado pelo servidor. Ex.: 'Instrutor Expert IV' ou 'Grão-Mestre'.
     nome: string;
+    // Nome escolhido pelo Comando Geral, ou null quando o nome é automático (categoria + grau).
+    nome_personalizado?: string | null;
+    // A letra que vale no número de série do certificado de graduação. Ex.: 'E'.
+    letra?: string;
+    // Só a letra escolhida no cadastro; null = usa a da categoria.
+    letra_escolhida?: string | null;
     // true = aparece nas listas de escolha; false = desativado.
     ativo: boolean;
 };

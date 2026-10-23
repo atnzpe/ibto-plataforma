@@ -28,14 +28,6 @@ use Illuminate\Support\Facades\DB;
 
 class CertificadosGraduacao
 {
-    /** A letra de cada categoria de nível no número de série. */
-    private const LETRAS = [
-        'Praticante' => 'P',
-        'Monitor' => 'M',
-        'Instrutor' => 'I',
-        'Instrutor Expert' => 'E',
-    ];
-
     /**
      * Os textos sugeridos para o formulário de emissão (o Comando Geral pode ajustar).
      *
@@ -147,11 +139,13 @@ class CertificadosGraduacao
     }
 
     /**
-     * A letra do nível do filiado. Ex.: Instrutor Expert → 'E'; sem nível → 'X'.
+     * A letra do nível do filiado: a escolhida no cadastro do nível ou a da
+     * categoria (Nivel::letraSerie). Ex.: Instrutor Expert → 'E'; sem nível → 'X'.
      */
     private function letra(Filiado $filiado): string
     {
-        return self::LETRAS[$filiado->nivel->categoria->value ?? ''] ?? 'X';
+        // Sem nível: 'X'; com nível, quem decide a letra é o próprio nível.
+        return $filiado->nivel?->letraSerie() ?? 'X';
     }
 
     /**

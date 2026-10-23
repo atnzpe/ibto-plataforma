@@ -570,11 +570,15 @@ export const MANUAIS: Manual[] = [
                 titulo: 'Níveis (graduações)',
                 resumo: 'As graduações do IBTO, na ordem; aparecem na ficha, na carteirinha e no dossiê.',
                 passos: [
-                    'Menu "Níveis": as graduações na ordem.',
-                    '"Novo nível": o nome e a ordem. Mude a ordem para refletir a hierarquia.',
+                    'Menu "Níveis": as graduações na ordem, do mais baixo ao mais alto, com a letra do certificado.',
+                    '"Novo nível": escolha a categoria e o grau, ou deixe o grau vazio e escreva um nome próprio (ex.: "Grão-Mestre" ou "Monitor III").',
+                    '"Posição na hierarquia": escolha depois de qual nível ele entra (ou "No início"). Na edição, serve para mudar a ordem.',
+                    '"Letra no certificado" (opcional): a letra do número de série do certificado de graduação; vazio = P, M, I ou E, conforme a categoria.',
                 ],
                 regras: [
                     'O nível do filiado aparece na carteirinha e na validação pública pelo QR.',
+                    'Nenhum nome pode se repetir (maiúsculas e minúsculas contam como iguais). Não existe apagar: desative o nível.',
+                    'A ordem da hierarquia vale para os pré-requisitos de nível mínimo dos cursos.',
                 ],
                 tela: { endereco: '/cadastros/niveis', nome: 'Níveis' },
             },
