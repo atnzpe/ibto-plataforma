@@ -43,3 +43,20 @@
         Header always set X-Robots-Tag "noindex, nofollow"
     </If>
 </IfModule>
+
+# Desempenho (#74, 23/10/2026): cache longo para os arquivos do front.
+#
+# Os arquivos de /build/assets têm um "carimbo" no nome (ex.: app-CK_GjVIS.js) que
+# muda a cada deploy: o navegador pode guardar por 1 ano ("immutable" = nem precisa
+# perguntar ao servidor se mudou), porque a versão nova chega com OUTRO nome.
+# As imagens fixas de /images (logos) não têm carimbo: guardar por 7 dias.
+# Fora dessas duas pastas, nada muda (as páginas e o sw.js do modo offline
+# continuam sem cache longo).
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#^/build/assets/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    <ElseIf "%{REQUEST_URI} =~ m#^/images/#">
+        Header set Cache-Control "public, max-age=604800"
+    </ElseIf>
+</IfModule>

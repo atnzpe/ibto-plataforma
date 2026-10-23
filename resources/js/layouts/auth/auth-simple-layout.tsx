@@ -37,8 +37,15 @@ export default function AuthSimpleLayout({
                             href={home().url}
                             className="flex w-full justify-center rounded-xl bg-[#0a0a0a] px-4 py-3"
                         >
+                            {/* Desempenho (#74, 23/10/2026): versão de 368×128 px (o dobro do tamanho
+                                na tela, nítida em celular) com 6 KB em vez de 18 KB; width/height reservam
+                                o espaço antes de a imagem chegar (a tela não "pula"); fetchPriority="high"
+                                pede a logo primeiro, porque ela é o maior elemento do topo do login. */}
                             <img
-                                src="/images/ibto-logo.webp"
+                                src="/images/ibto-logo-368.webp"
+                                width={184}
+                                height={64}
+                                fetchPriority="high"
                                 alt="IBTO — Instituto Brasileiro de Treinamento Operacional (página inicial)"
                                 className="h-16 w-auto max-w-full object-contain"
                             />
