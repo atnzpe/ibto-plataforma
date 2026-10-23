@@ -632,14 +632,14 @@ export const TOURS: Record<string, PassoDoTour[]> = {
         {
             elemento: 'main h1',
             titulo: 'Níveis',
-            texto: 'As graduações do IBTO, na ordem.',
+            texto: 'As graduações do IBTO, na ordem (do mais baixo ao mais alto), com a letra do certificado.',
         },
     ],
     'cadastros/niveis/formulario': [
         {
             elemento: 'main h1',
             titulo: 'Nível',
-            texto: 'O nome e a ordem da graduação.',
+            texto: 'Categoria e grau, ou um nome próprio (ex.: "Grão-Mestre"); a letra do certificado e depois de qual nível ele entra.',
         },
     ],
     'cadastros/equipes/formulario': [

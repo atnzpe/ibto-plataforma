@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (níveis livres)
+
+- O Comando Geral cria níveis novos com nome próprio (ex.: "Grão-Mestre" ou "Monitor III"), escolhe depois de qual nível cada um entra na hierarquia e a letra do número de série do certificado de graduação. A ordem vale em toda a plataforma (listas, pré-requisito de nível mínimo dos cursos, importação). Os 13 níveis de hoje continuam iguais, na mesma ordem.
+
 ### Adicionado (certificado de graduação, #46)
 
 - Certificado de graduação no modelo institucional do Mestre Eduardo: emitido na ficha do filiado (textos sugeridos pelo nível e pelas áreas), número de série GR + ano + ordem + letra do nível + via, QR code com a validação pública (nome abreviado), cancelamento com motivo e a lista no Meu dossiê para imprimir.

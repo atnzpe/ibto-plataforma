@@ -103,3 +103,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que a rota da foto devolve 404 (e não 403) para quem não pode ver?
 2. O que a "placa em atualização" resolve que a ordem de envio dos arquivos não resolvia?
 3. Por que a foto é recortada em quadrado e reduzida para 400 px antes de gravar?
+
+## 23/10/2026 — níveis livres (nome, posição e letra)
+
+- Para guardar uma ORDEM que muda, a coluna "posicao" com saltos de 10 (10, 20, 30...) deixa espaço para encaixar um item no meio (21) sem mexer nos outros; depois, uma "renumeração" volta tudo para 10, 20, 30. É como as faixas de uma academia: dá para criar uma faixa nova entre duas sem reimprimir a tabela inteira.
+- Gravar o nível e renumerar a ordem vão juntos numa transação (`DB::transaction`): ou as duas coisas acontecem, ou nenhuma, e a hierarquia nunca fica pela metade.
+- A conferência de "nome repetido" compara o nome FINAL que aparece na tela (escolhido ou automático), sem diferença de maiúsculas: "grão-mestre" e "Grão-Mestre" são o mesmo nível para quem lê.
+
+**Perguntas para fixar:**
+
+1. Por que a posição começa em 10 e não em 1?
+2. O que aconteceria se o servidor caísse entre gravar o nível novo e renumerar os outros, sem a transação?
+3. Por que o campo "Posição na hierarquia" não oferece o próprio nível como opção na edição?

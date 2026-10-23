@@ -9,16 +9,9 @@ import type { Nivel } from '@/types/cadastros';
 
 /**
  * @param niveis Todos os níveis, já em ordem. Ex.: [{ id: 1, nome: 'Praticante', ... }]
- * @param faltando Quantos níveis da hierarquia ainda não existem (0 = completa).
  * @returns A tela da lista.
  */
-export default function NiveisIndex({
-    niveis,
-    faltando = 0,
-}: {
-    niveis: Nivel[];
-    faltando?: number;
-}) {
+export default function NiveisIndex({ niveis }: { niveis: Nivel[] }) {
     // Mensagem da última ação (ex.: 'Nível "Monitor II" atualizado.'), ou null.
     const { sucesso } = usePage().props;
 
@@ -40,26 +33,18 @@ export default function NiveisIndex({
                             Desativar tira o nível das listas de escolha, sem
                             apagar.
                         </p>
-                        {/* Hierarquia completa: não há nível novo a criar (a lista é fechada). */}
-                        {faltando === 0 && (
-                            <p className="mt-1 text-sm">
-                                A hierarquia do IBTO já está completa
-                                (Praticante, Monitor I–II, Instrutor I–V e
-                                Instrutor Expert I–V). Não é preciso cadastrar
-                                nada: para tirar um nível de uso, abra-o e
-                                desative.
-                            </p>
-                        )}
+                        <p className="mt-1 text-sm">
+                            A lista está na ordem da hierarquia (do mais baixo
+                            ao mais alto). Para mudar o nome, a letra do
+                            certificado ou a posição de um nível, clique em
+                            Editar.
+                        </p>
                     </div>
 
-                    {/* "Novo nível" só quando falta algum da hierarquia. */}
-                    {faltando > 0 && (
-                        <Button asChild>
-                            <Link href={create()}>
-                                Novo nível ({faltando} faltando)
-                            </Link>
-                        </Button>
-                    )}
+                    {/* Criar um nível novo (ex.: "Grão-Mestre"), com nome e posição livres. */}
+                    <Button asChild className="min-h-11">
+                        <Link href={create()}>Novo nível</Link>
+                    </Button>
                 </div>
 
                 {/* Aviso de sucesso, anunciado pelo leitor de tela sem tirar o foco. */}
@@ -88,6 +73,12 @@ export default function NiveisIndex({
                                     scope="col"
                                     className="px-4 py-2 font-medium"
                                 >
+                                    Letra no certificado
+                                </th>
+                                <th
+                                    scope="col"
+                                    className="px-4 py-2 font-medium"
+                                >
                                     Situação
                                 </th>
                                 <th
@@ -109,6 +100,13 @@ export default function NiveisIndex({
                                         className="px-4 py-2"
                                     >
                                         {nivel.nome}
+                                    </td>
+                                    {/* A letra do número de série do certificado de graduação. */}
+                                    <td
+                                        data-rotulo="Letra no certificado"
+                                        className="px-4 py-2 font-mono"
+                                    >
+                                        {nivel.letra}
                                     </td>
                                     <td
                                         data-rotulo="Situação"
