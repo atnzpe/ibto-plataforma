@@ -94,6 +94,8 @@ describe('conteúdo dos manuais', () => {
             '/comando-geral/galeria': 'galeria-admin/index',
             '/cadastros/areas-atuacao': 'cadastros/areas-atuacao/index',
             '/cadastros/niveis': 'cadastros/niveis/index',
+            // Rede Nacional (#11): o quadro das fotos do Comando Geral.
+            '/cadastros/rede-nacional': 'cadastros/rede-nacional',
             '/settings/meus-dados': 'settings/meus-dados',
             '/settings/profile': 'settings/profile',
             '/admin/solicitacoes': 'admin/solicitacoes/index',

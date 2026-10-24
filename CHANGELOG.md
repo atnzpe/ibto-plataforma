@@ -13,6 +13,7 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ### Adicionado (Rede Nacional, #11)
 
+- Tela **Rede Nacional** (menu Pessoas, só Comando Geral): a lista de chamada das fotos. Mostra cada monitor e instrutor com ✅/❌ em ativo, anuidade, autorização, foto e UF, e se já aparece no site; tem filtros de estado e "só quem ainda não aparece", e o nome leva à ficha.
 - Foto da Rede Nacional na ficha do filiado e no Perfil: a foto personalizada dos monitores e instrutores, separada da 3x4 da carteirinha, com o aviso "aparece no site" ou o que falta.
 - API pública `GET /api/publico/rede-nacional` para a página Rede Nacional do site (modelo pedido pelo Mestre Eduardo): instrutores e monitores, por estado e pela hierarquia. Só entra quem é monitor ou instrutor, está ativo e em dia, autorizou a imagem e enviou a foto. Sai só nome abreviado, nível, equipe, UF e áreas, nunca contato. A foto pública só é entregue para quem está na lista.
 

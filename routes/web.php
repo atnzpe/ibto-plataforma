@@ -28,6 +28,7 @@ use App\Http\Controllers\Cadastros\FiliadoFotoRedeController;
 use App\Http\Controllers\Cadastros\GraduacaoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
+use App\Http\Controllers\Cadastros\RedeNacionalController;
 use App\Http\Controllers\CarteirinhaController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\CertificadoController;
@@ -185,6 +186,12 @@ Route::middleware(['auth', 'verified'])
                 Route::get('{codigo}/previa', 'previa')->name('previa');
                 Route::post('{codigo}/confirmar', 'confirmar')->name('confirmar');
             });
+
+        // Rede Nacional (#11): a "lista de chamada" das fotos dos monitores e instrutores
+        // (quem já aparece no site e o que falta). Só quem cuida de TODOS os filiados.
+        Route::get('rede-nacional', [RedeNacionalController::class, 'index'])
+            ->middleware('can:filiados.gerenciar')
+            ->name('rede-nacional');
 
         // Filiados (registro da carteirinha + conta do app), #37.
         Route::resource('filiados', FiliadoController::class)

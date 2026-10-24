@@ -568,6 +568,25 @@ export const MANUAIS: Manual[] = [
                 },
             },
             {
+                id: 'rede-nacional',
+                titulo: 'Rede Nacional (fotos no site)',
+                resumo: 'A lista de chamada das fotos dos monitores e instrutores para a página Rede Nacional do site, por estado.',
+                passos: [
+                    'Menu "Rede Nacional": cada monitor e instrutor com ✅ ou ❌ em ativo, anuidade, autorização, foto e UF, e se já aparece no site.',
+                    'Marque "Só quem ainda não aparece" e escolha o estado para ver de quem falta a foto.',
+                    'Clique no nome: na ficha, envie a "Foto da Rede Nacional" e, com a autorização assinada, marque a autorização de imagem.',
+                    '"Ver a página no site" abre a página pública para conferir (as mudanças aparecem em até 5 minutos).',
+                ],
+                regras: [
+                    'No site saem só nome abreviado, nível, equipe, estado e áreas. Nunca telefone, cidade ou e-mail.',
+                    'Desmarcar a autorização ou tirar a foto retira a pessoa do site.',
+                ],
+                tela: {
+                    endereco: '/cadastros/rede-nacional',
+                    nome: 'Rede Nacional',
+                },
+            },
+            {
                 id: 'niveis',
                 titulo: 'Níveis (graduações)',
                 resumo: 'As graduações do IBTO, na ordem; aparecem na ficha, na carteirinha e no dossiê.',
