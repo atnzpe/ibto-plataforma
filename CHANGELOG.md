@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (Rede Nacional, #11)
+
+- Foto da Rede Nacional na ficha do filiado e no Perfil: a foto personalizada dos monitores e instrutores, separada da 3x4 da carteirinha, com o aviso "aparece no site" ou o que falta.
+- API pública `GET /api/publico/rede-nacional` para a página Rede Nacional do site (modelo pedido pelo Mestre Eduardo): instrutores e monitores, por estado e pela hierarquia. Só entra quem é monitor ou instrutor, está ativo e em dia, autorizou a imagem e enviou a foto. Sai só nome abreviado, nível, equipe, UF e áreas, nunca contato. A foto pública só é entregue para quem está na lista.
+
 ### Desempenho (#74)
 
 - As molduras das telas (menu lateral do painel, vitrine pública, caixa do login, abas das configurações) passam a ser baixadas só quando uma tela precisa delas, já adiantadas junto com a primeira tela e as outras depois que a página carrega: o arquivo principal caiu de 73,0 KB para 39,5 KB (comprimido) para quem abre o login, o catálogo ou a privacidade.

@@ -115,3 +115,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que a posição começa em 10 e não em 1?
 2. O que aconteceria se o servidor caísse entre gravar o nível novo e renumerar os outros, sem a transação?
 3. Por que o campo "Posição na hierarquia" não oferece o próprio nível como opção na edição?
+
+## 23/10/2026 — Rede Nacional (#11): foto dos monitores e instrutores por estado
+
+- Uma regra, um lugar: "quem aparece na Rede Nacional" mora numa classe só (RedeNacional), e tanto a lista da API quanto a rota da foto perguntam a ela. Assim a foto nunca escapa de quem saiu da lista, como a catraca da academia que lê o mesmo cadastro da recepção.
+- Lista fechada de estados (27 siglas) evita o "Paraíba/Paraiba" repetido do modelo de referência: o dado bagunçado não entra na página.
+- Para o JSON sair como lista ([...]) e não como objeto ({"0": ...}), use array_values depois de filtrar ou ordenar uma coleção.
+
+**Perguntas para fixar:**
+
+1. Por que a foto da Rede Nacional é um campo separado da 3x4?
+2. O que acontece com a foto pública quando a pessoa desmarca a autorização?
+3. Por que a resposta da API não traz a cidade, se a ficha tem esse dado?

@@ -42,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string $status
  * @property string|null $codigo_validacao Código sorteado da carteirinha (#46), no QR code. Ex.: 'IBTO-7K2M-9QXA'.
  * @property string|null $foto Foto 3x4 na pasta PRIVADA (#78). Ex.: 'fotos/filiados/9f1c...webp'.
+ * @property string|null $foto_rede Foto personalizada da Rede Nacional, na pasta PRIVADA (#11). Ex.: 'fotos/rede-nacional/9f1c...webp'.
  * @property bool $autoriza_imagem_rede Autorizou a foto na Rede Nacional do site (#78)? Começa false.
  * @property Carbon|null $autoriza_imagem_em Quando a autorização foi marcada (#78).
  * @property Carbon|null $created_at
@@ -244,6 +245,22 @@ class Filiado extends Model
         }
 
         return route('filiados.foto', ['filiado' => $this->id, 'v' => $this->updated_at?->getTimestamp()]);
+    }
+
+    /**
+     * Endereço PROTEGIDO da foto da Rede Nacional (#11), para a prévia na ficha e em
+     * "Meus dados" (só quem pode mexer na foto vê), ou null sem foto.
+     *
+     * @return string|null Ex.: 'https://cursos.ib-to.org/fotos/rede-nacional/7?v=1760630400'.
+     */
+    public function fotoRedeUrl(): ?string
+    {
+        // Sem foto da Rede Nacional: null (a tela mostra o aviso "ainda sem foto").
+        if ($this->foto_rede === null) {
+            return null;
+        }
+
+        return route('filiados.foto-rede', ['filiado' => $this->id, 'v' => $this->updated_at?->getTimestamp()]);
     }
 
     /**

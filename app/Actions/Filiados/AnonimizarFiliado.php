@@ -6,7 +6,7 @@
  * Apaga o que identifica a pessoa e mantém só o que a lei ou a contabilidade
  * exigem guardar, sem nome:
  * - SOME: nome (vira "Filiado anonimizado (registro)"), e-mail, senha, CPF,
- *   nascimento, telefone, cidade, fotos (perfil e 3x4, os arquivos também),
+ *   nascimento, telefone, cidade, fotos (perfil, 3x4 e Rede Nacional, os arquivos também),
  *   autorização de imagem, quem indicou e o nome nos certificados;
  * - FICA: o número de registro, a equipe, o nível, as matrículas, as presenças
  *   e os lançamentos do financeiro (números, sem nome), para os relatórios e a
@@ -40,12 +40,13 @@ class AnonimizarFiliado
         $rotulo = 'Filiado anonimizado ('.$filiado->registro.')';
         $usuario = $filiado->usuario;
         // Os arquivos de foto são apagados só DEPOIS de gravar no banco (se o banco falhar, nada se perde pela metade).
-        $fotos = [$filiado->foto, $usuario?->foto];
+        // Inclui a foto da Rede Nacional (#11).
+        $fotos = [$filiado->foto, $filiado->foto_rede, $usuario?->foto];
 
         DB::transaction(function () use ($filiado, $usuario, $rotulo, $motivo): void {
             $filiado->forceFill([
                 'cpf' => null, 'cpf_hash' => null, 'nascimento' => null, 'telefone' => null,
-                'municipio' => null, 'uf' => null, 'foto' => null,
+                'municipio' => null, 'uf' => null, 'foto' => null, 'foto_rede' => null,
                 'autoriza_imagem_rede' => false, 'autoriza_imagem_em' => null,
                 'status' => 'inativo',
                 // Código novo: o QR da carteirinha antiga não abre mais nada.

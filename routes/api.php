@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PublicoBlogController;
 use App\Http\Controllers\Api\PublicoCursosController;
 use App\Http\Controllers\Api\PublicoEventosController;
 use App\Http\Controllers\Api\PublicoPostController;
+use App\Http\Controllers\Api\PublicoRedeNacionalController;
 use App\Http\Controllers\ErroTelaController;
 use App\Http\Controllers\SaudeController;
 use Illuminate\Support\Facades\Route;
@@ -60,3 +61,9 @@ Route::get('publico/cursos', PublicoCursosController::class)
 Route::get('publico/areas-atuacao', PublicoAreasController::class)
     ->middleware('throttle:60,1')
     ->name('api.publico.areas');
+
+// API PÚBLICA DA REDE NACIONAL (#11): monitores e instrutores credenciados, por estado,
+// para a página /rede-nacional do site. Só leitura; nunca contato. 60 por minuto por IP.
+Route::get('publico/rede-nacional', PublicoRedeNacionalController::class)
+    ->middleware('throttle:60,1')
+    ->name('api.publico.rede-nacional');

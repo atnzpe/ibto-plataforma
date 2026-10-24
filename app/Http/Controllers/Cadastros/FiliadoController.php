@@ -16,6 +16,7 @@
 namespace App\Http\Controllers\Cadastros;
 
 use App\Actions\Filiados\CriarFiliado;
+use App\Actions\Filiados\RedeNacional;
 use App\Enums\CategoriaFiliado;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Settings\MeusDadosController;
@@ -167,6 +168,9 @@ class FiliadoController extends Controller
                 'conta_ativada' => (bool) $filiado->usuario?->hasVerifiedEmail(),
                 // Foto 3x4 e autorização de imagem (#78).
                 'foto_url' => $filiado->fotoUrl(),
+                // Foto da Rede Nacional (#11): prévia protegida e se a pessoa já aparece no site.
+                'foto_rede_url' => $filiado->fotoRedeUrl(),
+                'na_rede_nacional' => app(RedeNacional::class)->aparece($filiado),
                 'autoriza_imagem_rede' => $filiado->autoriza_imagem_rede,
                 'autoriza_imagem_em' => $filiado->autoriza_imagem_em?->format('d/m/Y H:i'),
             ],

@@ -211,6 +211,7 @@ export const MANUAIS: Manual[] = [
                     'Em Configurações, troque nome, e-mail e senha.',
                     'Em Configurações → Perfil, "Escolher foto" coloca a sua foto (JPG, PNG ou WebP, até 5 MB; ela é recortada em quadrado). Ela aparece no menu da conta e ajuda o instrutor a reconhecer você na chamada.',
                     'Se você é filiado, ali também ficam a foto 3x4 (a da carteirinha) e a caixa "Autorizo o uso da minha foto na Rede Nacional do site". A caixa começa desmarcada: sem ela, a foto nunca sai da plataforma.',
+                    'Monitor ou instrutor: em "Foto da Rede Nacional", envie a foto personalizada (ex.: de uniforme) que aparece na página Rede Nacional do site, por estado. Você aparece lá com a autorização marcada, a foto enviada, a UF na ficha, cadastro ativo e anuidade em dia. Só saem nome abreviado, nível, equipe, estado e áreas, nunca telefone ou cidade.',
                     'Em Configurações → Meus dados, veja o que o IBTO guarda sobre você (CPF e telefone aparecem mascarados) e quem abriu a sua ficha completa, com data e hora. Para corrigir, pedir cópia ou exclusão, use o e-mail indicado ali.',
                     'O menu de idiomas (no topo) explica como traduzir a tela para inglês ou espanhol.',
                     'O "?" do topo abre o tour da tela; "Tour guiado: ligado/desligado" controla se ele abre sozinho.',
@@ -340,6 +341,7 @@ export const MANUAIS: Manual[] = [
                     'Use "Novo filiado" para cadastrar e "Convite" para a pessoa criar a senha.',
                     'Na ficha do filiado, preencha a "Data de filiação ao IBTO" (a real, não a do cadastro): ela conta o tempo de filiado nos cursos com pré-requisito.',
                     'Na ficha do filiado, "Escolher foto 3x4" coloca a foto da carteirinha. Só marque "O filiado autorizou o uso da foto na Rede Nacional" com a autorização assinada em mãos.',
+                    'Rede Nacional do site (modelo pedido pelo Mestre Eduardo): na ficha, "Escolher foto da Rede Nacional" põe a foto personalizada do monitor ou instrutor. A ficha mostra se ele já aparece no site ou o que falta. Tirar a foto ou desmarcar a autorização o retira do site em até 5 minutos.',
                 ],
                 regras: [
                     'Cada equipe tem um limite de filiados definido pelo Comando Geral.',

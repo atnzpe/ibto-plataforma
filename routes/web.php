@@ -24,6 +24,7 @@ use App\Http\Controllers\Cadastros\FiliadoAnonimizarController;
 use App\Http\Controllers\Cadastros\FiliadoAnuidadeController;
 use App\Http\Controllers\Cadastros\FiliadoController;
 use App\Http\Controllers\Cadastros\FiliadoFotoController;
+use App\Http\Controllers\Cadastros\FiliadoFotoRedeController;
 use App\Http\Controllers\Cadastros\GraduacaoController;
 use App\Http\Controllers\Cadastros\ImportacaoFiliadosController;
 use App\Http\Controllers\Cadastros\NivelController;
@@ -467,7 +468,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('filiados/{filiado}/autorizacao-imagem', [FiliadoFotoController::class, 'autorizacao'])
         ->middleware('throttle:10,1')
         ->name('filiados.autorizacao-imagem');
+    // Foto da Rede Nacional (#11): prévia, enviar e tirar, com o mesmo portão da 3x4.
+    Route::get('fotos/rede-nacional/{filiado}', [FiliadoFotoRedeController::class, 'show'])
+        ->middleware('throttle:240,1')
+        ->whereNumber('filiado')
+        ->name('filiados.foto-rede');
+    Route::post('filiados/{filiado}/foto-rede', [FiliadoFotoRedeController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('filiados.foto-rede.update');
+    Route::delete('filiados/{filiado}/foto-rede', [FiliadoFotoRedeController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('filiados.foto-rede.destroy');
 });
+
+// Foto PÚBLICA da Rede Nacional (#11), para o site: sem login, só de quem aparece na
+// Rede Nacional (os outros recebem 404). 120 por minuto por IP (a página tem várias fotos).
+Route::get('imagens/rede-nacional/{filiado}', [FiliadoFotoRedeController::class, 'publica'])
+    ->middleware('throttle:120,1')
+    ->whereNumber('filiado')
+    ->name('rede-nacional.foto');
 
 // Financeiro (#59): livro-caixa. Olhar pede "financeiro.ver"; lançar pede
 // "financeiro.lancar". Sem editar nem apagar: corrige-se com cancelar/estornar.
