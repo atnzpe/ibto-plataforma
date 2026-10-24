@@ -145,3 +145,40 @@ test('enviar e tirar a foto da Rede Nacional: a própria pessoa sim, outra pesso
     Storage::disk(FotoDePerfil::DISCO)->assertMissing($nova);
     expect($this->getJson(route('api.publico.rede-nacional'))->json('total'))->toBe(0);
 });
+
+test('quadro do Comando Geral: todos os monitores e instrutores, com o que falta', function () {
+    config(['app.admin_emails' => ['admin@ibto.test']]);
+    $admin = User::factory()->create(['email' => 'admin@ibto.test']);
+    credenciado('Ana Souza', 'Instrutor', 1, 'PE', '529.982.247-25');
+    $semFoto = credenciado('Bruno Lima', 'Monitor', 1, 'BA', '111.444.777-35');
+    $semFoto->forceFill(['foto_rede' => null])->save();
+    // Praticante não entra no quadro.
+    credenciado('Praticante Teste', 'Praticante', null, 'PE', '390.533.447-05');
+
+    $this->actingAs($admin)
+        ->get(route('cadastros.rede-nacional'))
+        ->assertOk()
+        ->assertInertia(fn ($pagina) => $pagina
+            ->component('cadastros/rede-nacional')
+            ->has('linhas', 2)
+            // BA antes de PE; o da BA está sem foto e não aparece.
+            ->where('linhas.0.nome', 'Bruno Lima')
+            ->where('linhas.0.lista', 'Monitores')
+            ->where('linhas.0.tem_foto', false)
+            ->where('linhas.0.aparece', false)
+            ->where('linhas.1.aparece', true)
+            ->where('resumo', ['total' => 2, 'aparecem' => 1]));
+
+    // "Só pendentes" + estado: só o Bruno; o resumo continua contando todos do estado.
+    $this->actingAs($admin)
+        ->get(route('cadastros.rede-nacional', ['pendentes' => 1, 'uf' => 'ba']))
+        ->assertInertia(fn ($pagina) => $pagina
+            ->has('linhas', 1)
+            ->where('filtros', ['uf' => 'BA', 'pendentes' => true])
+            ->where('resumo', ['total' => 1, 'aparecem' => 0]));
+
+    // Quem não cuida de todos os filiados: 403.
+    $this->actingAs(User::factory()->create())
+        ->get(route('cadastros.rede-nacional'))
+        ->assertForbidden();
+});

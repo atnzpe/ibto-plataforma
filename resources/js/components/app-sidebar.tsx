@@ -25,6 +25,7 @@ import {
     TicketPercent,
     Wallet,
     UserCheck,
+    MapPinned,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -50,6 +51,7 @@ import { index as niveis } from '@/routes/cadastros/niveis';
 // Lista das equipes filiadas (#37), para o item do menu.
 import { index as equipes } from '@/routes/cadastros/equipes';
 // Lista de filiados (#37), para o item do menu.
+import { redeNacional } from '@/routes/cadastros';
 import { index as filiados } from '@/routes/cadastros/filiados';
 // Cursos e trilhas do Comando Geral (#39), para o item do menu.
 import { index as cursosAdmin } from '@/routes/comando-geral/cursos';
@@ -206,6 +208,14 @@ const cadastrosNavItems: (NavItem & {
         href: filiados(),
         icon: ContactRound,
         permissao: 'filiados_acessar',
+    },
+    // Rede Nacional (#11): quem já aparece no site e de quem falta a foto.
+    {
+        title: 'Rede Nacional',
+        grupo: 'pessoas',
+        href: redeNacional(),
+        icon: MapPinned,
+        permissao: 'filiados_gerenciar',
     },
     // Financeiro (#59): livro-caixa (contas a receber e a pagar).
     {

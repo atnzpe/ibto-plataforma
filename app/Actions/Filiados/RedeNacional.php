@@ -100,6 +100,88 @@ class RedeNacional
     }
 
     /**
+     * QUADRO DE ACOMPANHAMENTO para o Comando Geral (tela "Rede Nacional"): TODOS os
+     * monitores e instrutores (inclusive os que ainda não aparecem), com o que cada um
+     * já cumpre. Serve de "lista de chamada" para recolher as fotos que o Eduardo pediu.
+     * Aqui o nome vai COMPLETO: a tela é interna, só para quem cuida de todos os filiados.
+     *
+     * @param  string|null  $uf  Só um estado (ex.: 'PE'), ou null para todos.
+     * @param  bool  $soPendentes  true = só quem ainda NÃO aparece no site.
+     * @return list<array{id: int, nome: string, nivel: string|null, equipe: string|null, uf: string|null, lista: string, ativo: bool, anuidade_em_dia: bool, autorizou: bool, tem_foto: bool, uf_valida: bool, aparece: bool}>
+     */
+    public function acompanhamento(?string $uf = null, bool $soPendentes = false): array
+    {
+        $categorias = array_map(fn (CategoriaNivel $categoria) => $categoria->value, [...self::CATEGORIAS_INSTRUTOR, ...self::CATEGORIAS_MONITOR]);
+        // Quem aparece hoje no site (a MESMA regra da página pública), numa consulta só.
+        $aparecem = $this->consulta()->whereHas('usuario')->pluck('id')->flip();
+        // Quem está com a anuidade em dia: null = todos (ano isento ou sem valor cadastrado).
+        $emDia = $this->idsComAnuidadeEmDia();
+
+        $linhas = Filiado::query()
+            ->with(['nivel', 'equipe:id,nome', 'usuario:id,name'])
+            ->whereHas('nivel', fn ($nivel) => $nivel->whereIn('categoria', $categorias))
+            ->when($uf !== null, fn ($consulta) => $consulta->where('uf', $uf))
+            ->get()
+            ->map(fn (Filiado $filiado) => [
+                'id' => $filiado->id,
+                // Sem conta (raro): mostra o registro, para o Comando Geral achar a ficha.
+                'nome' => $filiado->usuario->name ?? $filiado->registro,
+                'nivel' => $filiado->nivel?->nome(),
+                'equipe' => $filiado->equipe?->nome,
+                'uf' => $filiado->uf,
+                // Em qual aba do site a pessoa entra. Ex.: 'Instrutores'.
+                'lista' => in_array($filiado->nivel?->categoria, self::CATEGORIAS_MONITOR, true) ? 'Monitores' : 'Instrutores',
+                'ativo' => $filiado->status === 'ativo',
+                'anuidade_em_dia' => $emDia === null || $emDia->has($filiado->id),
+                'autorizou' => $filiado->autoriza_imagem_rede,
+                'tem_foto' => $filiado->foto_rede !== null,
+                'uf_valida' => array_key_exists((string) $filiado->uf, self::ESTADOS),
+                'aparece' => $aparecem->has($filiado->id),
+                // Para ordenar: o nível mais alto primeiro.
+                'posicao' => $filiado->nivel->posicao ?? 0,
+            ])
+            // Filtro "só pendentes": fica só quem ainda NÃO aparece (desligado = todos ficam).
+            ->filter(fn (array $linha) => ! $soPendentes || ! $linha['aparece'])
+            // Por estado (sem UF no fim) e, dentro dele, pela hierarquia e pelo nome.
+            ->sortBy([
+                fn (array $a, array $b) => [$a['uf'] === null, $a['uf']] <=> [$b['uf'] === null, $b['uf']],
+                fn (array $a, array $b) => $b['posicao'] <=> $a['posicao'],
+                fn (array $a, array $b) => strcoll($a['nome'], $b['nome']),
+            ])
+            // A posição só servia para ordenar: sai antes de ir para a tela.
+            ->map(function (array $linha) {
+                unset($linha['posicao']);
+
+                return $linha;
+            })
+            ->all();
+
+        return array_values($linhas);
+    }
+
+    /**
+     * Os filiados com a anuidade do ano EM DIA, numa consulta só.
+     *
+     * @return Collection<int, int>|null Os números dos filiados (como chaves), ou null quando
+     *                                   todos estão em dia (ano isento ou sem valor cadastrado).
+     */
+    private function idsComAnuidadeEmDia(): ?Collection
+    {
+        $ano = now()->year;
+        $anuidade = Anuidade::where('ano', $ano)->first();
+
+        // A mesma regra de Filiado::anuidadeEmDia: sem valor ou isento = todos em dia.
+        if ($anuidade === null || $anuidade->isenta) {
+            return null;
+        }
+
+        return Filiado::query()
+            ->whereHas('pagamentosAnuidade', fn ($pagamentos) => $pagamentos->validos()->where('ano', $ano))
+            ->pluck('id')
+            ->flip();
+    }
+
+    /**
      * A consulta com as regras 1 a 6 (ver o topo do arquivo).
      *
      * @return Builder<Filiado>

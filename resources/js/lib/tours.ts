@@ -635,6 +635,13 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'As graduações do IBTO, na ordem (do mais baixo ao mais alto), com a letra do certificado.',
         },
     ],
+    'cadastros/rede-nacional': [
+        {
+            elemento: 'main h1',
+            titulo: 'Rede Nacional',
+            texto: 'Todos os monitores e instrutores e o que falta para cada um aparecer na página Rede Nacional do site. Clique no nome para enviar a foto na ficha.',
+        },
+    ],
     'cadastros/niveis/formulario': [
         {
             elemento: 'main h1',
