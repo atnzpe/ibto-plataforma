@@ -4,8 +4,9 @@
  * FOTO DA REDE NACIONAL do filiado (#11, pedido do Mestre Eduardo, 23/10/2026).
  *
  * É a foto PERSONALIZADA (ex.: de uniforme, com o fundo do IBTO) que aparece na
- * página Rede Nacional do site, diferente da 3x4 da carteirinha. Mesmo cuidado
- * da 3x4 (#78): recorte quadrado, 400 px, WebP, pasta PRIVADA.
+ * página Rede Nacional do site, diferente da 3x4 da carteirinha. Guardada INTEIRA,
+ * sem recorte (o quadrado do centro cortava o rosto de quem posa em pé; Gleyson,
+ * 24/10/2026), reduzida até 800 px, em WebP e na pasta PRIVADA, como a 3x4 (#78).
  *
  * - Enviar, trocar, tirar e ver a prévia: a própria pessoa e quem já pode editar
  *   aquele filiado (Comando Geral ou o admin da equipe dele). Portão "filiado.foto".
@@ -68,7 +69,7 @@ class FiliadoFotoRedeController extends Controller
     }
 
     /**
-     * Grava a foto nova (recortada, 400 px) e apaga a antiga.
+     * Grava a foto nova (inteira, maior lado até 800 px) e apaga a antiga.
      *
      * @param  FotoRequest  $request  O envio já validado (JPG, PNG ou WebP até 5 MB).
      * @param  Filiado  $filiado  O filiado dono da foto.
@@ -80,7 +81,8 @@ class FiliadoFotoRedeController extends Controller
         Gate::authorize('filiado.foto', $filiado);
 
         try {
-            $nova = FotoDePerfil::gravar($request->file('foto'), self::PASTA);
+            // Inteira, sem recorte: no cartão do site a pessoa aparece de corpo inteiro.
+            $nova = FotoDePerfil::gravarInteira($request->file('foto'), self::PASTA);
         } catch (RuntimeException) {
             throw ValidationException::withMessages(['foto' => 'Não foi possível ler esta foto. Tente outra.']);
         }

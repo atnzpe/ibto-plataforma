@@ -146,6 +146,26 @@ test('enviar e tirar a foto da Rede Nacional: a própria pessoa sim, outra pesso
     expect($this->getJson(route('api.publico.rede-nacional'))->json('total'))->toBe(0);
 });
 
+test('a foto da Rede Nacional fica INTEIRA: só reduz, sem recortar o rosto', function () {
+    $filiado = credenciado('Ana Souza', 'Instrutor', 1, 'PE', '529.982.247-25');
+    $dono = $filiado->usuario;
+    $dono->markEmailAsVerified();
+
+    // Foto grande em pé (3000 x 4000): reduz para 600 x 800, a MESMA proporção (antes virava 400 x 400).
+    $this->actingAs($dono)
+        ->post(route('filiados.foto-rede.update', $filiado->id), ['foto' => UploadedFile::fake()->image('em-pe.jpg', 3000, 4000)])
+        ->assertSessionHasNoErrors();
+    $tamanho = getimagesizefromstring((string) Storage::disk(FotoDePerfil::DISCO)->get($filiado->fresh()->foto_rede));
+    expect([$tamanho[0], $tamanho[1]])->toBe([600, 800]);
+
+    // Foto pequena (300 x 500): fica do tamanho que veio (ampliar só deixaria borrada).
+    $this->actingAs($dono)
+        ->post(route('filiados.foto-rede.update', $filiado->id), ['foto' => UploadedFile::fake()->image('pequena.png', 300, 500)])
+        ->assertSessionHasNoErrors();
+    $tamanho = getimagesizefromstring((string) Storage::disk(FotoDePerfil::DISCO)->get($filiado->fresh()->foto_rede));
+    expect([$tamanho[0], $tamanho[1]])->toBe([300, 500]);
+});
+
 test('quadro do Comando Geral: todos os monitores e instrutores, com o que falta', function () {
     config(['app.admin_emails' => ['admin@ibto.test']]);
     $admin = User::factory()->create(['email' => 'admin@ibto.test']);
