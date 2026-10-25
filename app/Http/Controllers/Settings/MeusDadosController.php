@@ -42,7 +42,7 @@ class MeusDadosController extends Controller
                 'equipe' => $filiado->equipe?->nome,
                 'categoria' => $filiado->categoria?->rotulo(),
                 'nivel' => $filiado->nivel?->nome(),
-                'cidade' => trim($filiado->municipio.'-'.$filiado->uf, '-'),
+                'cidade' => $filiado->local(),
                 // Mascarados na tela (alguém pode estar olhando por cima do ombro): só o final.
                 'cpf' => $this->mascarar($filiado->cpf, 2),
                 'telefone' => $this->mascarar($filiado->telefone, 4),

@@ -27,9 +27,9 @@ class RedeNacionalController extends Controller
      */
     public function index(Request $request, RedeNacional $rede): Response
     {
-        // Estado do filtro: só aceita uma das 27 siglas; qualquer outra coisa = todos.
+        // Filtro de local: uma das 27 UFs ou 'EX' (exterior); qualquer outra coisa = todos.
         $uf = strtoupper($request->string('uf')->toString());
-        $uf = array_key_exists($uf, RedeNacional::ESTADOS) ? $uf : null;
+        $uf = array_key_exists($uf, RedeNacional::ESTADOS) || $uf === 'EX' ? $uf : null;
         // "Só pendentes" ligado ou não.
         $pendentes = $request->boolean('pendentes');
 

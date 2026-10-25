@@ -68,7 +68,7 @@ test('separa instrutores e monitores, por estado e pela hierarquia, sem contato'
 
     // O cartão: só nome, nível, equipe, UF, áreas e foto. Nada de telefone, cidade ou e-mail.
     $cartao = $resposta->json('instrutores.1.pessoas.0');
-    expect(array_keys($cartao))->toBe(['nome', 'nivel', 'equipe', 'uf', 'areas', 'foto_url'])
+    expect(array_keys($cartao))->toBe(['nome', 'nivel', 'equipe', 'uf', 'pais', 'areas', 'foto_url'])
         ->and($cartao['nivel'])->toBe('Instrutor Expert II')
         ->and($cartao['equipe'])->toBe('Equipe Teste');
     expect($resposta->getContent())->not->toContain('Cidade Secreta')->not->toContain('99999')->not->toContain('@ibto.test');
@@ -181,4 +181,55 @@ test('quadro do Comando Geral: todos os monitores e instrutores, com o que falta
     $this->actingAs(User::factory()->create())
         ->get(route('cadastros.rede-nacional'))
         ->assertForbidden();
+});
+
+test('país: quem mora fora do Brasil sai no bloco do país, com registro do país', function () {
+    credenciado('Ana Souza', 'Instrutor', 1, 'PE', '529.982.247-25');
+    $lisboa = credenciado('Rui Costa', 'Instrutor', 2, 'PE', '111.444.777-35');
+    $lisboa->forceFill(['pais' => 'PT', 'uf' => null, 'municipio' => 'Lisboa'])->save();
+    // País fora da lista: não aparece (local inválido).
+    $invalido = credenciado('Sem Pais', 'Monitor', 1, 'PE', '390.533.447-05');
+    $invalido->forceFill(['pais' => 'XX', 'uf' => null])->save();
+
+    $resposta = $this->getJson(route('api.publico.rede-nacional'))->assertOk();
+
+    // O Brasil continua em "instrutores" (como antes); Portugal vai para o exterior.
+    expect(collect($resposta->json('instrutores'))->pluck('uf')->all())->toBe(['PE'])
+        ->and($resposta->json('instrutores_exterior.0.pais'))->toBe('PT')
+        ->and($resposta->json('instrutores_exterior.0.nome'))->toBe('Portugal')
+        ->and($resposta->json('instrutores_exterior.0.pessoas.0.uf'))->toBe('PT')
+        ->and($resposta->json('instrutores_exterior.0.pessoas.0.pais'))->toBe('Portugal')
+        ->and($resposta->json('instrutores.0.pessoas.0.pais'))->toBeNull()
+        ->and($resposta->json('monitores_exterior'))->toBe([])
+        ->and($resposta->json('total'))->toBe(2);
+    // Nem a cidade de Lisboa sai na resposta.
+    expect($resposta->getContent())->not->toContain('Lisboa');
+});
+
+test('país: registro do exterior com a sigla do país no início e sem UF', function () {
+    expect(Filiado::montarRegistro(2026, 46, null, 'PT'))->toBe('PT20260046')
+        ->and(Filiado::montarRegistro(2026, 45, 'sc'))->toBe('BR20260045SC');
+
+    config(['app.admin_emails' => ['admin@ibto.test']]);
+    $admin = User::factory()->create(['email' => 'admin@ibto.test']);
+    // A ficha do exterior não pede estado; a sequência continua única entre os países.
+    $this->actingAs($admin)
+        ->post(route('cadastros.filiados.store'), [
+            'nome' => 'Rui Costa', 'email' => 'rui@ibto.test', 'cpf' => '529.982.247-25', 'nascimento' => '1990-01-01',
+            'municipio' => 'Lisboa', 'pais' => 'PT', 'uf' => 'PE', 'status' => 'ativo',
+        ])
+        ->assertSessionHasNoErrors();
+    $rui = Filiado::whereHas('usuario', fn ($q) => $q->where('email', 'rui@ibto.test'))->firstOrFail();
+    expect($rui->pais)->toBe('PT')
+        ->and($rui->uf)->toBeNull()
+        ->and($rui->registro)->toStartWith('PT'.now()->year)
+        ->and($rui->local())->toBe('Lisboa (Portugal)');
+
+    // No Brasil, a UF continua obrigatória.
+    $this->actingAs($admin)
+        ->post(route('cadastros.filiados.store'), [
+            'nome' => 'Ana Lima', 'email' => 'ana.lima@ibto.test', 'cpf' => '111.444.777-35', 'nascimento' => '1990-01-01',
+            'municipio' => 'Recife', 'pais' => 'BR', 'status' => 'ativo',
+        ])
+        ->assertSessionHasErrors('uf');
 });

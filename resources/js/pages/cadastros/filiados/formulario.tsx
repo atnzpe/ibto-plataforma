@@ -6,6 +6,7 @@
  * plataforma. LGPD: CPF, nascimento e telefone são gravados criptografados.
  */
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import FiliadoController from '@/actions/App/Http/Controllers/Cadastros/FiliadoController';
 import AnonimizarFiliado from '@/components/cadastros/anonimizar-filiado';
 import InputError from '@/components/input-error';
@@ -32,7 +33,10 @@ type FiliadoFormulario = {
     nascimento: string;
     telefone: string | null;
     municipio: string;
-    uf: string;
+    // UF (só no Brasil); vazia para quem mora fora.
+    uf: string | null;
+    // Sigla do país (#11, 24/10/2026). Ex.: 'BR' (padrão) ou 'PT'.
+    pais?: string;
     equipe_id: number | null;
     // Função no IBTO (ex.: 'instrutor'), ou null.
     categoria: string | null;
@@ -62,6 +66,7 @@ const classeSelect =
  * @param niveis Os níveis ativos, na ordem da hierarquia.
  * @param areas As áreas de atuação ativas.
  * @param ufs As 27 siglas de estado.
+ * @param paises Os países (sigla => nome), com o Brasil primeiro. Ex.: { BR: 'Brasil', PT: 'Portugal' }
  * @param categorias As 5 categorias (funções). Ex.: [{ valor: 'instrutor', rotulo: 'Instrutor' }]
  * @param anuidade O quadro da anuidade (só na edição, para quem vê o financeiro), ou null.
  * @param graduacao O quadro do certificado de graduação (só para quem gerencia os filiados), ou null.
@@ -73,6 +78,7 @@ export default function FiliadoFormularioTela({
     niveis,
     areas,
     ufs,
+    paises = { BR: 'Brasil' },
     categorias,
     anuidade = null,
     graduacao = null,
@@ -82,6 +88,7 @@ export default function FiliadoFormularioTela({
     niveis: Opcao[];
     areas: Opcao[];
     ufs: string[];
+    paises?: Record<string, string>;
     categorias: { valor: string; rotulo: string }[];
     anuidade?: QuadroAnuidade | null;
     graduacao?: React.ComponentProps<typeof QuadroGraduacao>['quadro'] | null;
@@ -91,6 +98,8 @@ export default function FiliadoFormularioTela({
     // pode: as permissões de quem está logado (ex.: filiados_gerenciar). Só mostra ou esconde.
     const { sucesso, errors, pode } = usePage().props;
     const editando = filiado !== null;
+    // País escolhido agora (começa com o da ficha, ou o Brasil): decide se o campo Estado aparece.
+    const [pais, setPais] = useState(filiado?.pais ?? 'BR');
     const titulo = editando
         ? `Editar filiado ${filiado.registro}`
         : 'Novo filiado';
@@ -268,10 +277,38 @@ export default function FiliadoFormularioTela({
                                     <InputError message={errors.telefone} />
                                 </div>
 
+                                {/* PAÍS (#11): Brasil por padrão; fora do Brasil não há estado (UF). */}
+                                <div className="grid gap-2 sm:max-w-xs">
+                                    <Label htmlFor="pais">País</Label>
+                                    <select
+                                        id="pais"
+                                        name="pais"
+                                        value={pais}
+                                        onChange={(evento) =>
+                                            setPais(evento.target.value)
+                                        }
+                                        className={classeSelect}
+                                    >
+                                        {Object.entries(paises).map(
+                                            ([sigla, nome]) => (
+                                                <option
+                                                    key={sigla}
+                                                    value={sigla}
+                                                >
+                                                    {nome}
+                                                </option>
+                                            ),
+                                        )}
+                                    </select>
+                                    <InputError message={errors.pais} />
+                                </div>
+
                                 <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
                                     <div className="grid gap-2">
                                         <Label htmlFor="municipio">
-                                            Município
+                                            {pais === 'BR'
+                                                ? 'Município'
+                                                : 'Cidade'}
                                         </Label>
                                         <Input
                                             id="municipio"
@@ -286,24 +323,27 @@ export default function FiliadoFormularioTela({
                                             message={errors.municipio}
                                         />
                                     </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="uf">Estado</Label>
-                                        <select
-                                            id="uf"
-                                            name="uf"
-                                            defaultValue={filiado?.uf ?? ''}
-                                            required
-                                            className={classeSelect}
-                                        >
-                                            <option value="">—</option>
-                                            {ufs.map((uf) => (
-                                                <option key={uf} value={uf}>
-                                                    {uf}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError message={errors.uf} />
-                                    </div>
+                                    {/* Estado só para quem mora no Brasil. */}
+                                    {pais === 'BR' && (
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="uf">Estado</Label>
+                                            <select
+                                                id="uf"
+                                                name="uf"
+                                                defaultValue={filiado?.uf ?? ''}
+                                                required
+                                                className={classeSelect}
+                                            >
+                                                <option value="">—</option>
+                                                {ufs.map((uf) => (
+                                                    <option key={uf} value={uf}>
+                                                        {uf}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <InputError message={errors.uf} />
+                                        </div>
+                                    )}
                                 </div>
                             </fieldset>
 

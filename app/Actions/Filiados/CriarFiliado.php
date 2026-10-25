@@ -16,6 +16,7 @@ namespace App\Actions\Filiados;
 use App\Models\Filiado;
 use App\Models\User;
 use App\Notifications\ConviteFiliado;
+use App\Support\Paises;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,7 @@ class CriarFiliado
      * $dados = os campos do formulário ou de uma linha da planilha.
      * Ex.: ['nome' => 'Fulano', 'email' => 'fulano@exemplo.com', 'cpf' => '529.982.247-25', ...]
      *
-     * @param  array{nome: string, email: string|null, cpf: string|null, nascimento: string|null, telefone?: string|null, municipio: string|null, uf: string, equipe_id?: int|null, categoria?: string|null, nivel_id?: int|null, abrangencia?: string|null, documentacao_emitida?: bool, areas?: list<int>, registro?: string|null}  $dados
+     * @param  array{nome: string, email: string|null, cpf: string|null, nascimento: string|null, telefone?: string|null, municipio: string|null, uf?: string|null, pais?: string, equipe_id?: int|null, categoria?: string|null, nivel_id?: int|null, abrangencia?: string|null, documentacao_emitida?: bool, areas?: list<int>, registro?: string|null}  $dados
      * @return Filiado O filiado criado, já com a conta (usuario) ligada.
      */
     public function executar(array $dados): Filiado
@@ -46,7 +47,10 @@ class CriarFiliado
                 'nascimento' => $dados['nascimento'],
                 'telefone' => $dados['telefone'] ?? null,
                 'municipio' => $dados['municipio'],
-                'uf' => strtoupper($dados['uf']),
+                // UF só no Brasil (fora dele vem vazia).
+                'uf' => ! empty($dados['uf']) ? strtoupper($dados['uf']) : null,
+                // País: o informado, ou o Brasil (padrão; a planilha antiga não tem país).
+                'pais' => strtoupper($dados['pais'] ?? Paises::BRASIL),
                 'equipe_id' => $dados['equipe_id'] ?? null,
                 // Função no IBTO (ex.: 'instrutor'), ou null.
                 'categoria' => $dados['categoria'] ?? null,
@@ -63,7 +67,7 @@ class CriarFiliado
             $filiado->user_id = $usuario->id;
             // Registro: o que já existe na planilha (importação) é mantido, porque a
             // carteirinha não muda; senão, a plataforma gera o próximo do ano.
-            $filiado->registro = $dados['registro'] ?? $this->proximoRegistro($dados['uf']);
+            $filiado->registro = $dados['registro'] ?? $this->proximoRegistro($dados['uf'] ?? null, strtoupper($dados['pais'] ?? Paises::BRASIL));
             $filiado->save();
 
             $filiado->areas()->sync($dados['areas'] ?? []);
@@ -93,18 +97,20 @@ class CriarFiliado
      * @param  string  $uf  Ex.: 'PE'
      * @return string Ex.: 'BR20260046PE'
      */
-    private function proximoRegistro(string $uf): string
+    private function proximoRegistro(?string $uf, string $pais = Paises::BRASIL): string
     {
-        // Maior sequência já usada, de QUALQUER ano: as 4 casas depois de "BR" + ano.
-        // Ex.: em "BR20260045SC", as casas 7 a 10 são "0045".
+        // Maior sequência já usada, de QUALQUER ano e QUALQUER país: as 4 casas depois
+        // das 2 letras do país + ano. Ex.: em "BR20260045SC" e em "PT20260046", as casas
+        // 7 a 10 ("0045", "0046"). Uma sequência só para todos: o número nunca se repete.
         $ultima = Filiado::query()
-            ->where('registro', 'like', 'BR%')
             ->lockForUpdate()
             ->pluck('registro')
+            // Só os registros no formato da plataforma (2 letras + 8 números no começo).
+            ->filter(fn (?string $registro): bool => is_string($registro) && preg_match('/^[A-Z]{2}\d{8}/', $registro) === 1)
             ->map(fn (string $registro): int => (int) substr($registro, 6, 4))
             ->max() ?? 0;
 
         // O ano é sempre o corrente; só a sequência vem da maior já usada.
-        return Filiado::montarRegistro((int) now()->format('Y'), $ultima + 1, $uf);
+        return Filiado::montarRegistro((int) now()->format('Y'), $ultima + 1, $uf, $pais);
     }
 }

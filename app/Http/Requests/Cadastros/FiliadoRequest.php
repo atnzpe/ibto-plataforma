@@ -13,6 +13,7 @@ namespace App\Http\Requests\Cadastros;
 use App\Enums\CategoriaFiliado;
 use App\Models\Filiado;
 use App\Support\Documento;
+use App\Support\Paises;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,12 @@ class FiliadoRequest extends FormRequest
         $this->merge([
             'cpf' => $this->filled('cpf') ? Documento::apenasDigitos($this->string('cpf')->toString()) : null,
             'telefone' => $this->filled('telefone') ? Documento::apenasDigitos($this->string('telefone')->toString()) : null,
-            'uf' => $this->filled('uf') ? strtoupper($this->string('uf')->toString()) : null,
+            // País: sigla em maiúsculas; sem país, vale o Brasil (#11, 24/10/2026).
+            'pais' => $this->filled('pais') ? strtoupper($this->string('pais')->toString()) : Paises::BRASIL,
+            // UF só no Brasil: fora dele, a UF é descartada (não existe estado brasileiro lá).
+            'uf' => $this->filled('uf') && strtoupper($this->string('pais', Paises::BRASIL)->toString()) === Paises::BRASIL
+                ? strtoupper($this->string('uf')->toString())
+                : null,
             'email' => $this->filled('email') ? strtolower($this->string('email')->toString()) : null,
         ]);
     }
@@ -72,7 +78,9 @@ class FiliadoRequest extends FormRequest
             ],
             'telefone' => ['nullable', 'digits_between:10,11'],
             'municipio' => ['required', 'string', 'max:100'],
-            'uf' => ['required', Rule::in(EquipeRequest::UFS)],
+            // País da lista (sigla de 2 letras); UF obrigatória só no Brasil.
+            'pais' => ['required', Rule::in(array_keys(Paises::LISTA))],
+            'uf' => ['nullable', 'required_if:pais,'.Paises::BRASIL, Rule::in(EquipeRequest::UFS)],
             'equipe_id' => ['nullable', 'integer', Rule::exists('equipes', 'id')],
             'nivel_id' => ['nullable', 'integer', Rule::exists('niveis', 'id')],
             'areas' => ['nullable', 'array'],

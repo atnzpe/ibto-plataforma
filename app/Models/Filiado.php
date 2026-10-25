@@ -14,6 +14,7 @@ namespace App\Models;
 
 use App\Enums\CategoriaFiliado;
 use App\Support\Documento;
+use App\Support\Paises;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -32,7 +33,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $telefone
  * @property string|null $cpf_hash
  * @property string|null $municipio
- * @property string|null $uf
+ * @property string|null $uf UF (só no Brasil). Ex.: 'PE'.
+ * @property string $pais Sigla do país (#11, 24/10/2026). Ex.: 'BR' (padrão), 'PT'.
  * @property int|null $equipe_id
  * @property CategoriaFiliado|null $categoria
  * @property int|null $nivel_id
@@ -49,7 +51,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 // registro e cpf_hash ficam de fora: quem calcula é a própria plataforma (ver booted()).
-#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status', 'data_filiacao'])]
+#[Fillable(['cpf', 'nascimento', 'telefone', 'municipio', 'uf', 'pais', 'equipe_id', 'categoria', 'nivel_id', 'abrangencia', 'documentacao_emitida', 'status', 'data_filiacao'])]
 // LGPD (16/10/2026): CPF, nascimento, telefone e o hash do CPF NUNCA vão junto quando o
 // filiado vira dado para a tela (JSON). Quem precisa (ex.: a ficha do filiado) pede o campo
 // explicitamente. Antes, o filiado carregado ia junto com a conta logada em toda tela.
@@ -128,11 +130,33 @@ class Filiado extends Model
      * @param  string  $uf  Ex.: 'pe'
      * @return string Ex.: 'BR20260007PE'
      */
-    public static function montarRegistro(int $ano, int $sequencia, string $uf): string
+    public static function montarRegistro(int $ano, int $sequencia, ?string $uf, string $pais = Paises::BRASIL): string
     {
+        // Fora do Brasil (decisão de 24/10/2026): a sigla do país no início e sem UF.
+        // Ex.: Portugal, 2026, sequência 46 → 'PT20260046'.
+        if (strtoupper($pais) !== Paises::BRASIL) {
+            return sprintf('%s%d%04d', strtoupper($pais), $ano, $sequencia);
+        }
+
         // sprintf monta o texto a partir de um "molde": %d = o ano; %04d = a
         // sequência com 4 casas (7 vira 0007); %s = a UF, em maiúsculas (pe vira PE).
-        return sprintf('BR%d%04d%s', $ano, $sequencia, strtoupper($uf));
+        return sprintf('BR%d%04d%s', $ano, $sequencia, strtoupper((string) $uf));
+    }
+
+    /**
+     * A localidade para as telas: "Recife-PE" no Brasil; "Lisboa (Portugal)" fora dele.
+     *
+     * @return string Ex.: 'Recife-PE'; vazio se não houver município nem UF.
+     */
+    public function local(): string
+    {
+        // Fora do Brasil: o município e o nome do país entre parênteses.
+        if ($this->pais !== Paises::BRASIL) {
+            return trim(($this->municipio ?? '').' ('.(Paises::nome($this->pais) ?? $this->pais).')');
+        }
+
+        // No Brasil: "município-UF", sem traço sobrando quando falta um dos dois.
+        return trim($this->municipio.'-'.$this->uf, '-');
     }
 
     /**
@@ -161,7 +185,8 @@ class Filiado extends Model
         return ($guardado['cpf_hash'] ?? null) === null
             || ($guardado['nascimento'] ?? null) === null
             || blank($this->municipio)
-            || blank($this->uf)
+            // A UF só é obrigatória no Brasil (quem mora fora não tem UF).
+            || ($this->pais === Paises::BRASIL && blank($this->uf))
             // Conta existe, mas sem e-mail (sem conta nenhuma não conta aqui).
             || ($this->usuario !== null && $this->usuario->email === null);
     }

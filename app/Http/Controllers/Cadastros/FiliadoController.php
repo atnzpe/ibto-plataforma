@@ -29,6 +29,7 @@ use App\Models\Filiado;
 use App\Models\Nivel;
 use App\Models\User;
 use App\Notifications\ConviteFiliado;
+use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -72,7 +73,7 @@ class FiliadoController extends Controller
                 'categoria' => $filiado->categoria?->rotulo(),
                 'nivel' => $filiado->nivel?->nome(),
                 // Cidade/UF; o que faltar (importado incompleto) não aparece. Ex.: "Recife/PE", "PE".
-                'local' => implode('/', array_filter([$filiado->municipio, $filiado->uf])),
+                'local' => $filiado->local(),
                 'status' => $filiado->status,
                 // true = falta dado (selo "Incompleto"; completar na edição).
                 'incompleto' => $filiado->incompleto(),
@@ -155,6 +156,7 @@ class FiliadoController extends Controller
                 'telefone' => $filiado->telefone,
                 'municipio' => $filiado->municipio,
                 'uf' => $filiado->uf,
+                'pais' => $filiado->pais,
                 'equipe_id' => $filiado->equipe_id,
                 'categoria' => $filiado->categoria?->value,
                 'nivel_id' => $filiado->nivel_id,
@@ -301,6 +303,8 @@ class FiliadoController extends Controller
                 CategoriaFiliado::cases(),
             ),
             'ufs' => EquipeRequest::UFS,
+            // Os países (sigla => nome), com o Brasil primeiro (#11).
+            'paises' => Paises::LISTA,
         ];
     }
 }

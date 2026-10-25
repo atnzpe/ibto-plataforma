@@ -20,7 +20,10 @@ type Linha = {
     nome: string;
     nivel: string | null;
     equipe: string | null;
+    // No Brasil, a UF; fora dele, o nome do país. Ex.: 'PE' ou 'Portugal'.
     uf: string | null;
+    // true = mora fora do Brasil.
+    exterior: boolean;
     // Em qual aba do site entra: 'Instrutores' ou 'Monitores'.
     lista: string;
     ativo: boolean;
@@ -121,13 +124,18 @@ export default function RedeNacionalQuadro({
                 {/* Resumo: anunciado pelo leitor de tela quando o filtro muda. */}
                 <p role="status" className="text-sm font-medium">
                     {resumo.aparecem} de {resumo.total} já aparecem no site
-                    {filtros.uf ? ` (${estados[filtros.uf]})` : ''}.
+                    {filtros.uf === 'EX'
+                        ? ' (exterior)'
+                        : filtros.uf
+                          ? ` (${estados[filtros.uf]})`
+                          : ''}
+                    .
                 </p>
 
                 {/* Filtros: 2 colunas no celular, em linha no computador. */}
                 <div className="grid grid-cols-2 items-end gap-4 lg:flex">
                     <div className="grid gap-2 lg:w-64">
-                        <Label htmlFor="filtro-uf">Estado</Label>
+                        <Label htmlFor="filtro-uf">Estado ou exterior</Label>
                         <select
                             id="filtro-uf"
                             value={filtros.uf ?? ''}
@@ -139,7 +147,11 @@ export default function RedeNacionalQuadro({
                             }
                             className={classeSelect}
                         >
-                            <option value="">Todos os estados</option>
+                            <option value="">Todos os lugares</option>
+                            {/* Quem mora fora do Brasil (#11): um bloco por país no site. */}
+                            <option value="EX">
+                                Exterior (fora do Brasil)
+                            </option>
                             {Object.entries(estados).map(([uf, nome]) => (
                                 <option key={uf} value={uf}>
                                     {nome} ({uf})
@@ -183,7 +195,7 @@ export default function RedeNacionalQuadro({
                                         'Nome',
                                         'Nível',
                                         'Equipe',
-                                        'UF',
+                                        'Local',
                                         'Ativo',
                                         'Anuidade',
                                         'Autorização',
@@ -234,7 +246,7 @@ export default function RedeNacionalQuadro({
                                             {linha.equipe ?? '—'}
                                         </td>
                                         <td
-                                            data-rotulo="UF"
+                                            data-rotulo="Local"
                                             className="px-4 py-2"
                                         >
                                             {/* UF vazia ou inválida: ❌ (precisa corrigir na ficha). */}
