@@ -13,7 +13,9 @@
  *   3. anuidade EM DIA (em ano isento, todos estão em dia);
  *   4. AUTORIZAÇÃO de imagem da Rede Nacional marcada (LGPD; começa desmarcada);
  *   5. com a FOTO da Rede Nacional enviada;
- *   6. com a UF preenchida (uma das 27 siglas) e com uma conta (de onde vem o nome).
+ *   6. com uma conta (de onde vem o nome) e com o LOCAL válido: no Brasil, uma das
+ *      27 UFs; fora dele, um país da lista (decisão de 24/10/2026: quem está no
+ *      exterior aparece num bloco do país, depois dos estados).
  *
  * O que sai de cada pessoa: nome ABREVIADO (ex.: 'Gleyson A. S.'), nível, equipe,
  * UF e áreas de atuação, mais o endereço público da foto. NUNCA telefone, cidade,
@@ -32,6 +34,7 @@ use App\Models\AreaAtuacao;
 use App\Models\Filiado;
 use App\Models\Nivel;
 use App\Relatorios\AuditoriaRelatorio;
+use App\Support\Paises;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -63,8 +66,11 @@ class RedeNacional
     /**
      * As duas listas prontas para a API pública.
      *
-     * @return array{instrutores: list<array<string, mixed>>, monitores: list<array<string, mixed>>, total: int}
-     *                                                                                                           Ex.: ['instrutores' => [['uf' => 'PE', 'estado' => 'Pernambuco', 'pessoas' => [...]]], ...]
+     * Os estados do Brasil ficam em "instrutores" e "monitores" (como antes); quem está
+     * fora do Brasil fica em "instrutores_exterior" e "monitores_exterior", por país.
+     *
+     * @return array{instrutores: list<array<string, mixed>>, monitores: list<array<string, mixed>>, instrutores_exterior: list<array<string, mixed>>, monitores_exterior: list<array<string, mixed>>, total: int}
+     *                                                                                                                                                                                                             Ex.: ['instrutores' => [['uf' => 'PE', 'estado' => 'Pernambuco', 'pessoas' => [...]]], ...]
      */
     public function listas(): array
     {
@@ -76,12 +82,16 @@ class RedeNacional
             // Sem conta não há nome para mostrar: fica de fora.
             ->filter(fn (Filiado $filiado) => $filiado->usuario !== null);
 
-        $instrutores = $this->porEstado($credenciados->filter(fn (Filiado $filiado) => in_array($filiado->nivel?->categoria, self::CATEGORIAS_INSTRUTOR, true)));
-        $monitores = $this->porEstado($credenciados->filter(fn (Filiado $filiado) => in_array($filiado->nivel?->categoria, self::CATEGORIAS_MONITOR, true)));
+        // Separa por lista (instrutores ou monitores) e por lugar (Brasil ou exterior).
+        $instrutores = $credenciados->filter(fn (Filiado $filiado) => in_array($filiado->nivel?->categoria, self::CATEGORIAS_INSTRUTOR, true));
+        $monitores = $credenciados->filter(fn (Filiado $filiado) => in_array($filiado->nivel?->categoria, self::CATEGORIAS_MONITOR, true));
+        $noBrasil = fn (Filiado $filiado) => $filiado->pais === Paises::BRASIL;
 
         return [
-            'instrutores' => $instrutores,
-            'monitores' => $monitores,
+            'instrutores' => $this->porEstado($instrutores->filter($noBrasil)),
+            'monitores' => $this->porEstado($monitores->filter($noBrasil)),
+            'instrutores_exterior' => $this->porPais($instrutores->reject($noBrasil)),
+            'monitores_exterior' => $this->porPais($monitores->reject($noBrasil)),
             'total' => $credenciados->count(),
         ];
     }
@@ -105,9 +115,9 @@ class RedeNacional
      * já cumpre. Serve de "lista de chamada" para recolher as fotos que o Eduardo pediu.
      * Aqui o nome vai COMPLETO: a tela é interna, só para quem cuida de todos os filiados.
      *
-     * @param  string|null  $uf  Só um estado (ex.: 'PE'), ou null para todos.
+     * @param  string|null  $uf  Só um estado (ex.: 'PE'), 'EX' para só o exterior, ou null para todos.
      * @param  bool  $soPendentes  true = só quem ainda NÃO aparece no site.
-     * @return list<array{id: int, nome: string, nivel: string|null, equipe: string|null, uf: string|null, lista: string, ativo: bool, anuidade_em_dia: bool, autorizou: bool, tem_foto: bool, uf_valida: bool, aparece: bool}>
+     * @return list<array{id: int, nome: string, nivel: string|null, equipe: string|null, uf: string|null, exterior: bool, lista: string, ativo: bool, anuidade_em_dia: bool, autorizou: bool, tem_foto: bool, uf_valida: bool, aparece: bool}>
      */
     public function acompanhamento(?string $uf = null, bool $soPendentes = false): array
     {
@@ -120,7 +130,9 @@ class RedeNacional
         $linhas = Filiado::query()
             ->with(['nivel', 'equipe:id,nome', 'usuario:id,name'])
             ->whereHas('nivel', fn ($nivel) => $nivel->whereIn('categoria', $categorias))
-            ->when($uf !== null, fn ($consulta) => $consulta->where('uf', $uf))
+            // 'EX' = só quem está fora do Brasil; uma UF = só aquele estado (no Brasil).
+            ->when($uf === 'EX', fn ($consulta) => $consulta->where('pais', '!=', Paises::BRASIL))
+            ->when($uf !== null && $uf !== 'EX', fn ($consulta) => $consulta->where('pais', Paises::BRASIL)->where('uf', $uf))
             ->get()
             ->map(fn (Filiado $filiado) => [
                 'id' => $filiado->id,
@@ -128,23 +140,30 @@ class RedeNacional
                 'nome' => $filiado->usuario->name ?? $filiado->registro,
                 'nivel' => $filiado->nivel?->nome(),
                 'equipe' => $filiado->equipe?->nome,
-                'uf' => $filiado->uf,
+                // No Brasil, a UF; fora dele, o nome do país. Ex.: 'PE' ou 'Portugal'.
+                'uf' => $filiado->pais === Paises::BRASIL ? $filiado->uf : (Paises::nome($filiado->pais) ?? $filiado->pais),
+                // true = fora do Brasil (vem depois dos estados no quadro).
+                'exterior' => $filiado->pais !== Paises::BRASIL,
                 // Em qual aba do site a pessoa entra. Ex.: 'Instrutores'.
                 'lista' => in_array($filiado->nivel?->categoria, self::CATEGORIAS_MONITOR, true) ? 'Monitores' : 'Instrutores',
                 'ativo' => $filiado->status === 'ativo',
                 'anuidade_em_dia' => $emDia === null || $emDia->has($filiado->id),
                 'autorizou' => $filiado->autoriza_imagem_rede,
                 'tem_foto' => $filiado->foto_rede !== null,
-                'uf_valida' => array_key_exists((string) $filiado->uf, self::ESTADOS),
+                // Local válido: UF da lista no Brasil; país da lista fora dele.
+                'uf_valida' => $filiado->pais === Paises::BRASIL
+                    ? array_key_exists((string) $filiado->uf, self::ESTADOS)
+                    : Paises::nome($filiado->pais) !== null,
                 'aparece' => $aparecem->has($filiado->id),
                 // Para ordenar: o nível mais alto primeiro.
                 'posicao' => $filiado->nivel->posicao ?? 0,
             ])
             // Filtro "só pendentes": fica só quem ainda NÃO aparece (desligado = todos ficam).
             ->filter(fn (array $linha) => ! $soPendentes || ! $linha['aparece'])
-            // Por estado (sem UF no fim) e, dentro dele, pela hierarquia e pelo nome.
+            // Brasil primeiro, por estado (sem UF no fim); depois o exterior, por país; dentro
+            // de cada um, pela hierarquia e pelo nome.
             ->sortBy([
-                fn (array $a, array $b) => [$a['uf'] === null, $a['uf']] <=> [$b['uf'] === null, $b['uf']],
+                fn (array $a, array $b) => [$a['exterior'], $a['uf'] === null, $a['uf']] <=> [$b['exterior'], $b['uf'] === null, $b['uf']],
                 fn (array $a, array $b) => $b['posicao'] <=> $a['posicao'],
                 fn (array $a, array $b) => strcoll($a['nome'], $b['nome']),
             ])
@@ -197,7 +216,10 @@ class RedeNacional
             ->where('autoriza_imagem_rede', true)
             ->whereNotNull('foto_rede')
             ->whereIn('nivel_id', $niveis)
-            ->whereIn('uf', array_keys(self::ESTADOS));
+            // Local válido: no Brasil, uma das 27 UFs; fora dele, um país da lista.
+            ->where(fn ($local) => $local
+                ->where(fn ($brasil) => $brasil->where('pais', Paises::BRASIL)->whereIn('uf', array_keys(self::ESTADOS)))
+                ->orWhere(fn ($exterior) => $exterior->where('pais', '!=', Paises::BRASIL)->whereIn('pais', array_keys(Paises::LISTA))));
 
         // Anuidade: o ano de hoje. Sem valor cadastrado ou isento (ex.: 2026), todos estão
         // em dia (a mesma regra de Filiado::anuidadeEmDia). Se não, precisa de um pagamento
@@ -216,7 +238,7 @@ class RedeNacional
      * mais alto primeiro; empate = ordem alfabética do nome).
      *
      * @param  Collection<int, Filiado>  $filiados  Os credenciados de uma das listas.
-     * @return list<array{uf: string, estado: string, pessoas: list<array{nome: string, nivel: string|null, equipe: string|null, uf: string, areas: list<string>, foto_url: string}>}>
+     * @return list<array{uf: string, estado: string, pessoas: list<array{nome: string, nivel: string|null, equipe: string|null, uf: string, pais: string|null, areas: list<string>, foto_url: string}>}>
      */
     private function porEstado(Collection $filiados): array
     {
@@ -240,10 +262,37 @@ class RedeNacional
     }
 
     /**
+     * Agrupa quem está FORA do Brasil por país (A→Z pelo nome do país) e, dentro dele,
+     * pela hierarquia e pelo nome (a mesma ordem dos estados).
+     *
+     * @param  Collection<int, Filiado>  $filiados  Os credenciados do exterior de uma das listas.
+     * @return list<array{pais: string, nome: string, pessoas: list<array{nome: string, nivel: string|null, equipe: string|null, uf: string, pais: string|null, areas: list<string>, foto_url: string}>}>
+     */
+    private function porPais(Collection $filiados): array
+    {
+        return array_values($filiados
+            ->groupBy('pais')
+            ->map(fn (Collection $doPais, string $pais) => [
+                'pais' => $pais,
+                'nome' => Paises::nome($pais) ?? $pais,
+                'pessoas' => array_values($doPais
+                    ->sortBy([
+                        fn (Filiado $a, Filiado $b) => ($b->nivel->posicao ?? 0) <=> ($a->nivel->posicao ?? 0),
+                        fn (Filiado $a, Filiado $b) => strcoll($a->usuario->name ?? '', $b->usuario->name ?? ''),
+                    ])
+                    ->map(fn (Filiado $filiado) => $this->cartao($filiado))
+                    ->all()),
+            ])
+            // Em ordem alfabética do nome do país (ex.: Argentina antes de Portugal).
+            ->sortBy(fn (array $grupo) => $grupo['nome'])
+            ->all());
+    }
+
+    /**
      * O que vai no cartão de UMA pessoa (só o necessário; nada de contato).
      *
      * @param  Filiado  $filiado  O credenciado, com nível, equipe, áreas e conta carregados.
-     * @return array{nome: string, nivel: string|null, equipe: string|null, uf: string, areas: list<string>, foto_url: string}
+     * @return array{nome: string, nivel: string|null, equipe: string|null, uf: string, pais: string|null, areas: list<string>, foto_url: string}
      */
     private function cartao(Filiado $filiado): array
     {
@@ -252,7 +301,10 @@ class RedeNacional
             'nome' => AuditoriaRelatorio::abreviado($filiado->usuario->name ?? ''),
             'nivel' => $filiado->nivel?->nome(),
             'equipe' => $filiado->equipe?->nome,
-            'uf' => (string) $filiado->uf,
+            // No Brasil, a UF; fora dele, a sigla do país. Ex.: 'PE' ou 'PT'.
+            'uf' => $filiado->pais === Paises::BRASIL ? (string) $filiado->uf : $filiado->pais,
+            // O nome do país só para quem está fora do Brasil. Ex.: 'Portugal'; null no Brasil.
+            'pais' => $filiado->pais === Paises::BRASIL ? null : Paises::nome($filiado->pais),
             // As áreas em ordem alfabética. Ex.: ['Defesa Pessoal', 'Krav Maga'].
             'areas' => array_values($filiado->areas->map(fn (AreaAtuacao $area) => $area->nome)->sort()->all()),
             // Endereço COMPLETO (o site fica em outro domínio). O "?v=" muda quando a ficha

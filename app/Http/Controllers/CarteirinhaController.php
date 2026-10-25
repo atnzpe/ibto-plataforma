@@ -131,7 +131,7 @@ class CarteirinhaController extends Controller
             // Nome abreviado sempre; completo e cidade só com a autorização de imagem (#78).
             'nome_abreviado' => AuditoriaRelatorio::abreviado($nome),
             'nome_completo' => $autorizou ? $nome : null,
-            'cidade' => $autorizou ? trim($filiado->municipio.'-'.$filiado->uf, '-') : null,
+            'cidade' => $autorizou ? $filiado->local() : null,
             'foto_publica_url' => $autorizou && $filiado->foto !== null ? route('carteirinha.foto', $filiado->codigo_validacao) : null,
         ];
     }
