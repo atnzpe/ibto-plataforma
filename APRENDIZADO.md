@@ -127,3 +127,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que a foto da Rede Nacional é um campo separado da 3x4?
 2. O que acontece com a foto pública quando a pessoa desmarca a autorização?
 3. Por que a resposta da API não traz a cidade, se a ficha tem esse dado?
+
+## 24/10/2026 — País do filiado (#11)
+
+- Coluna nova com valor padrão ('BR') é a migração mais segura: os filiados que já existem continuam válidos sem ninguém precisar editar, como um campo novo no cadastro do PDV que já vem preenchido com "Loja 1".
+- Regra que só vale num caso fica escrita no próprio caso: a UF só é obrigatória quando o país é Brasil; fora dele, o registro troca o "BR" pela sigla do país (ex.: PT20260046).
+- "Teste deu erro" nem sempre é bug: o PHP local tinha teto de 128 MB e um teste envia um arquivo de 7 MB; o teto é limite, não consumo, e subir para 1 GB só para os testes não gasta a RAM da máquina.
+
+**Perguntas para fixar:**
+
+1. Por que o registro de um filiado antigo não muda quando você edita o país dele?
+2. O que aconteceria se a coluna `pais` fosse criada sem valor padrão?
+3. Qual a diferença entre `memory_limit` (teto) e a memória que o PHP de fato usa?
