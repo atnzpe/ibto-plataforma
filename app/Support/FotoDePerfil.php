@@ -1,10 +1,15 @@
 <?php
 
 /*
- * PROCESSADOR DE FOTOS de pessoas (#78): foto de perfil do usuário e 3x4 do filiado.
+ * PROCESSADOR DE FOTOS de pessoas (#78): foto de perfil do usuário, 3x4 do filiado
+ * e foto da Rede Nacional (#11).
  *
- * Recebe a foto enviada (JPG, PNG ou WebP), recorta um QUADRADO do centro,
- * reduz para 400 x 400 px e grava em WebP (leve no celular) na pasta PRIVADA
+ * Dois jeitos de gravar:
+ * - gravar(): recorta um QUADRADO do centro e reduz para 400 x 400 px (perfil e 3x4);
+ * - gravarInteira(): mantém a foto INTEIRA, só reduz (Rede Nacional, onde a pessoa
+ *   aparece de corpo inteiro e o recorte cortava o rosto; Gleyson, 24/10/2026).
+ *
+ * Os dois gravam em WebP (leve no celular) na pasta PRIVADA
  * (storage/app/private). A foto nunca fica num endereço público: quem a entrega
  * é uma rota que confere a permissão (como a ficha do aluno que só o professor
  * e a secretaria abrem).
@@ -26,6 +31,9 @@ class FotoDePerfil
     // Lado do quadrado final, em pixels: nítido no menu, nos inscritos e na carteirinha.
     public const LADO = 400;
 
+    // Maior lado da foto INTEIRA, em pixels: nítida no cartão do site sem pesar no celular.
+    public const MAIOR_LADO_INTEIRA = 800;
+
     // Disco onde as fotos ficam: o "local" do Laravel aponta para storage/app/private.
     public const DISCO = 'local';
 
@@ -38,13 +46,7 @@ class FotoDePerfil
      */
     public static function gravar(UploadedFile $arquivo, string $pasta): string
     {
-        // Abre a imagem a partir do conteúdo (o GD descobre sozinho se é JPG, PNG ou WebP).
-        $original = imagecreatefromstring((string) file_get_contents($arquivo->getRealPath()));
-
-        // Arquivo que diz ser imagem mas não abre (corrompido ou disfarçado): para aqui.
-        if ($original === false) {
-            throw new RuntimeException('FOTO_ILEGIVEL');
-        }
+        $original = self::abrir($arquivo);
 
         // Largura e altura originais. Ex.: 3000 x 4000 (foto de celular em pé).
         $largura = imagesx($original);
@@ -62,6 +64,70 @@ class FotoDePerfil
         // Copia o quadrado do centro, reduzindo com suavização (boa qualidade).
         imagecopyresampled($final, $original, 0, 0, $inicioX, $inicioY, self::LADO, self::LADO, $ladoDoRecorte, $ladoDoRecorte);
 
+        return self::salvar($final, $pasta);
+    }
+
+    /**
+     * Grava a foto INTEIRA (sem recorte), só reduzida, mantendo a proporção.
+     * Uma foto pequena não é ampliada (ampliar só deixa borrada).
+     *
+     * @param  UploadedFile  $arquivo  A foto enviada (já validada). Ex.: 3000 x 4000, em pé.
+     * @param  string  $pasta  Subpasta onde gravar. Ex.: 'fotos/rede-nacional'.
+     * @return string O caminho gravado. Ex.: 'fotos/rede-nacional/9f1c...webp' (600 x 800).
+     */
+    public static function gravarInteira(UploadedFile $arquivo, string $pasta): string
+    {
+        $original = self::abrir($arquivo);
+
+        // Largura e altura originais. Ex.: 3000 x 4000.
+        $largura = imagesx($original);
+        $altura = imagesy($original);
+        // Quanto reduzir para o maior lado caber em 800 px; nunca mais que 1 (não amplia).
+        // Ex.: 3000 x 4000 → 800 / 4000 = 0,2 → 600 x 800.
+        $fator = min(1, self::MAIOR_LADO_INTEIRA / max($largura, $altura));
+        // Tamanho final, com pelo menos 1 px de cada lado (foto muito fina não some).
+        $novaLargura = max(1, (int) round($largura * $fator));
+        $novaAltura = max(1, (int) round($altura * $fator));
+
+        // Tela nova do tamanho final, com fundo branco (PNG transparente não fica preto).
+        $final = imagecreatetruecolor($novaLargura, $novaAltura);
+        imagefill($final, 0, 0, (int) imagecolorallocate($final, 255, 255, 255));
+        // Copia a foto TODA (do ponto 0,0 até o fim), reduzindo com suavização.
+        imagecopyresampled($final, $original, 0, 0, 0, 0, $novaLargura, $novaAltura, $largura, $altura);
+
+        return self::salvar($final, $pasta);
+    }
+
+    /**
+     * Abre a foto enviada como imagem do GD.
+     *
+     * @param  UploadedFile  $arquivo  A foto enviada pelo formulário.
+     * @return \GdImage A imagem aberta, pronta para recortar ou reduzir.
+     *
+     * @throws RuntimeException FOTO_ILEGIVEL, se o arquivo não for uma imagem que abre.
+     */
+    private static function abrir(UploadedFile $arquivo): \GdImage
+    {
+        // Abre a imagem a partir do conteúdo (o GD descobre sozinho se é JPG, PNG ou WebP).
+        $original = imagecreatefromstring((string) file_get_contents($arquivo->getRealPath()));
+
+        // Arquivo que diz ser imagem mas não abre (corrompido ou disfarçado): para aqui.
+        if ($original === false) {
+            throw new RuntimeException('FOTO_ILEGIVEL');
+        }
+
+        return $original;
+    }
+
+    /**
+     * Grava a imagem pronta na pasta privada, com nome aleatório.
+     *
+     * @param  \GdImage  $final  A imagem já recortada ou reduzida.
+     * @param  string  $pasta  Subpasta. Ex.: 'fotos/filiados'.
+     * @return string O caminho gravado. Ex.: 'fotos/filiados/9f1c...webp'.
+     */
+    private static function salvar(\GdImage $final, string $pasta): string
+    {
         // Grava na memória: WebP se o servidor souber, senão JPEG. Qualidade 82 (boa e leve).
         $temWebp = function_exists('imagewebp');
         ob_start();

@@ -212,13 +212,14 @@ export default function FotoFiliado({
                     Foto da Rede Nacional (site do IBTO)
                 </h3>
                 <div className="flex flex-wrap items-center gap-4">
-                    {/* Quadrada, como no cartão do site; sem foto, um ícone neutro. */}
-                    <div className="flex size-28 items-center justify-center overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-700">
+                    {/* Em pé (3:4), como no cartão do site, e INTEIRA (object-contain: encaixa
+                        sem cortar, nem o rosto nem os pés). Sem foto, um ícone neutro. */}
+                    <div className="flex aspect-[3/4] w-24 items-center justify-center overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-700">
                         {filiado.foto_rede_url ? (
                             <img
                                 src={filiado.foto_rede_url}
                                 alt="Foto da Rede Nacional"
-                                className="size-full object-cover"
+                                className="size-full object-contain"
                             />
                         ) : (
                             <UserRound
