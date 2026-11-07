@@ -457,18 +457,19 @@ export const MANUAIS: Manual[] = [
         publico:
             'A diretoria e a equipe do IBTO. Veja também todos os outros manuais.',
         secoes: [
-            // Duas etapas obrigatórias da equipe (07/11/2026): explica por que a
-            // plataforma leva a pessoa para a Segurança no primeiro acesso.
+            // Duas etapas da equipe (07/11/2026): hoje é OPCIONAL (a regra que obriga
+            // fica desligada na fase de testes). Explica como ligar e que o IBTO pode
+            // passar a exigir mais tarde.
             {
                 id: 'duas-etapas',
-                titulo: 'Verificação em duas etapas (obrigatória para a equipe)',
-                resumo: 'Quem mexe no financeiro, nas fichas dos filiados ou nas permissões precisa de um código do celular além da senha.',
+                titulo: 'Verificação em duas etapas (recomendada para a equipe)',
+                resumo: 'Por enquanto é opcional: a equipe entra só com e-mail e senha. Ligar a verificação protege a conta se a senha vazar, e o IBTO pode passar a exigir antes de abrir ao público.',
                 passos: [
                     'Instale no celular um aplicativo autenticador gratuito (ex.: Google Authenticator ou Microsoft Authenticator).',
-                    'Ao entrar, a plataforma leva você para a tela Segurança, dentro de Configurações.',
+                    'Abra Configurações e depois Segurança.',
                     'Em "Verificação em duas etapas", clique para ligar, leia o QR code com o aplicativo e digite o código de 6 números.',
                     'Guarde os códigos de recuperação em lugar seguro: eles servem se você perder o celular.',
-                    'Pronto: as outras telas são liberadas. Nas próximas entradas, a plataforma pede a senha e o código.',
+                    'Pronto: nas próximas entradas, a plataforma pede a senha e o código.',
                     'Se preferir, cadastre uma chave de acesso (digital ou rosto do celular) em "Chaves de acesso": ela também vale.',
                 ],
                 // Sem "tela": a Segurança não tem tour guiado, então não há "Mostrar na tela".

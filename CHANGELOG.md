@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Mudado (verificação em duas etapas opcional, 07/11/2026)
+
+- A equipe volta a entrar só com e-mail e senha: a verificação em duas etapas deixou de ser obrigatória na fase de testes. Quem quiser pode ligá-la na tela Segurança. Para voltar a obrigar, basta `SEGURANCA_EXIGIR_2FA_EQUIPE=true` no `.env` do servidor.
+
 ### Melhorado (fotos inteiras, #105)
 
 - Fotos e capas aparecem **inteiras**, sem cortar rosto, cabeça ou pés: blog, Meus cursos, galeria de eventos, vitrine e pedido de fotos, álbum do fotógrafo e as prévias dos formulários (blog, galeria, cursos e áreas de atuação). A moldura tem o mesmo tamanho em toda a grade e a sobra é preenchida com a própria foto desfocada, como no site.
