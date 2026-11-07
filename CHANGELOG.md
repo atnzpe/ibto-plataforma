@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Corrigido (senha e acessibilidade)
+
+- O olho de mostrar/esconder a senha pode ser alcançado pela tecla Tab (antes era pulado) e avisa ao leitor de tela se a senha está à mostra. A senha pedida para anonimizar um filiado também ganhou o olho.
+
 ### Adicionado (país do filiado, #11)
 
 - A ficha do filiado ganha o **país** (Brasil por padrão). Quem mora fora recebe o número de registro com a sigla do país (ex.: PT para Portugal), e na Rede Nacional aparece separado dos estados brasileiros.

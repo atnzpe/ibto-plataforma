@@ -6,6 +6,8 @@
  */
 import { Form } from '@inertiajs/react';
 import InputError from '@/components/input-error';
+// Campo de senha com o botão de olho (mostrar/esconder o que foi digitado).
+import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,10 +76,12 @@ export default function AnonimizarFiliado({
                             </div>
                             <div className="grid gap-1">
                                 <Label htmlFor="anon-senha">Sua senha</Label>
-                                <Input
+                                {/* Campo de senha com o olho para mostrar/esconder (07/11/2026),
+                                    igual às telas de entrar e de segurança: quem digita confere
+                                    a senha antes de uma ação que não tem volta. */}
+                                <PasswordInput
                                     id="anon-senha"
                                     name="senha"
-                                    type="password"
                                     autoComplete="current-password"
                                     required
                                 />
