@@ -9,6 +9,9 @@
  * "Marcar como assistida" e o ✓ de cada aula na lista.
  */
 import { Head, Link, router } from '@inertiajs/react';
+// Tocador de vídeo (o mesmo da Biblioteca de técnicas, #107).
+import TocadorVideo from '@/components/tocador-video';
+import type { Video } from '@/components/tocador-video';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
 import { curso as paginaDoCurso } from '@/routes/catalogo';
@@ -61,48 +64,6 @@ function BlocoSalaAoVivo({ sala }: { sala: SalaAoVivo }) {
                 </p>
             )}
         </section>
-    );
-}
-
-/** Como tocar o vídeo (vem de CursoAula::video() no servidor). */
-type Video =
-    | { tipo: 'youtube'; id: string; embed: string }
-    | { tipo: 'arquivo'; url: string }
-    | { tipo: 'enviado'; url: string };
-
-/**
- * O vídeo da aula: YouTube num quadro (iframe) ou o arquivo no tocador do navegador.
- *
- * @param video Ex.: { tipo: 'youtube', embed: 'https://www.youtube-nocookie.com/embed/...' }
- * @param titulo O título da aula (para o leitor de tela).
- * @returns O tocador, sempre em 16:9 e na largura toda.
- */
-function Tocador({ video, titulo }: { video: Video; titulo: string }) {
-    // YouTube: quadro do youtube-nocookie (não grava cookies de propaganda).
-    if (video.tipo === 'youtube') {
-        return (
-            <iframe
-                src={video.embed}
-                title={`Vídeo: ${titulo}`}
-                className="aspect-video w-full rounded-lg bg-black"
-                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-            />
-        );
-    }
-
-    // Arquivo (link .mp4/.webm ou enviado à plataforma): o tocador do próprio navegador.
-    return (
-        <video
-            src={video.url}
-            controls
-            preload="metadata"
-            controlsList="nodownload"
-            className="aspect-video w-full rounded-lg bg-black"
-            aria-label={`Vídeo: ${titulo}`}
-        />
     );
 }
 
@@ -220,7 +181,7 @@ export default function Assistir({
                     </div>
 
                     {aula.video && (
-                        <Tocador video={aula.video} titulo={aula.titulo} />
+                        <TocadorVideo video={aula.video} titulo={aula.titulo} />
                     )}
 
                     {/* Encontro presencial (aula do cronograma): dia, horário e quem aplica. */}

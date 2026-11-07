@@ -52,6 +52,10 @@ class HandleInertiaRequests extends Middleware
         // Aulas regulares (#80): "Aulas regulares" para quem entrou; "Programas" para quem cuida dos cursos.
         'aulas.ver',
         'cursos.gerenciar',
+        // Biblioteca de técnicas (#107): "Biblioteca" para monitores e instrutores;
+        // "Biblioteca (gerenciar)" para o Comando Geral enviar o material.
+        'biblioteca.ver',
+        'biblioteca.gerenciar',
     ];
 
     /**

@@ -11,6 +11,8 @@ use App\Http\Controllers\AulasRegulares\ChamadaRegularController;
 use App\Http\Controllers\AulasRegulares\MensalidadeController;
 use App\Http\Controllers\AulasRegulares\PainelAulasController;
 use App\Http\Controllers\AulasRegulares\ProgramaController;
+use App\Http\Controllers\Biblioteca\BibliotecaController;
+use App\Http\Controllers\Biblioteca\MaterialAdminController;
 use App\Http\Controllers\Blog\AlbumController;
 use App\Http\Controllers\Blog\BlogController;
 use App\Http\Controllers\Blog\FotoDesfoqueController;
@@ -410,6 +412,32 @@ Route::middleware(['auth', 'verified', 'can:blog.publicar'])
         // arquivar). PUBLICAR é só do Comando Geral (blog.publicar).
         Route::resource('galeria', AlbumController::class)->parameters(['galeria' => 'album'])->only(['index', 'create', 'store']);
         Route::post('galeria/{album}/situacao', [AlbumController::class, 'situacao'])->name('galeria.situacao');
+    });
+
+// BIBLIOTECA DE TÉCNICAS no Comando Geral (#107): lista, cadastro e edição dos
+// materiais (vídeo e apostila). Quem entra: "biblioteca.gerenciar".
+// Sem "show" (a prévia é a própria ficha em /biblioteca/{id}) e sem "destroy"
+// (apagar = retirar, desmarcando "ativo"; assim nada some da auditoria).
+Route::middleware(['auth', 'verified', 'can:biblioteca.gerenciar'])
+    ->prefix('comando-geral')
+    ->name('comando-geral.')
+    ->group(function () {
+        Route::resource('biblioteca', MaterialAdminController::class)->except(['show', 'destroy'])
+            ->whereNumber('biblioteca');
+    });
+
+// BIBLIOTECA DE TÉCNICAS para quem estuda (#107): monitores, instrutores e o Comando
+// Geral. A rota exige "biblioteca.ver"; cada material confere também o nível da pessoa
+// (Gate "biblioteca.material", no controlador). Ex.: /biblioteca, /biblioteca/3,
+// /biblioteca/3/video e /biblioteca/3/apostila.
+Route::middleware(['auth', 'verified', 'can:biblioteca.ver'])
+    ->prefix('biblioteca')
+    ->name('biblioteca.')
+    ->group(function () {
+        Route::get('/', [BibliotecaController::class, 'index'])->name('index');
+        Route::get('{material}', [BibliotecaController::class, 'show'])->whereNumber('material')->name('show');
+        Route::get('{material}/video', [BibliotecaController::class, 'video'])->whereNumber('material')->name('video');
+        Route::get('{material}/apostila', [BibliotecaController::class, 'apostila'])->whereNumber('material')->name('apostila');
     });
 
 // EDITAR AS FOTOS DE UM ÁLBUM (17/10/2026): o Comando Geral OU o instrutor do curso ligado

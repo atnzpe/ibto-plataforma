@@ -49,6 +49,9 @@ declare module '@inertiajs/core' {
                 // Aulas regulares (#80): ver os programas (todo mundo que entrou) e cuidar deles.
                 aulas_ver: boolean;
                 cursos_gerenciar: boolean;
+                // Biblioteca de técnicas (#107): abrir a biblioteca e cuidar dos materiais.
+                biblioteca_ver: boolean;
+                biblioteca_gerenciar: boolean;
             };
             // A versão no ar (#75): back (número e commit), front (build) e banco (versão e última migration).
             versao: {

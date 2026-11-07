@@ -151,3 +151,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que a regra vem desligada no `phpunit.xml` e os testes dela a ligam de novo?
 2. O que acontece com um instrutor comum que nunca ligou a segunda etapa?
 3. Se alguém da equipe perder o celular, quais são os dois caminhos para voltar a entrar?
+
+## 07/11/2026 — Biblioteca de técnicas (#107)
+
+- Duas portas: a primeira ("biblioteca.ver") decide quem entra na sala; a segunda ("biblioteca.material") decide cada prateleira, pelo nível. É como o estoque: entrar no depósito não dá direito a abrir o armário dos itens controlados.
+- O link copiado não fura a regra: o vídeo e o PDF só saem por rotas que conferem o nível de novo (403 para quem não pode), nunca por um endereço público.
+- Reaproveitar é mais seguro que copiar: o tocador de vídeo saiu da tela da aula para um componente só; corrigir num lugar corrige nos dois.
+
+**Perguntas para fixar:**
+
+1. Um Monitor II abre o link de um material de "Instrutor I" que um colega mandou. O que acontece, e por quê?
+2. Por que "retirar" um material desmarca "ativo" em vez de apagar a linha do banco?
+3. Um instrutor graduado ficou com a anuidade vencida. Ele ainda abre a biblioteca?

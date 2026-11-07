@@ -4,13 +4,16 @@ namespace App\Providers;
 
 use App\Actions\Fotos\VendaFotos;
 use App\Enums\AcessoCurso;
+use App\Enums\CategoriaNivel;
 use App\Enums\SituacaoCurso;
 use App\Enums\SituacaoMatricula;
+use App\Models\BibliotecaMaterial;
 use App\Models\Curso;
 use App\Models\CursoMatricula;
 use App\Models\Filiado;
 use App\Models\FotoAlbumVenda;
 use App\Models\GaleriaAlbum;
+use App\Models\Nivel;
 use App\Models\Programa;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -262,6 +265,48 @@ class AppServiceProvider extends ServiceProvider
                 // for filiado ativo e com a anuidade em dia (vencido perde o acesso até pagar).
                 && ($curso->acesso !== AcessoCurso::Restrito
                     || ($usuario->filiado?->status === 'ativo' && $usuario->filiado->anuidadeEmDia()))));
+
+        // "biblioteca.ver" (#107): abrir a BIBLIOTECA DE TÉCNICAS. Quem tem a permissão
+        // "biblioteca.ver" (instrutor e admin de equipe, no começo) já passa antes, pelo
+        // Gate::before. Aqui entram também:
+        //   - quem cuida da biblioteca (biblioteca.gerenciar, o Comando Geral);
+        //   - o filiado GRADUADO (Monitor, Instrutor ou Instrutor Expert), ativo e com a
+        //     carteirinha valendo (anuidade em dia ou ano isento), mesmo sem papel nenhum.
+        // O Praticante e o aluno do público ficam de fora (o pedido do Alex é para quem ensina).
+        Gate::define('biblioteca.ver', function (User $usuario): bool {
+            // Comando Geral: sempre entra.
+            if ($usuario->temPermissao('biblioteca.gerenciar')) {
+                return true;
+            }
+
+            $filiado = $usuario->filiado;
+            // Sem ficha de filiado, sem nível ou ainda Praticante: não entra por aqui.
+            if ($filiado === null || $filiado->nivel === null || $filiado->nivel->categoria === CategoriaNivel::Praticante) {
+                return false;
+            }
+
+            // Graduado: só com o registro ativo e a carteirinha valendo (igual à carteirinha, #46).
+            return $filiado->situacaoCarteirinha()['situacao'] === 'ativa';
+        });
+
+        // "biblioteca.material" (#107): ver UM material (a ficha, o vídeo, a apostila).
+        // O Comando Geral vê todos (até os retirados, para conferir). Os outros precisam
+        // abrir a biblioteca, o material precisa estar ativo e liberado para o nível da
+        // pessoa (BibliotecaMaterial::liberadoPara). Sem isso: 403, mesmo com o link.
+        Gate::define('biblioteca.material', function (User $usuario, BibliotecaMaterial $material): bool {
+            // Comando Geral: vê tudo.
+            if ($usuario->temPermissao('biblioteca.gerenciar')) {
+                return true;
+            }
+
+            // Não abre a biblioteca, ou o material foi retirado: não vê.
+            if (Gate::forUser($usuario)->denies('biblioteca.ver') || ! $material->ativo) {
+                return false;
+            }
+
+            // Confere o nível: o da ficha de filiado (sem ficha = sem nível).
+            return $material->liberadoPara($usuario->filiado?->nivel_id, Nivel::posicoes());
+        });
     }
 
     /**
