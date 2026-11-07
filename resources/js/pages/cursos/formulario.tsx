@@ -7,6 +7,8 @@
  * Responsivo: campos em grade que vira uma coluna no celular.
  */
 import PreRequisitosCampos from '@/components/cursos/pre-requisitos-campos';
+// Foto inteira, sem cortar, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { Form, Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import CursoController from '@/actions/App/Http/Controllers/Cursos/CursoController';
@@ -289,10 +291,12 @@ export default function CursoFormulario({
                                             até 2 MB)
                                         </Label>
                                         {curso?.imagem_url && (
-                                            <img
+                                            // Capa inteira: quem edita vê a imagem toda (#105).
+                                            <FotoInteira
                                                 src={curso.imagem_url}
                                                 alt={`Capa atual de ${curso.titulo}`}
-                                                className="h-28 w-full max-w-sm rounded-md object-cover"
+                                                proporcao="h-28"
+                                                className="max-w-sm rounded-md"
                                             />
                                         )}
                                         <Input

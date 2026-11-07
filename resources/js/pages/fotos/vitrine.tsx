@@ -4,6 +4,8 @@
  * Os pedidos anteriores aparecem no topo, para voltar ao Pix ou baixar.
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { useState } from 'react';
 import VitrineFotosController from '@/actions/App/Http/Controllers/Fotos/VitrineFotosController';
 import PassosCompra from '@/components/fotos/passos-compra';
@@ -124,11 +126,13 @@ export default function VitrineFotos({
                                     onClick={() => alternar(foto.id)}
                                     className={`relative block w-full overflow-hidden rounded-md ring-offset-2 focus-visible:outline-2 ${marcada ? 'ring-4 ring-[#6b5d3a]' : ''}`}
                                 >
-                                    <img
+                                    {/* Prévia INTEIRA: quem compra precisa ver a foto toda antes de escolher.
+                                        "span" porque a foto fica dentro de um botão. */}
+                                    <FotoInteira
                                         src={foto.previa_url}
                                         alt={`Foto ${foto.id} do evento (prévia com marca d'água)`}
-                                        loading="lazy"
-                                        className="aspect-square w-full object-cover"
+                                        proporcao="aspect-square"
+                                        como="span"
                                     />
                                     <span className="absolute top-2 right-2 rounded bg-black/70 px-2 py-0.5 text-xs text-white">
                                         {marcada ? '✓ Escolhida' : 'Escolher'}

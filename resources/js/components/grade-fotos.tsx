@@ -4,6 +4,8 @@
  * crédito embaixo; clicar abre a foto inteira numa aba nova. 1 coluna no
  * celular, 2 no tablet e 3 na tela larga: nenhuma tela rola de lado.
  */
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 
 /** Uma foto como a tela mostra. */
 export type FotoGaleria = {
@@ -30,11 +32,11 @@ export default function GradeFotos({ fotos }: { fotos: FotoGaleria[] }) {
                     <figure className="flex flex-col gap-1">
                         {/* Link comum: abre a foto inteira numa aba nova. */}
                         <a href={foto.url} target="_blank" rel="noopener">
-                            <img
+                            {/* Foto inteira na moldura 4:3: a grade fica simétrica e ninguém tem o rosto cortado. */}
+                            <FotoInteira
                                 src={foto.url}
                                 alt={foto.descricao ?? ''}
-                                className="aspect-[4/3] w-full rounded-lg object-cover"
-                                loading="lazy"
+                                className="rounded-lg"
                             />
                         </a>
                         <figcaption className="text-xs text-[#5c5644]">

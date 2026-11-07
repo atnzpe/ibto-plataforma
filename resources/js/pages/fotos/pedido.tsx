@@ -4,6 +4,8 @@
  * marca d'água, até a data limite.
  */
 import { Head, Link, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import VitrineFotosController from '@/actions/App/Http/Controllers/Fotos/VitrineFotosController';
 import PixCopiaECola from '@/components/cursos/pix-copia-e-cola';
 import PassosCompra from '@/components/fotos/passos-compra';
@@ -99,11 +101,12 @@ export default function PedidoFotos({
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {pedido.fotos.map((foto) => (
                         <li key={foto.id} className="flex flex-col gap-1">
-                            <img
+                            {/* Prévia inteira, na mesma moldura quadrada da vitrine. */}
+                            <FotoInteira
                                 src={foto.previa_url}
                                 alt={`Foto ${foto.id} do pedido`}
-                                loading="lazy"
-                                className="aspect-square w-full rounded-md object-cover"
+                                proporcao="aspect-square"
+                                className="rounded-md"
                             />
                             {foto.download_url && (
                                 <a

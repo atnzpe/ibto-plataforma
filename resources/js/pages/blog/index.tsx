@@ -5,6 +5,8 @@
  * Qualquer pessoa vê, sem login.
  */
 import { Head, Link } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { dataBr } from '@/pages/catalogo/index';
 import { index, post as paginaDoPost } from '@/routes/blog';
 
@@ -91,11 +93,11 @@ export default function Blog({
                         >
                             {/* Capa (com a descrição para o leitor de tela) ou o fundo escuro do IBTO. */}
                             {post.capa_url ? (
-                                <img
+                                // Foto inteira na moldura de altura fixa: todos os cartões iguais (#105).
+                                <FotoInteira
                                     src={post.capa_url}
                                     alt={post.capa_descricao ?? ''}
-                                    className="h-44 w-full object-cover"
-                                    loading="lazy"
+                                    proporcao="h-44"
                                 />
                             ) : (
                                 <div

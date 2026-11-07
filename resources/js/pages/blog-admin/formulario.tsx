@@ -7,6 +7,8 @@
  * Salvar aceita o post incompleto; o que falta é cobrado na hora de publicar.
  */
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { useState } from 'react';
 import PostController from '@/actions/App/Http/Controllers/Blog/PostController';
 import InputError from '@/components/input-error';
@@ -318,10 +320,12 @@ export default function PostFormulario({
                                 </legend>
                                 {/* Capa atual (na edição), para ver o que vai trocar. */}
                                 {post?.capa_url && (
-                                    <img
+                                    // Capa inteira: quem edita vê a foto toda, como no site (#105).
+                                    <FotoInteira
                                         src={post.capa_url}
                                         alt={`Capa atual: ${post.capa_descricao ?? ''}`}
-                                        className="h-40 w-full max-w-sm rounded-md border border-border object-cover"
+                                        proporcao="h-40"
+                                        className="max-w-sm rounded-md border border-border"
                                     />
                                 )}
                                 <div className="grid gap-2">
