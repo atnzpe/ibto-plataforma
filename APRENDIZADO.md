@@ -175,3 +175,14 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que a foto da carteirinha continua cortada de propósito?
 2. O navegador baixa a foto duas vezes por causa do fundo desfocado?
 3. O que acontece na esteira se uma tela nova usar `object-cover`?
+
+## 07/11/2026 — Duas etapas opcional na fase de testes
+
+- Uma regra de segurança pode ficar pronta no código e ser ligada ou desligada por uma chave no `.env`, sem apagar nada. Como o caixa do PDV que tem a "senha do gerente" configurável: liga quando a loja precisa.
+- O padrão da chave (`env('...', false)`) é o que vale quando o servidor não diz nada. Mudar o padrão muda a homologação sem precisar entrar no cPanel.
+- Segurança demais na hora errada atrapalha o teste; o certo é ligar antes de abrir ao público.
+
+**Perguntas para fixar:**
+
+1. Onde se liga de novo a obrigação das duas etapas?
+2. Quem já ligou as duas etapas na própria conta continua precisando do código?
