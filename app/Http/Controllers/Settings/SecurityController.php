@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Support\DuasEtapas;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -38,6 +39,10 @@ class SecurityController extends Controller
                     ->all()
                 : [],
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            // Duas etapas obrigatórias da equipe (07/11/2026): true quando esta pessoa
+            // tem acesso sensível e ainda não ligou a segunda etapa (nem tem passkey).
+            // A tela mostra o aviso explicando por que foi trazida até aqui.
+            'exigeDuasEtapas' => DuasEtapas::pendentePara($request->user()),
         ];
 
         if (Features::canManageTwoFactorAuthentication()) {

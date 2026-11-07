@@ -20,6 +20,9 @@ import ManageTwoFactor from '@/components/manage-two-factor';
 // oxfmt-ignore
 type Props = {
     passwordRules: string;
+    // true quando a pessoa tem acesso sensível (financeiro, filiados, permissões...)
+    // e ainda não ligou a verificação em duas etapas: a plataforma a trouxe até aqui.
+    exigeDuasEtapas: boolean;
 } & ManagePasskeysProps &
     ManageTwoFactorProps;
 
@@ -32,6 +35,29 @@ export default function Security(props: Props) {
             <Head title="Configurações de segurança" />
 
             <h1 className="sr-only">Configurações de segurança</h1>
+
+            {/* Aviso das duas etapas obrigatórias (07/11/2026): só aparece para a equipe
+                com acesso sensível que ainda não ligou a segunda etapa. role="alert" faz o
+                leitor de tela ler o aviso assim que a tela abre. Sem a obrigação, nada aparece. */}
+            {props.exigeDuasEtapas && (
+                <div
+                    role="alert"
+                    className="mb-6 rounded-md border border-amber-500/60 bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950/40 dark:text-amber-100"
+                >
+                    <p className="font-semibold">
+                        Ligue a verificação em duas etapas para continuar
+                    </p>
+                    <p className="mt-1">
+                        A sua conta tem acesso a dados sensíveis do IBTO
+                        (financeiro, fichas dos filiados ou permissões). Para
+                        proteger esses dados, além da senha a plataforma vai
+                        pedir um código do aplicativo autenticador do celular.
+                        Ligue abaixo, em &quot;Verificação em duas etapas&quot;,
+                        ou cadastre uma chave de acesso. Depois disso, a
+                        plataforma libera as outras telas.
+                    </p>
+                </div>
+            )}
 
             <div className="space-y-6">
                 <Heading

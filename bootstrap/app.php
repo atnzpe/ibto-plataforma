@@ -4,6 +4,7 @@ use App\Http\Middleware\BloquearCadastroNaoAprovado;
 use App\Http\Middleware\BloquearContaDesativada;
 use App\Http\Middleware\CabecalhosDeSeguranca;
 use App\Http\Middleware\ExigirAceitePolitica;
+use App\Http\Middleware\ExigirDuasEtapas;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentificadorDoPedido;
@@ -47,6 +48,9 @@ return Application::configure(basePath: dirname(__DIR__))
             BloquearCadastroNaoAprovado::class,
             // LGPD (#47): com LGPD_EXIGIR_ACEITE=true, pede o aceite da política antes de seguir.
             ExigirAceitePolitica::class,
+            // Segurança (07/11/2026): a equipe com acesso sensível precisa ligar a
+            // verificação em duas etapas antes de usar a plataforma.
+            ExigirDuasEtapas::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -139,3 +139,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que o registro de um filiado antigo não muda quando você edita o país dele?
 2. O que aconteceria se a coluna `pais` fosse criada sem valor padrão?
 3. Qual a diferença entre `memory_limit` (teto) e a memória que o PHP de fato usa?
+
+## 07/11/2026 — Duas etapas obrigatórias para a equipe
+
+- Senha sozinha é uma chave só: se vazar, abre a porta. A segunda etapa é como o cofre da loja que pede a chave E o código do gerente; quem mexe no dinheiro e nos dados dos filiados precisa das duas.
+- Porteiro (middleware) com "lista de portas livres": a tela para ligar a segunda etapa, confirmar a senha e sair nunca é barrada, senão a pessoa ficaria presa do lado de dentro sem conseguir se proteger.
+- `can()` e `temPermissao()` não são a mesma coisa: algumas regras pedem também QUAL filiado; para perguntar só "o papel tem esta permissão?", vale `temPermissao()`.
+
+**Perguntas para fixar:**
+
+1. Por que a regra vem desligada no `phpunit.xml` e os testes dela a ligam de novo?
+2. O que acontece com um instrutor comum que nunca ligou a segunda etapa?
+3. Se alguém da equipe perder o celular, quais são os dois caminhos para voltar a entrar?

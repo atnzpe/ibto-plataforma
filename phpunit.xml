@@ -30,6 +30,9 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
+        <!-- Duas etapas obrigatórias da equipe desligadas nos testes em geral; os
+             testes da própria regra (DuasEtapasEquipeTest) a ligam quando precisam. -->
+        <env name="SEGURANCA_EXIGIR_2FA_EQUIPE" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
     </php>

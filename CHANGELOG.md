@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Segurança (duas etapas obrigatórias para a equipe)
+
+- Quem tem acesso sensível (financeiro, fichas dos filiados, permissões, usuários, relatórios ou aprovação de cadastros) só usa a plataforma depois de ligar a **verificação em duas etapas** ou cadastrar uma **chave de acesso**. Até lá, a plataforma leva a pessoa para Configurações, Segurança, com um aviso explicando o porquê, e guarda a tela que ela queria. Aluno e instrutor comum não são afetados. Numa emergência, `SEGURANCA_EXIGIR_2FA_EQUIPE=false` no `.env` desliga a regra. Manual do Comando Geral atualizado.
+
 ### Corrigido (senha e acessibilidade)
 
 - O olho de mostrar/esconder a senha pode ser alcançado pela tecla Tab (antes era pulado) e avisa ao leitor de tela se a senha está à mostra. A senha pedida para anonimizar um filiado também ganhou o olho.
