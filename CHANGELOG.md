@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Segurança (bibliotecas, 07/11/2026)
+
+- Bibliotecas do Symfony (a base do Laravel) de 7.4.19 para 7.4.23: corrige os 10 alertas publicados (pedidos HEAD contornando regras de acesso, endereços gerados com o host escolhido pelo visitante, injeção de cabeçalho em e-mail, leitura de arquivo do servidor pelo serializer, entre outros). `composer audit` sem alertas.
+- Bibliotecas JavaScript atualizadas dentro das faixas do `package.json` (vite 8.3.6, react 19.3.1, tailwindcss 4.3.5...). Os alertas que sobram no `bun audit` vêm de dentro do vite-plus (ferramenta de montagem) e não chegam ao navegador; somem quando ele lançar a correção.
+
 ### Segurança (duas etapas obrigatórias para a equipe)
 
 - Quem tem acesso sensível (financeiro, fichas dos filiados, permissões, usuários, relatórios ou aprovação de cadastros) só usa a plataforma depois de ligar a **verificação em duas etapas** ou cadastrar uma **chave de acesso**. Até lá, a plataforma leva a pessoa para Configurações, Segurança, com um aviso explicando o porquê, e guarda a tela que ela queria. Aluno e instrutor comum não são afetados. Numa emergência, `SEGURANCA_EXIGIR_2FA_EQUIPE=false` no `.env` desliga a regra. Manual do Comando Geral atualizado.
