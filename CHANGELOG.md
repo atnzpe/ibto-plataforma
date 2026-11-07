@@ -11,6 +11,11 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Melhorado (fotos inteiras, #105)
+
+- Fotos e capas aparecem **inteiras**, sem cortar rosto, cabeça ou pés: blog, Meus cursos, galeria de eventos, vitrine e pedido de fotos, álbum do fotógrafo e as prévias dos formulários (blog, galeria, cursos e áreas de atuação). A moldura tem o mesmo tamanho em toda a grade e a sobra é preenchida com a própria foto desfocada, como no site.
+- Novo componente `FotoInteira`, igual ao do site. Um teste de guarda reprova a esteira se alguma tela voltar a cortar foto fora das exceções (logo, foto 3x4 da carteirinha e do filiado).
+
 ### Novo (biblioteca de técnicas, #107)
 
 - **Biblioteca de técnicas** (pedido do Alex, 06/11/2026): vídeos e apostilas das técnicas, do básico ao avançado, para monitores e instrutores revisarem antes de ensinar. Filtro por área e por nível e busca pelo nome.

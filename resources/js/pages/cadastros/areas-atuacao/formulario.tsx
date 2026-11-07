@@ -5,6 +5,8 @@
  * voltam em português e aparecem embaixo de cada campo.
  */
 import { Form, Head, Link } from '@inertiajs/react';
+// Foto inteira, sem cortar, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import AreaAtuacaoController from '@/actions/App/Http/Controllers/Cadastros/AreaAtuacaoController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -91,11 +93,15 @@ export default function AreaAtuacaoFormulario({
                                 <Label htmlFor="imagem">Imagem da área</Label>
                                 {/* Imagem atual (na edição), para a pessoa ver o que vai trocar. */}
                                 {area?.imagem_url && (
-                                    <img
-                                        src={area.imagem_url}
-                                        alt={`Imagem atual de ${area.nome}`}
-                                        className="h-32 w-48 rounded-md border border-border object-cover"
-                                    />
+                                    // Caixa de 12rem de largura com a imagem inteira dentro (#105).
+                                    <div className="w-48">
+                                        <FotoInteira
+                                            src={area.imagem_url}
+                                            alt={`Imagem atual de ${area.nome}`}
+                                            proporcao="h-32"
+                                            className="rounded-md border border-border"
+                                        />
+                                    </div>
                                 )}
                                 {/* accept: o seletor de arquivos já mostra só imagens
                                     (a conferência de verdade é no servidor). */}

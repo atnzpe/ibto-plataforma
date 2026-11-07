@@ -5,6 +5,8 @@
  * link "Editar" em cada linha. Desativar é feito pela edição (não há apagar).
  */
 import { Head, Link, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { Button } from '@/components/ui/button';
 import { create, edit, index } from '@/routes/cadastros/areas-atuacao';
 import type { AreaAtuacao } from '@/types/cadastros';
@@ -100,12 +102,15 @@ export default function AreasAtuacaoIndex({ areas }: { areas: AreaAtuacao[] }) {
                                         {/* Miniatura da imagem; sem imagem, o aviso escrito.
                                             alt="" : a imagem é decorativa aqui, o nome está ao lado. */}
                                         {area.imagem_url ? (
-                                            <img
-                                                src={area.imagem_url}
-                                                alt=""
-                                                loading="lazy"
-                                                className="h-10 w-16 rounded border border-border object-cover"
-                                            />
+                                            // Miniatura de 4rem de largura com a imagem inteira (#105).
+                                            <div className="w-16">
+                                                <FotoInteira
+                                                    src={area.imagem_url}
+                                                    alt=""
+                                                    proporcao="h-10"
+                                                    className="rounded border border-border"
+                                                />
+                                            </div>
                                         ) : (
                                             <span className="text-xs text-muted-foreground">
                                                 Sem imagem

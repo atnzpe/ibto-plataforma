@@ -5,6 +5,8 @@
  * acima veem; quem não pode ver recebe o aviso "exclusivo para filiados".
  */
 import { Head, Link } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import { dataBr } from '@/pages/catalogo/index';
 import { album as paginaDoAlbum } from '@/routes/galeria';
 
@@ -76,11 +78,11 @@ export default function Eventos({
                         >
                             {/* A capa é a primeira foto do álbum. */}
                             {album.capa_url ? (
-                                <img
+                                // Capa inteira na moldura de altura fixa: todos os cartões iguais (#105).
+                                <FotoInteira
                                     src={album.capa_url}
                                     alt={album.capa_descricao ?? ''}
-                                    className="h-48 w-full object-cover"
-                                    loading="lazy"
+                                    proporcao="h-48"
                                 />
                             ) : (
                                 <div

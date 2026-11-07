@@ -8,6 +8,8 @@
  * Sem rolagem lateral: as etapas quebram em grade e os cartões empilham.
  */
 import { Head, Link } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import { dataBr } from '@/pages/catalogo/index';
@@ -240,12 +242,11 @@ export default function MeusCursos({
                             >
                                 <div className="flex h-28 items-center justify-center bg-[#1c1b17]">
                                     {meu.imagem_url ? (
-                                        <img
+                                        // Imagem do curso inteira (sem cortar), só de enfeite (alt vazio) (#105).
+                                        <FotoInteira
                                             src={meu.imagem_url}
                                             alt=""
-                                            aria-hidden="true"
-                                            className="h-full w-full object-cover"
-                                            loading="lazy"
+                                            proporcao="h-full"
                                         />
                                     ) : (
                                         <span

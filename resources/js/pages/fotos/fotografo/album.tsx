@@ -3,6 +3,8 @@
  * as prévias com a marca d'água. "Tirar" apaga a foto do álbum.
  */
 import { Form, Head, router, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import FotografoController from '@/actions/App/Http/Controllers/Fotos/FotografoController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -87,11 +89,12 @@ export default function AlbumFotografo({ album }: { album: Album }) {
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     {album.fotos.map((foto) => (
                         <li key={foto.id} className="flex flex-col gap-1">
-                            <img
+                            {/* Prévia inteira: o fotógrafo confere a foto como o comprador vai ver. */}
+                            <FotoInteira
                                 src={foto.previa_url}
                                 alt={`Prévia da foto ${foto.id}`}
-                                loading="lazy"
-                                className="aspect-square w-full rounded-md object-cover"
+                                proporcao="aspect-square"
+                                className="rounded-md"
                             />
                             <Button
                                 type="button"

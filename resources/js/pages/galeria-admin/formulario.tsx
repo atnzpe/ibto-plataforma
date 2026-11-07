@@ -9,6 +9,8 @@
  * 4. (na edição) a situação e os botões: publicar, arquivar, voltar para rascunho.
  */
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+// Foto inteira, sem cortar o rosto, com o fundo desfocado (#105).
+import FotoInteira from '@/components/foto-inteira';
 import AlbumController from '@/actions/App/Http/Controllers/Blog/AlbumController';
 import DesfocarFoto from '@/components/galeria/desfocar-foto';
 import type { Area } from '@/components/galeria/desfocar-foto';
@@ -465,14 +467,14 @@ export default function AlbumFormulario({
                                                 key={foto.id}
                                                 className={`flex flex-col gap-2 rounded-md border p-3 text-sm ${foto.descrita ? 'border-border' : 'border-amber-600'}`}
                                             >
-                                                <img
+                                                {/* Foto inteira: quem descreve vê a foto toda (#105). */}
+                                                <FotoInteira
                                                     src={foto.url}
                                                     alt={
                                                         foto.descricao ??
                                                         'Foto ainda sem descrição'
                                                     }
-                                                    className="aspect-[4/3] w-full rounded object-cover"
-                                                    loading="lazy"
+                                                    className="rounded"
                                                 />
                                                 <Label
                                                     htmlFor={`descricao-${foto.id}`}

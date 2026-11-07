@@ -163,3 +163,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Um Monitor II abre o link de um material de "Instrutor I" que um colega mandou. O que acontece, e por quê?
 2. Por que "retirar" um material desmarca "ativo" em vez de apagar a linha do banco?
 3. Um instrutor graduado ficou com a anuidade vencida. Ele ainda abre a biblioteca?
+
+## 07/11/2026 — Fotos inteiras (#105)
+
+- `object-cover` enche a moldura cortando a sobra; `object-contain` mostra a foto toda e deixa sobra. O componente junta os dois: a foto inteira na frente e a mesma foto desfocada atrás, preenchendo a sobra.
+- Um "teste de guarda" não testa uma função: ele vigia o código. Se alguém escrever `object-cover` numa tela nova, a esteira avisa antes de ir para o ar.
+- O HTML tem regras de quem cabe dentro de quem: `<div>` não entra em `<button>`. Por isso o componente aceita virar `<span>`.
+
+**Perguntas para fixar:**
+
+1. Por que a foto da carteirinha continua cortada de propósito?
+2. O navegador baixa a foto duas vezes por causa do fundo desfocado?
+3. O que acontece na esteira se uma tela nova usar `object-cover`?
