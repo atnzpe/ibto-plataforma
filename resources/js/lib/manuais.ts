@@ -225,6 +225,27 @@ export const MANUAIS: Manual[] = [
         titulo: 'Instrutor',
         publico: 'Quem propõe e ministra cursos.',
         secoes: [
+            // Biblioteca de técnicas (#107): revisar a técnica antes de ensinar.
+            {
+                id: 'biblioteca',
+                titulo: 'Biblioteca de técnicas',
+                resumo: 'Vídeos e apostilas das técnicas, do básico ao avançado, para revisar antes de passar ao aluno.',
+                passos: [
+                    'Abra "Biblioteca de técnicas" no menu.',
+                    'Escolha a área e o nível, ou digite o nome da técnica na busca.',
+                    'Clique no cartão para ver o vídeo e a explicação.',
+                    'Se a técnica tiver apostila, clique em "Baixar a apostila (PDF)".',
+                ],
+                regras: [
+                    'Você vê as técnicas até o seu nível. As de níveis acima aparecem quando você for graduado.',
+                    'Monitores e instrutores graduados entram com o registro ativo e a anuidade em dia.',
+                ],
+                // "Mostrar na tela": abre a biblioteca já com o tour.
+                tela: {
+                    endereco: '/biblioteca',
+                    nome: 'Biblioteca de técnicas',
+                },
+            },
             {
                 id: 'propor-curso',
                 titulo: 'Propor um curso',
@@ -451,6 +472,30 @@ export const MANUAIS: Manual[] = [
                     'Se preferir, cadastre uma chave de acesso (digital ou rosto do celular) em "Chaves de acesso": ela também vale.',
                 ],
                 // Sem "tela": a Segurança não tem tour guiado, então não há "Mostrar na tela".
+            },
+            // Biblioteca de técnicas (#107): o Comando Geral envia e cuida do material.
+            {
+                id: 'biblioteca-materiais',
+                titulo: 'Enviar material para a Biblioteca de técnicas',
+                resumo: 'Vídeo e apostila de cada técnica, liberados por nível para monitores e instrutores.',
+                passos: [
+                    'Abra "Biblioteca (materiais)" no menu e clique em "Novo material".',
+                    'Escreva o nome da técnica e a explicação (o que observar, erros comuns).',
+                    'Escolha a área e o nível mínimo. Vazio quer dizer todas as áreas ou todos os níveis.',
+                    'No vídeo, cole o link do YouTube não listado (recomendado) ou envie o arquivo .mp4 de até 200 MB.',
+                    'Se tiver, envie a apostila em PDF (até 10 MB) e clique em "Salvar".',
+                    'Para retirar, abra "Editar", desmarque "Na biblioteca" e salve. Nada é apagado e dá para voltar.',
+                ],
+                regras: [
+                    'Só vê o material quem tem o nível mínimo ou um acima. O link copiado não abre para quem não tem o nível.',
+                    'Quem abre a biblioteca muda na tela de Permissões ("Ver a biblioteca de técnicas").',
+                    'Cada envio, edição e retirada fica na auditoria.',
+                ],
+                // "Mostrar na tela": abre a lista dos materiais já com o tour.
+                tela: {
+                    endereco: '/comando-geral/biblioteca',
+                    nome: 'Biblioteca (materiais)',
+                },
             },
             {
                 id: 'painel',

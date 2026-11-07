@@ -13,6 +13,8 @@ import {
     FileText,
     Landmark,
     LayoutGrid,
+    // Ícone de estante de livros: a Biblioteca de técnicas (#107).
+    Library,
     Medal,
     Newspaper,
     Tags,
@@ -157,6 +159,23 @@ const cadastrosNavItems: (NavItem & {
         permissao: 'pagamentos_confirmar',
     },
     // Dados para pagamento (#41): PIX e conta do IBTO e a chave "por curso".
+    // Biblioteca de técnicas (#107): vídeos e apostilas para monitores e instrutores
+    // revisarem antes de ensinar. Aparece para quem pode abrir a biblioteca.
+    {
+        title: 'Biblioteca de técnicas',
+        grupo: 'ensino',
+        href: '/biblioteca',
+        icon: Library,
+        permissao: 'biblioteca_ver',
+    },
+    // Biblioteca no Comando Geral (#107): enviar, editar e retirar material.
+    {
+        title: 'Biblioteca (materiais)',
+        grupo: 'ensino',
+        href: '/comando-geral/biblioteca',
+        icon: Library,
+        permissao: 'biblioteca_gerenciar',
+    },
     {
         title: 'Dados para pagamento',
         grupo: 'financeiro',

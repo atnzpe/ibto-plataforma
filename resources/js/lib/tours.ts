@@ -324,6 +324,35 @@ export const TOURS: Record<string, PassoDoTour[]> = {
             texto: 'Álbuns de fotos dos eventos. Cada foto precisa de descrição; o álbum só publica com a autorização de imagem.',
         },
     ],
+    // Biblioteca de técnicas (#107): a lista, a ficha e as duas telas do Comando Geral.
+    'biblioteca/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Biblioteca de técnicas',
+            texto: 'Vídeos e apostilas para revisar antes de ensinar. Filtre pela área e pelo nível ou busque pelo nome; você vê as técnicas até o seu nível.',
+        },
+    ],
+    'biblioteca/material': [
+        {
+            elemento: 'main h1',
+            titulo: 'A técnica',
+            texto: 'Assista ao vídeo, leia a explicação e, se houver, baixe a apostila em PDF.',
+        },
+    ],
+    'biblioteca-admin/index': [
+        {
+            elemento: 'main h1',
+            titulo: 'Biblioteca (materiais)',
+            texto: 'Todos os materiais, na biblioteca e retirados. Toque em "Novo material" para enviar vídeo e apostila de uma técnica.',
+        },
+    ],
+    'biblioteca-admin/formulario': [
+        {
+            elemento: 'main h1',
+            titulo: 'O material',
+            texto: 'Nome, explicação, área e nível mínimo. No vídeo, prefira o link do YouTube não listado. Desmarque "Na biblioteca" para retirar.',
+        },
+    ],
     // ===== Tours completados em 17/10/2026 (auditoria "nível militar": toda tela tem tour). =====
     // Aulas regulares (#80).
     'aulas-regulares/index': [

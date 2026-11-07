@@ -11,6 +11,13 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Novo (biblioteca de técnicas, #107)
+
+- **Biblioteca de técnicas** (pedido do Alex, 06/11/2026): vídeos e apostilas das técnicas, do básico ao avançado, para monitores e instrutores revisarem antes de ensinar. Filtro por área e por nível e busca pelo nome.
+- Quem abre: monitores e instrutores graduados com o registro ativo e a anuidade em dia, quem tem a permissão "Ver a biblioteca de técnicas" (instrutor e admin de equipe, no começo) e o Comando Geral. Cada material pode exigir um nível mínimo: só vê quem tem aquele nível ou um acima, e o link copiado dá 403 para quem não tem.
+- Comando Geral: "Biblioteca (materiais)" para enviar vídeo (link do YouTube ou arquivo de até 200 MB) e apostila em PDF (até 10 MB), editar e retirar (sem apagar). Cada ação fica na auditoria.
+- Manual `/ajuda` e tours das quatro telas novas. O tocador de vídeo das aulas virou um componente reaproveitado pela biblioteca.
+
 ### Segurança (bibliotecas, 07/11/2026)
 
 - Bibliotecas do Symfony (a base do Laravel) de 7.4.19 para 7.4.23: corrige os 10 alertas publicados (pedidos HEAD contornando regras de acesso, endereços gerados com o host escolhido pelo visitante, injeção de cabeçalho em e-mail, leitura de arquivo do servidor pelo serializer, entre outros). `composer audit` sem alertas.

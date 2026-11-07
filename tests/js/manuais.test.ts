@@ -63,6 +63,9 @@ describe('conteúdo dos manuais', () => {
         const telaDoEndereco: Record<string, string> = {
             '/cursos': 'catalogo/index',
             '/meus-cursos': 'meus-cursos',
+            // Biblioteca de técnicas (#107): a lista de quem estuda e a do Comando Geral.
+            '/biblioteca': 'biblioteca/index',
+            '/comando-geral/biblioteca': 'biblioteca-admin/index',
             '/meu-dossie': 'meu-dossie',
             '/minha-carteirinha': 'carteirinha/minha',
             '/fotos': 'fotos/index',
