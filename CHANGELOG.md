@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Adicionado (país do filiado, #11)
+
+- A ficha do filiado ganha o **país** (Brasil por padrão). Quem mora fora recebe o número de registro com a sigla do país (ex.: PT para Portugal), e na Rede Nacional aparece separado dos estados brasileiros.
+
 ### Corrigido (Rede Nacional, #11)
 
 - A foto da Rede Nacional é guardada **inteira**, só reduzida (lado maior até 800 px), sem o recorte quadrado que cortava o rosto e os pés de quem posa em pé. A prévia na ficha e no Perfil mostra a foto inteira, em pé. A 3x4 e a foto de perfil continuam quadradas. Quem já tinha enviado a foto precisa enviar de novo.
