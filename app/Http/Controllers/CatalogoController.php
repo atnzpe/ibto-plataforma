@@ -197,9 +197,11 @@ class CatalogoController extends Controller
                 ? ['noindex' => true]
                 : ['seo' => Seo::pagina(
                     $curso->titulo,
-                    $curso->chamada ?: $curso->descricao,
+                    // Descrição completa (15/11/2026): chamada + data, cidade, modalidade e preço.
+                    Seo::descricaoCurso($curso),
                     $curso->imagemUrl(),
-                    Seo::curso($curso->titulo, $curso->chamada ?: $curso->descricao, route('catalogo.curso', $curso)),
+                    // Dados estruturados completos: turma (data, local, instrutor) e oferta (preço).
+                    Seo::curso($curso, route('catalogo.curso', $curso)),
                 )],
         );
     }

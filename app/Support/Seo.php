@@ -17,6 +17,8 @@
 
 namespace App\Support;
 
+use App\Enums\ModalidadeCurso;
+use App\Models\Curso;
 use Illuminate\Support\Str;
 
 class Seo
@@ -29,12 +31,16 @@ class Seo
      * @param  string|null  $imagem  Endereço completo da imagem do cartão; null = o emblema do IBTO.
      * @param  array<string, mixed>|null  $dados  Os dados estruturados (JSON-LD), ou null. Ex.: Seo::curso(...).
      * @param  string  $tipo  O tipo do Open Graph: 'website' (padrão) ou 'article'.
-     * @return array{titulo: string, descricao: string, url: string, imagem: string, tipo: string, json_ld: string|null}
+     * @return array{titulo: string, titulo_curto: string, descricao: string, url: string, imagem: string, tipo: string, json_ld: string|null}
      */
     public static function pagina(string $titulo, ?string $descricao, ?string $imagem = null, ?array $dados = null, string $tipo = 'website'): array
     {
         return [
-            'titulo' => $titulo.' · '.config('app.name'),
+            // "Título - IBTO Cursos": o MESMO formato que o React usa (app.tsx), para o
+            // Google e a aba do navegador mostrarem o mesmo texto antes e depois do React.
+            'titulo' => $titulo.' - '.config('app.name'),
+            // O título sozinho, para o texto alternativo da imagem do cartão. Ex.: 'APH Tático — Nível 1'.
+            'titulo_curto' => $titulo,
             'descricao' => self::resumo($descricao),
             // O endereço oficial (canônico): sem os filtros da busca (?area=...), para o
             // Google não achar que cada filtro é uma página diferente.
@@ -49,25 +55,97 @@ class Seo
     }
 
     /**
-     * Os dados estruturados de um CURSO (o tipo "Course" do schema.org, que o
-     * Google usa nos resultados de cursos).
+     * A DESCRIÇÃO de um curso para o Google e o WhatsApp (15/11/2026, SEO altíssimo):
+     * a chamada (ou a descrição) seguida do que a pessoa procura antes de clicar:
+     * data, cidade, modalidade e preço. O resumo() corta em até 160 letras.
      *
-     * @param  string  $nome  O título do curso.
-     * @param  string|null  $descricao  A descrição.
-     * @param  string  $url  O endereço da página do curso.
+     * @param  Curso  $curso  O curso da página.
+     * @return string Ex.: 'Integração · Capacitação. 21/02/2027 · Limeira - SP · Presencial · R$ 250,00.'
+     */
+    public static function descricaoCurso(Curso $curso): string
+    {
+        // Os pedaços de informação, na ordem em que aparecem; os vazios são descartados.
+        $detalhes = array_filter([
+            // A data de início, no formato brasileiro (dia/mês/ano). Sem data (online): nada.
+            $curso->data_inicio?->format('d/m/Y'),
+            // O local (cidade). Sem local (online): nada.
+            $curso->local,
+            // "Presencial" ou "Online".
+            $curso->modalidade->rotulo(),
+            // "Gratuito" ou o preço em reais. Ex.: 'R$ 250,00'.
+            $curso->gratuito() ? 'Gratuito' : 'R$ '.number_format($curso->valor_centavos / 100, 2, ',', '.'),
+        ]);
+
+        // Os detalhes numa linha só, com ponto final. Ex.: '21/02/2027 · Limeira - SP · Presencial · R$ 250,00.'
+        $linhaDetalhes = implode(' · ', $detalhes).'.';
+
+        // A frase do curso: a chamada do cartaz; sem ela, a descrição (sem HTML); sem as duas, vazia.
+        $frase = trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) ($curso->chamada ?: $curso->descricao))));
+
+        // Espaço que sobra para a frase dentro das 157 letras: os detalhes NUNCA são cortados
+        // (data e preço são o que a pessoa procura); quem encolhe é a frase.
+        $espaco = 157 - mb_strlen($linhaDetalhes) - 1;
+        // Frase maior que o espaço: corta e põe "..." no fim. Se couber, fica inteira.
+        $frase = Str::limit($frase, max(0, $espaco - 3));
+        // Garante o ponto final da frase (sem duplicar se já terminar em ".", "!" ou "?"). Frase vazia: fica vazia.
+        $frase = $frase === '' || preg_match('/[.!?]$/u', $frase) ? $frase : $frase.'.';
+
+        // Frase + detalhes. O resumo() limpa os espaços e garante o limite de tamanho.
+        return self::resumo(trim($frase.' '.$linhaDetalhes));
+    }
+
+    /**
+     * Os dados estruturados de um CURSO (o tipo "Course" do schema.org, que o
+     * Google usa nos resultados de cursos). Desde 15/11/2026, completos: a TURMA
+     * (hasCourseInstance: data, local, presencial ou online, instrutor) e a OFERTA
+     * (offers: preço em reais), que o Google pede para mostrar o curso em destaque.
+     *
+     * @param  Curso  $curso  O curso da página.
+     * @param  string  $url  O endereço da página do curso. Ex.: 'https://cursos.ib-to.org/cursos/25'.
      * @return array<string, mixed>
      */
-    public static function curso(string $nome, ?string $descricao, string $url): array
+    public static function curso(Curso $curso, string $url): array
     {
-        return [
+        // A TURMA (CourseInstance): como e quando o curso acontece.
+        $turma = array_filter([
+            '@type' => 'CourseInstance',
+            // Modo: "onsite" (presencial) ou "online", nos nomes que o schema.org entende.
+            'courseMode' => $curso->modalidade === ModalidadeCurso::Presencial ? 'onsite' : 'online',
+            // Datas no formato internacional (ano-mês-dia). Sem data: o campo some (array_filter).
+            'startDate' => $curso->data_inicio?->toDateString(),
+            // Sem data de fim: termina no mesmo dia em que começa.
+            'endDate' => ($curso->data_fim ?? $curso->data_inicio)?->toDateString(),
+            // O lugar, só para curso presencial com local preenchido.
+            'location' => $curso->modalidade === ModalidadeCurso::Presencial && $curso->local
+                ? ['@type' => 'Place', 'name' => $curso->local, 'address' => $curso->local]
+                : null,
+            // Quem aplica, se houver um nome para mostrar.
+            'instructor' => $curso->instrutorExibido() ? ['@type' => 'Person', 'name' => $curso->instrutorExibido()] : null,
+            // Carga horária no formato internacional de duração. Ex.: 10 horas = 'PT10H'.
+            'courseWorkload' => $curso->carga_horaria ? 'PT'.$curso->carga_horaria.'H' : null,
+        ], fn ($valor) => $valor !== null);
+
+        return array_filter([
             '@context' => 'https://schema.org',
             '@type' => 'Course',
-            'name' => $nome,
-            'description' => self::resumo($descricao),
+            'name' => $curso->titulo,
+            'description' => self::descricaoCurso($curso),
             'url' => $url,
+            // A capa do curso (endereço completo), se houver.
+            'image' => $curso->imagemUrl(),
             // Quem oferece: o IBTO.
             'provider' => self::organizacao(),
-        ];
+            'hasCourseInstance' => [$turma],
+            // A OFERTA: preço em reais (texto com ponto, como o schema.org pede). Ex.: '250.00'.
+            'offers' => [[
+                '@type' => 'Offer',
+                // "Free" (gratuito) ou "Paid" (pago), nos nomes que o Google entende.
+                'category' => $curso->gratuito() ? 'Free' : 'Paid',
+                'price' => number_format($curso->valor_centavos / 100, 2, '.', ''),
+                'priceCurrency' => 'BRL',
+                'url' => $url,
+            ]],
+        ], fn ($valor) => $valor !== null);
     }
 
     /**

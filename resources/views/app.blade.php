@@ -27,6 +27,8 @@
             <meta property="og:description" content="{{ $seo['descricao'] }}">
             <meta property="og:url" content="{{ $seo['url'] }}">
             <meta property="og:image" content="{{ $seo['imagem'] }}">
+            {{-- Texto alternativo da imagem do cartão (acessibilidade: leitores de tela nas redes sociais). --}}
+            <meta property="og:image:alt" content="{{ $seo['titulo_curto'] }}">
             <meta name="twitter:card" content="summary_large_image">
             {{-- Dados estruturados (JSON-LD): "isto é um curso do IBTO". O texto já vem
                  protegido (JSON_HEX_TAG), por isso pode ir sem o escape do Blade. --}}
@@ -73,7 +75,10 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            {{-- O título que o Google lê ANTES do React (15/11/2026, SEO altíssimo): o da página
+                 ("Congresso Nacional IBTO - IBTO Cursos"), quando o controller mandou o SEO;
+                 senão, só o nome da plataforma. O React troca pelo mesmo texto depois. --}}
+            <title>{{ $seo['titulo'] ?? config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
