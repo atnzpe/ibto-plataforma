@@ -6,13 +6,13 @@
 
 ## 1. O que já está pronto (conferido em 15/11/2026)
 
-| Item | Resultado |
-|---|---|
-| Homologação no ar desde 07/10/2026, publicando sozinha a cada merge | ok |
-| Testes automáticos, tipos, estilo e Lighthouse a cada mudança | ok |
-| Histórico sem senhas nem chaves (gitleaks, 07/11/2026) | ok |
-| Pedidos já entregues: Rede Nacional (#11), fotos inteiras (#105), biblioteca de técnicas (#107) | no ar na homologação |
-| Congresso Nacional IBTO com dados de exemplo | na homologação, marcado `[TESTE]` |
+| Item                                                                                            | Resultado                         |
+| ----------------------------------------------------------------------------------------------- | --------------------------------- |
+| Homologação no ar desde 07/10/2026, publicando sozinha a cada merge                             | ok                                |
+| Testes automáticos, tipos, estilo e Lighthouse a cada mudança                                   | ok                                |
+| Histórico sem senhas nem chaves (gitleaks, 07/11/2026)                                          | ok                                |
+| Pedidos já entregues: Rede Nacional (#11), fotos inteiras (#105), biblioteca de técnicas (#107) | no ar na homologação              |
+| Congresso Nacional IBTO com dados de exemplo                                                    | na homologação, marcado `[TESTE]` |
 
 ## 2. O que precisa vir do IBTO (sem isso, a produção não começa)
 
@@ -24,34 +24,34 @@
 
 ## 3. O que muda em relação à homologação
 
-| Item | Homologação | Produção |
-|---|---|---|
-| Endereço | `cursos-homolog.ib-to.org` | `cursos.ib-to.org` |
-| Pasta no servidor | `~/cursos-homolog.ib-to.org` | `~/cursos.ib-to.org` |
-| Banco | o da homologação | **banco novo, vazio** (nunca cópia do de testes) |
-| Ambiente no GitHub | `homologacao` | `producao` |
-| Deploy | automático a cada merge na `main` | **só pelo botão "Run workflow"**, depois do teste humano |
-| `APP_KEY` | a da homologação | **nova** (`php artisan key:generate --show`) |
-| Cargas de teste (`PILOTO_*`) | ligadas | **todas vazias / false** |
-| `SEGURANCA_EXIGIR_2FA_EQUIPE` | false (fase de testes) | true (depois da #110) |
-| `APP_INDEXAVEL` | false | false até o lançamento; true no dia do lançamento |
+| Item                          | Homologação                       | Produção                                                 |
+| ----------------------------- | --------------------------------- | -------------------------------------------------------- |
+| Endereço                      | `cursos-homolog.ib-to.org`        | `cursos.ib-to.org`                                       |
+| Pasta no servidor             | `~/cursos-homolog.ib-to.org`      | `~/cursos.ib-to.org`                                     |
+| Banco                         | o da homologação                  | **banco novo, vazio** (nunca cópia do de testes)         |
+| Ambiente no GitHub            | `homologacao`                     | `producao`                                               |
+| Deploy                        | automático a cada merge na `main` | **só pelo botão "Run workflow"**, depois do teste humano |
+| `APP_KEY`                     | a da homologação                  | **nova** (`php artisan key:generate --show`)             |
+| Cargas de teste (`PILOTO_*`)  | ligadas                           | **todas vazias / false**                                 |
+| `SEGURANCA_EXIGIR_2FA_EQUIPE` | false (fase de testes)            | true (depois da #110)                                    |
+| `APP_INDEXAVEL`               | false                             | false até o lançamento; true no dia do lançamento        |
 
 ## 4. Passo a passo
 
 Ordem pensada para que nada mude para quem usa a homologação.
 
-| # | O que fazer | Como conferir | Como voltar |
-|---|---|---|---|
-| 1 | Criar o workflow `deploy-producao.yml` (cópia do da homologação, ambiente `producao`, só "Run workflow") numa branch, com PR e revisão | CI verde na PR | Fechar a PR |
-| 2 | cPanel: subdomínio `cursos.ib-to.org` com Document Root em `cursos.ib-to.org/public`, HTTPS e PHP 8.3 | Abre o aviso padrão do servidor com cadeado | Apagar o subdomínio |
-| 3 | cPanel: banco e usuário **novos** | Usuário aparece ligado ao banco | Apagar o banco |
-| 4 | cPanel: conta FTP com diretório `cursos.ib-to.org` (sem `/public`; ver o aviso na Parte D do guia da homologação) | Diretório da conta sem nada depois do nome da pasta | Apagar a conta FTP |
-| 5 | GitHub: ambiente `producao` com `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` | Os 3 segredos aparecem no ambiente | Apagar o ambiente |
-| 6 | Primeiro envio pelo botão "Run workflow" (ambiente `producao`) | Arquivos na pasta certa; `public/` só com o necessário | Apagar os arquivos enviados |
-| 7 | `.env` de produção ao lado do `artisan`, permissão 600 (seção 3) | Página de login abre | Apagar o `.env` |
-| 8 | Cron Job com os 3 comandos, trocando a pasta para `cursos.ib-to.org` | Aparece `storage/app/versao-aplicada` em até 5 min | Apagar o Cron |
-| 9 | Primeira entrada com o e-mail do `ADMIN_EMAILS`; criar a conta de Tecnologia; esvaziar o `ADMIN_EMAILS` | Lista da seção 5 | Desativar a conta |
-| 10 | Avisar a direção e acompanhar por uma semana | Sem queixas | A homologação continua igual |
+| #   | O que fazer                                                                                                                            | Como conferir                                          | Como voltar                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------- |
+| 1   | Criar o workflow `deploy-producao.yml` (cópia do da homologação, ambiente `producao`, só "Run workflow") numa branch, com PR e revisão | CI verde na PR                                         | Fechar a PR                  |
+| 2   | cPanel: subdomínio `cursos.ib-to.org` com Document Root em `cursos.ib-to.org/public`, HTTPS e PHP 8.3                                  | Abre o aviso padrão do servidor com cadeado            | Apagar o subdomínio          |
+| 3   | cPanel: banco e usuário **novos**                                                                                                      | Usuário aparece ligado ao banco                        | Apagar o banco               |
+| 4   | cPanel: conta FTP com diretório `cursos.ib-to.org` (sem `/public`; ver o aviso na Parte D do guia da homologação)                      | Diretório da conta sem nada depois do nome da pasta    | Apagar a conta FTP           |
+| 5   | GitHub: ambiente `producao` com `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`                                                           | Os 3 segredos aparecem no ambiente                     | Apagar o ambiente            |
+| 6   | Primeiro envio pelo botão "Run workflow" (ambiente `producao`)                                                                         | Arquivos na pasta certa; `public/` só com o necessário | Apagar os arquivos enviados  |
+| 7   | `.env` de produção ao lado do `artisan`, permissão 600 (seção 3)                                                                       | Página de login abre                                   | Apagar o `.env`              |
+| 8   | Cron Job com os 3 comandos, trocando a pasta para `cursos.ib-to.org`                                                                   | Aparece `storage/app/versao-aplicada` em até 5 min     | Apagar o Cron                |
+| 9   | Primeira entrada com o e-mail do `ADMIN_EMAILS`; criar a conta de Tecnologia; esvaziar o `ADMIN_EMAILS`                                | Lista da seção 5                                       | Desativar a conta            |
+| 10  | Avisar a direção e acompanhar por uma semana                                                                                           | Sem queixas                                            | A homologação continua igual |
 
 ## 5. Lista de conferência (rode na produção)
 

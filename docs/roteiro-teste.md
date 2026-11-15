@@ -14,21 +14,25 @@ Ambiente: **homologação**, https://cursos-homolog.ib-to.org (nada aqui é púb
 
 O que mudou: o Congresso (21/02/2027, Limeira-SP) foi cadastrado como **curso presencial**, para a equipe ver como a plataforma trata um evento. Valor, vagas, horários e instrutores são **exemplo**.
 
-**Vitrine**
+### Vitrine
+
 1. [ ] No catálogo, aparece o cartão "[TESTE] Congresso Nacional IBTO: 21/02/2027, Limeira-SP", com o cartaz **inteiro** (rostos sem corte).
 2. [ ] Abra o cartão: aparecem a frase "Integração · Capacitação · Atualização Operacional", 21/02/2027, das 08:00 às 18:00, Limeira-SP, R$ 250,00 e 200 vagas.
 3. [ ] O primeiro parágrafo avisa que é página de **TESTE** e que os dados são exemplo.
 4. [ ] O cronograma mostra **10 encontros**, de "Abertura e credenciamento" a "Painel técnico e encerramento", com "A confirmar (exemplo)" em quem aplica.
 5. [ ] Clique num encontro: abre a janela com dia, horário e o botão de lembrete na agenda.
 
-**Comando Geral**
+### Comando Geral
+
 6. [ ] Em Cursos, abra o Congresso e mude o valor para R$ 300,00. Salve: a vitrine mostra o novo valor.
 7. [ ] Volte o valor para R$ 250,00.
 
-**No celular**
+### No celular
+
 8. [ ] Página do Congresso sem rolagem para os lados; cartaz inteiro; cronograma legível.
 
-**O que anotar para a reunião** (não é erro, é decisão da direção)
+### O que anotar para a reunião (não é erro, é decisão da direção)
+
 9. [ ] Ficou faltando algo do cartaz? (lotes, preço de filiado, trilhas em paralelo, vários instrutores, termo do tiro)
 
 ## Bloco 2 — Pedidos já entregues: conferência final — 25 min
