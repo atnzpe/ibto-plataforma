@@ -108,6 +108,32 @@ class Curso extends Model
     }
 
     /**
+     * Filtro pronto ("escopo") dos cursos VIGENTES (15/11/2026, mesma regra da CBSA):
+     * tira do catálogo e da lista do site os cursos cujo último dia já passou.
+     * O último dia é a data de fim; sem ela, a data de início (curso de um dia só).
+     * Curso SEM data (online, no ritmo do aluno) é sempre vigente.
+     * "Hoje" ainda conta: o curso que termina hoje continua aparecendo até o fim do dia.
+     * A página do curso antigo continua abrindo pelo link (certificados e matrículas apontam para ela).
+     * Uso: Curso::query()->vigente()->...
+     *
+     * @param  Builder<Curso>  $consulta  A consulta que está sendo montada.
+     */
+    public function scopeVigente(Builder $consulta): void
+    {
+        // O dia de hoje no fuso da plataforma (Brasília). Ex.: '2026-11-15'.
+        $hoje = today()->toDateString();
+
+        // Agrupa as duas condições entre parênteses, para não atrapalhar os outros filtros da consulta.
+        $consulta->where(function (Builder $condicao) use ($hoje): void {
+            // Sem data: curso online, sempre vigente.
+            $condicao->whereNull('data_inicio')
+                // Com data: o último dia (fim, ou o início se não houver fim) é hoje ou depois.
+                // COALESCE pega o primeiro valor não vazio da lista (funciona no MySQL 5.7 e no SQLite dos testes).
+                ->orWhereRaw('COALESCE(data_fim, data_inicio) >= ?', [$hoje]);
+        });
+    }
+
+    /**
      * DIVIDE um valor pago entre o IBTO e o instrutor, pelo percentual do curso.
      * Tudo em CENTAVOS (número inteiro, sem vírgula): a parte do IBTO é
      * arredondada para baixo e o centavo que sobrar vai para o instrutor, assim

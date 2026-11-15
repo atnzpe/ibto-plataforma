@@ -34,6 +34,8 @@ class PublicoCursosController extends Controller
             ->where('situacao', SituacaoCurso::Publicado)
             // Curso FECHADO não aparece no site (decisão de 14/10/2026).
             ->noSite()
+            // Curso que já terminou também sai da lista do site (mesma regra do catálogo, 15/11/2026).
+            ->vigente()
             ->with('area:id,nome')
             // Os com data primeiro (do mais próximo), os sem data no fim.
             ->orderByRaw('data_inicio is null')->orderBy('data_inicio')->orderBy('titulo')

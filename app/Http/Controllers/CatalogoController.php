@@ -62,6 +62,8 @@ class CatalogoController extends Controller
             ->where('situacao', SituacaoCurso::Publicado)
             // Curso FECHADO (ex.: Formação de instrutor) não aparece no site.
             ->noSite()
+            // Curso que já terminou não aparece no catálogo (mesma regra da CBSA, 15/11/2026).
+            ->vigente()
             ->with(['area:id,nome', 'instrutor:id,name'])
             // Os com data primeiro, do mais próximo ao mais distante; os sem data no fim.
             ->orderByRaw('data_inicio is null')->orderBy('data_inicio')->orderBy('titulo');
@@ -82,9 +84,9 @@ class CatalogoController extends Controller
         return Inertia::render('catalogo/index', [
             'filtros' => ['area' => $area > 0 ? $area : null, 'modalidade' => $modalidade?->value, 'acesso' => $acesso?->value, 'busca' => $busca],
             'cursos' => $consulta->limit(200)->get()->map(fn (Curso $curso) => $this->cartao($curso))->values(),
-            // Só as áreas que têm curso publicado (filtro sem opções vazias).
+            // Só as áreas que têm curso publicado E vigente (filtro sem opções que levam a uma lista vazia).
             'areas' => AreaAtuacao::query()
-                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->noSite()->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
+                ->whereIn('id', Curso::where('situacao', SituacaoCurso::Publicado)->noSite()->vigente()->whereNotNull('area_atuacao_id')->select('area_atuacao_id'))
                 ->orderBy('nome')->get(['id', 'nome']),
             // Trilhas ativas, para o atalho "Trilhas de formação".
             'trilhas' => Trilha::query()->where('ativa', true)->orderBy('nome')->get(['id', 'nome']),
