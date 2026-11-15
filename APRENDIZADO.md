@@ -198,3 +198,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 1. Por que o Congresso de teste não aparece na produção, mesmo rodando a mesma migration?
 2. Que nome a plataforma dá a um "evento" hoje, e onde ficam os temas do cartaz?
 3. Por que o banco da produção nasce vazio, e não como cópia da homologação?
+
+## 15/11/2026 — Curso vencido fora do catálogo e SEO altíssimo
+
+- Uma regra que vale em vários lugares mora num **escopo** só (`Curso::vigente()`): catálogo, filtro de áreas e API usam o mesmo filtro. Como a regra de "produto fora de linha" do PDV: definida uma vez no cadastro, vale no caixa, no site e no relatório.
+- Teste com data fixa "vence" com o calendário: congele o relógio (`travelTo`) ou use datas relativas ("daqui a um mês").
+- O SQLite dos testes não confere o tamanho das colunas; o MySQL do servidor confere. Por isso a CI roda no MySQL: o erro apareceu lá, não no computador.
+
+**Perguntas para fixar:**
+
+1. Um curso de dois dias (14 e 15/11) aparece no catálogo no dia 15? E no dia 16?
+2. Por que a página de um curso antigo continua abrindo pelo link?
+3. O que o Google mostra a mais quando o "Course" tem a turma e a oferta?
