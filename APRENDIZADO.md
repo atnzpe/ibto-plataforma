@@ -186,3 +186,15 @@ Diário curto do que o Gleyson aprendeu em cada tarefa (3 linhas por tarefa).
 
 1. Onde se liga de novo a obrigação das duas etapas?
 2. Quem já ligou as duas etapas na própria conta continua precisando do código?
+
+## 15/11/2026 — Congresso na homologação e trava da produção
+
+- Sem SSH no servidor, quem executa um comando lá é uma **migration** (o Cron roda as migrations no pós-deploy). É como mandar a ordem de serviço junto com a mercadoria: quando a caixa chega, a tarefa já vem dentro.
+- A homologação usa `APP_ENV=production` para imitar a produção. Por isso, para separar os dois servidores no código, olha-se o **endereço** (`APP_URL`), não o nome do ambiente.
+- Ler o projeto inteiro antes de publicar acha problemas escondidos: a carga de teste de 17/10 iria parar no blog público da produção. Uma trava de 5 linhas resolveu.
+
+**Perguntas para fixar:**
+
+1. Por que o Congresso de teste não aparece na produção, mesmo rodando a mesma migration?
+2. Que nome a plataforma dá a um "evento" hoje, e onde ficam os temas do cartaz?
+3. Por que o banco da produção nasce vazio, e não como cópia da homologação?

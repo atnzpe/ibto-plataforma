@@ -11,6 +11,15 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Novo (Congresso Nacional IBTO na homologação, 15/11/2026)
+
+- O **Congresso Nacional IBTO** (21/02/2027, Limeira-SP) entra na homologação como curso presencial, com o cartaz de capa e um encontro por tema. Valor, vagas, horários e instrutores são **exemplo** (título com `[TESTE]`), até a direção mandar os dados oficiais. Comando: `php artisan plataforma:carregar-congresso`.
+- Documentação no molde do projeto CBSA: `docs/arquitetura-atual.md` (leitura completa e o que falta antes da produção), `docs/publicacao-producao.md` (guia da #56) e `docs/roteiro-teste.md` (teste humano em blocos de 25 min).
+
+### Corrigido (trava da produção nas cargas de teste, 15/11/2026)
+
+- A carga do conteúdo de teste do piloto (migration de 17/10/2026) rodava em **qualquer** banco novo: a produção nasceria com posts e álbuns `[TESTE]` no blog público. Agora ela e a do Congresso só rodam na homologação ou no computador local (trava pelo endereço, porque a homologação também usa `APP_ENV=production`).
+
 ### Mudado (verificação em duas etapas opcional, 07/11/2026)
 
 - A equipe volta a entrar só com e-mail e senha: a verificação em duas etapas deixou de ser obrigatória na fase de testes. Quem quiser pode ligá-la na tela Segurança. Para voltar a obrigar, basta `SEGURANCA_EXIGIR_2FA_EQUIPE=true` no `.env` do servidor.
