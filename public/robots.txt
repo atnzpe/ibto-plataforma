@@ -26,6 +26,13 @@ Disallow: /reset-password
 Disallow: /convite
 Disallow: /api/
 Disallow: /imagens/
+# SEO (15/11/2026): as CAPAS dos cursos, as imagens das áreas e as logos das equipes
+# podem ser lidas (a capa aparece no Google e no Google Imagens). A regra mais
+# específica (Allow) vence a geral (Disallow /imagens/). As fotos da GALERIA e do
+# BLOG continuam fechadas: podem ter rostos de pessoas (LGPD).
+Allow: /imagens/cursos/
+Allow: /imagens/areas-atuacao/
+Allow: /imagens/equipes/
 
 # O blog e os eventos moram no site do IBTO; a lista de páginas dele fica aqui:
 Sitemap: https://ib-to.org/sitemap.xml

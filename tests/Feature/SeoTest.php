@@ -10,6 +10,7 @@
 
 use App\Enums\SituacaoCurso;
 use App\Models\Curso;
+use App\Support\Seo;
 
 /**
  * Cria um curso do catálogo para os testes do SEO.
@@ -30,11 +31,49 @@ test('a página do curso publicado sai com descrição, cartão do link e dados 
     $html = $this->get(route('catalogo.curso', $curso))->assertOk()->getContent();
 
     expect($html)
-        ->toContain('<meta name="description" content="Curso prático de teste.">')
+        // Descrição sem HTML, seguida da modalidade e do preço (curso sem data nem local).
+        ->toContain('<meta name="description" content="Curso prático de teste. Presencial · Gratuito.">')
         ->toContain('<meta property="og:title" content="APH Tático Teste')
+        ->toContain('<meta property="og:image:alt" content="APH Tático Teste">')
         ->toContain('<link rel="canonical" href="'.route('catalogo.curso', $curso).'">')
         ->toContain('"@type":"Course"')
         ->toContain('"name":"APH Tático Teste"');
+});
+
+test('o título que o Google lê já sai com o nome do curso, antes do React (15/11/2026)', function () {
+    $curso = cursoDoSeo('Congresso de Teste');
+
+    expect($this->get(route('catalogo.curso', $curso))->getContent())
+        ->toContain('<title>Congresso de Teste - '.config('app.name').'</title>');
+});
+
+test('o Course traz a turma (data, local, modo, instrutor, horas) e a oferta em reais', function () {
+    $curso = cursoDoSeo('Congresso de Teste', SituacaoCurso::Publicado, [
+        'chamada' => 'Integração · Capacitação', 'valor_centavos' => 25000, 'data_inicio' => '2027-02-21',
+        'local' => 'Limeira - SP', 'carga_horaria' => 10, 'instrutor_nome' => 'Instrutores convidados',
+    ]);
+
+    $html = $this->get(route('catalogo.curso', $curso))->getContent();
+
+    expect($html)
+        ->toContain('<meta name="description" content="Integração · Capacitação. 21/02/2027 · Limeira - SP · Presencial · R$ 250,00.">')
+        ->toContain('"@type":"CourseInstance","courseMode":"onsite","startDate":"2027-02-21","endDate":"2027-02-21"')
+        ->toContain('"location":{"@type":"Place","name":"Limeira - SP"')
+        ->toContain('"instructor":{"@type":"Person","name":"Instrutores convidados"}')
+        ->toContain('"courseWorkload":"PT10H"')
+        ->toContain('"offers":[{"@type":"Offer","category":"Paid","price":"250.00","priceCurrency":"BRL"');
+});
+
+test('chamada longa: a frase é cortada, mas a data e o preço nunca somem da descrição', function () {
+    $curso = cursoDoSeo('Curso de frase longa', SituacaoCurso::Publicado, [
+        'chamada' => str_repeat('Treinamento operacional completo para profissionais. ', 6),
+        'valor_centavos' => 9990, 'data_inicio' => '2027-03-10', 'local' => 'Recife - PE',
+    ]);
+
+    $descricao = Seo::descricaoCurso($curso);
+
+    expect(mb_strlen($descricao))->toBeLessThanOrEqual(160)
+        ->and($descricao)->toEndWith('10/03/2027 · Recife - PE · Presencial · R$ 99,90.');
 });
 
 test('um título com </script> não fecha a etiqueta dos dados estruturados', function () {

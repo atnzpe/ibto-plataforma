@@ -11,6 +11,14 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Melhorado (SEO altíssimo na página do curso, 15/11/2026)
+
+- O **título** que o Google lê já sai com o nome do curso ("Congresso Nacional IBTO - IBTO Cursos"), antes do React; antes era "IBTO Cursos" em todas as páginas.
+- A **descrição** traz a chamada e os detalhes que a pessoa procura: data, cidade, modalidade e preço. Se a frase for longa, ela é cortada; a data e o preço nunca somem.
+- Os **dados estruturados** do curso ficaram completos: a turma (data, local, presencial ou online, instrutor, carga horária) e a oferta (preço em reais).
+- A imagem do cartão do link ganhou **texto alternativo**.
+- O `robots.txt` passa a deixar o Google ler as **capas dos cursos**, as imagens das áreas e as logos das equipes. As fotos da galeria e do blog continuam fechadas (podem ter rostos, LGPD).
+
 ### Corrigido (curso vencido some do catálogo, 15/11/2026)
 
 - Curso cujo último dia já passou **não aparece mais** no catálogo, no filtro de áreas nem na lista do site (mesma regra da CBSA). Continua aparecendo o que termina hoje, o que está acontecendo e o curso online sem data. A página do curso antigo continua abrindo pelo link, porque certificados e matrículas apontam para ela.
