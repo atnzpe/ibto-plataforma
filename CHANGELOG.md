@@ -11,6 +11,10 @@ Enquanto a versão começar com **0**, a plataforma está em homologação (ante
 
 ## [Não lançado]
 
+### Corrigido (curso vencido some do catálogo, 15/11/2026)
+
+- Curso cujo último dia já passou **não aparece mais** no catálogo, no filtro de áreas nem na lista do site (mesma regra da CBSA). Continua aparecendo o que termina hoje, o que está acontecendo e o curso online sem data. A página do curso antigo continua abrindo pelo link, porque certificados e matrículas apontam para ela.
+
 ### Novo (Congresso Nacional IBTO na homologação, 15/11/2026)
 
 - O **Congresso Nacional IBTO** (21/02/2027, Limeira-SP) entra na homologação como curso presencial, com o cartaz de capa e um encontro por tema. Valor, vagas, horários e instrutores são **exemplo** (título com `[TESTE]`), até a direção mandar os dados oficiais. Comando: `php artisan plataforma:carregar-congresso`.

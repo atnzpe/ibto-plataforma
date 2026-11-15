@@ -23,7 +23,8 @@ function cursoNoBanco(SituacaoCurso $situacao, array $troca = []): Curso
 {
     $curso = new Curso([
         'titulo' => 'Combate Corpo a Corpo', 'modalidade' => 'presencial', 'acesso' => 'aberto',
-        'valor_centavos' => 25000, 'data_inicio' => '2026-10-10', 'local' => 'Recife',
+        // Data sempre FUTURA (daqui a um mês): com data fixa, o curso "venceria" e sairia do catálogo (regra de 15/11/2026).
+        'valor_centavos' => 25000, 'data_inicio' => now()->addMonth()->toDateString(), 'local' => 'Recife',
         'material_incluso' => 'Certificado, Camisa do evento , ,E muito mais',
         'contato_whatsapp' => '(81) 99999-0000', 'instrutor_nome' => 'Trinca',
         'instrutor_especialidade' => 'Especialista em artes marciais', 'chamada' => 'Treinamento para a vida real.',
