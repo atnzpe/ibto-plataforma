@@ -66,7 +66,8 @@ test('o Course traz a turma (data, local, modo, instrutor, horas) e a oferta em 
 
 test('chamada longa: a frase é cortada, mas a data e o preço nunca somem da descrição', function () {
     $curso = cursoDoSeo('Curso de frase longa', SituacaoCurso::Publicado, [
-        'chamada' => str_repeat('Treinamento operacional completo para profissionais. ', 6),
+        // 159 letras: cabe na coluna (até 200 no MySQL) e, somada aos detalhes, passa das 157 do Google.
+        'chamada' => str_repeat('Treinamento operacional completo para profissionais. ', 3),
         'valor_centavos' => 9990, 'data_inicio' => '2027-03-10', 'local' => 'Recife - PE',
     ]);
 
